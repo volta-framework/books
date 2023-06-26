@@ -1,0 +1,25 @@
+{
+  "name" : "volta-framework/composer-books",
+  "type": "library",
+  "description": "A component to read compose a book from a specified folder structure",
+  "keywords": ["Framework, PHP Components"],
+  "homepage": "https://github.com/volta-framework/component-books",
+  "license": "MIT",
+  "version": "1.0.0",
+  "authors": [
+    {
+      "name":"Rob Demmenie",
+      "email": "rob@volta-framework.com"
+    }
+  ],
+
+  "require": {
+    "php": ">=8.1"
+  },
+
+  "autoload": {
+    "psr-4": { "Volta\\Component\\Books\\": "src/Volta/Component/Books/" }
+  }
+
+
+}

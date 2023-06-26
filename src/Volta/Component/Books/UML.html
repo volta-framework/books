@@ -1,0 +1,295 @@
+<!-- (Start HTML Volta\Component\UmlDoc\MermaidDiagram) -->
+<html lang="en">
+  <head>
+    <title>ClassDiagram Volta\Component\Books\</title>
+    <meta charset="utf-8" />
+    <style>
+        body{
+            margin:20px; color:#cccccc;
+            background: rgb(52,20,20);
+            background: linear-gradient(90deg, rgba(52,20,20,1) 12%, rgba(13,6,6,1) 52%, rgba(52,19,19,1) 90%);
+        }
+    </style>
+  </head>
+  <body>
+    <h1>Volta\Component\Books\</h1>
+    <p>Generated @ 20230620 10:04:32</p>
+
+<div class="mermaid">
+%%{init: {'theme':'dark'}}%%
+classDiagram
+    class Quadro_Books_BookNode
+    Quadro_Books_DocumentNode<|--Quadro_Books_BookNode
+    class Quadro_Books_DocumentNode {
+        #array _children
+        #string _contentFile
+        #Volta\Component\Books\Meta _meta
+        #?Volta\Component\Books\NodeInterface _next
+        #?Volta\Component\Books\NodeInterface _previous
+        +getChildren():array
+        +getContent():string
+        +getContentAsStream():Psr\Http\Message\StreamInterface
+        +getContentFile():string
+        +getContentType():string
+        +getMeta():Volta\Component\Books\Meta
+        +getNext():?Volta\Component\Books\NodeInterface
+        +getPrevious():?Volta\Component\Books\NodeInterface
+    }
+    class Quadro_Books_Meta {
+        #array _metadata=[0..*]
+        +__construct(?string file=NULL)
+        +equals(string key, mixed value):bool
+        +get(string key, mixed default=NULL):mixed
+        +has(string key):bool
+        +set(string key, mixed value, bool overWrite=false):static
+    }
+    Quadro_Books_DocumentNode *-- Quadro_Books_Meta : #_meta
+    class Quadro_Books_NodeInterface {
+         	&lt;&lt;interface&gt;&gt;
+        +getAbsolutePath():string
+        +getChildren():array
+        +getContent():string
+        +getContentAsStream():Psr\Http\Message\StreamInterface
+        +getContentType():string
+        +getDisplayName():string
+        +getMeta():Volta\Component\Books\Meta
+        +getName():string
+        +getNext():?Volta\Component\Books\NodeInterface
+        +getNode(string relativePath):?Volta\Component\Books\NodeInterface
+        +getParent():?Volta\Component\Books\NodeInterface
+        +getPrevious():?Volta\Component\Books\NodeInterface
+        +getRelativePath():string
+        +getRoot():?Volta\Component\Books\NodeInterface
+        +getToc():array
+        +getType():string
+        +getUri(bool absolute=true):string
+    }
+    class Psr_Http_Message_StreamInterface {
+         	&lt;&lt;interface&gt;&gt;
+    }
+    class Stringable {
+         	&lt;&lt;interface&gt;&gt;
+    }
+    Stringable..|>Psr_Http_Message_StreamInterface
+    Quadro_Books_NodeInterface --> Psr_Http_Message_StreamInterface : +getContentAsStream()
+    Quadro_Books_NodeInterface --> Quadro_Books_Meta : +getMeta()
+    Quadro_Books_NodeInterface --> Quadro_Books_NodeInterface : +getNext()
+    Quadro_Books_NodeInterface --> Quadro_Books_NodeInterface : +getNode()
+    Quadro_Books_NodeInterface --> Quadro_Books_NodeInterface : +getParent()
+    Quadro_Books_NodeInterface --> Quadro_Books_NodeInterface : +getPrevious()
+    Quadro_Books_NodeInterface --> Quadro_Books_NodeInterface : +getRoot()
+    Quadro_Books_DocumentNode *-- Quadro_Books_NodeInterface : #_next
+    Quadro_Books_DocumentNode *-- Quadro_Books_NodeInterface : #_previous
+    Quadro_Books_DocumentNode --> Psr_Http_Message_StreamInterface : +getContentAsStream()
+    Quadro_Books_DocumentNode --> Quadro_Books_Meta : +getMeta()
+    Quadro_Books_DocumentNode --> Quadro_Books_NodeInterface : +getNext()
+    Quadro_Books_DocumentNode --> Quadro_Books_NodeInterface : +getPrevious()
+    Quadro_Books_Node<|--Quadro_Books_DocumentNode
+    class Quadro_Books_Node {
+         	&lt;&lt;abstract&gt;&gt;
+        #string _absolutePath
+        #array _nodesCache$=[0..*]
+        #?Volta\Component\Books\NodeInterface _parent
+        #?Volta\Component\Books\NodeInterface _root
+        #array _toc=[0..*]
+        #__construct(string absolutePath)
+        #getTocFromNode(Volta\Component\Books\NodeInterface node):array
+        +factory(string absolutePath):Volta\Component\Books\NodeInterface
+        +__toString():string
+        +findNode(string uri):?Volta\Component\Books\NodeInterface
+        +getAbsolutePath():string
+        +getDisplayName():string
+        +getName():string
+        +getNode(string relativePath):?Volta\Component\Books\NodeInterface
+        +getParent():?Volta\Component\Books\NodeInterface
+        +getRelativePath():string
+        +getRoot():?Volta\Component\Books\NodeInterface
+        +getToc():array
+        +getType():string
+        +getUri(bool absolute=true):string
+    }
+    Quadro_Books_Node *-- Quadro_Books_NodeInterface : #_parent
+    Quadro_Books_Node *-- Quadro_Books_NodeInterface : #_root
+    Quadro_Books_Node ..> Quadro_Books_NodeInterface : #getTocFromNode(node)
+    Quadro_Books_Node --> Quadro_Books_NodeInterface : +factory()
+    Quadro_Books_Node --> Quadro_Books_NodeInterface : +findNode()
+    Quadro_Books_Node --> Quadro_Books_NodeInterface : +getNode()
+    Quadro_Books_Node --> Quadro_Books_NodeInterface : +getParent()
+    Quadro_Books_Node --> Quadro_Books_NodeInterface : +getRoot()
+    Quadro_Books_NodeInterface..|>Quadro_Books_Node
+    Stringable..|>Quadro_Books_Node
+    class Quadro_Books_Bookshelf {
+        +addBook(string absolutePath):Volta\Component\Books\NodeInterface
+        +getBook(string name):?Volta\Component\Books\NodeInterface
+        +hasBook(string name):bool
+    }
+    Quadro_Books_Bookshelf --> Quadro_Books_NodeInterface : +addBook()
+    Quadro_Books_Bookshelf --> Quadro_Books_NodeInterface : +getBook()
+    class Quadro_Books_Exceptions_DocumentNodeException
+    Quadro_Books_Exceptions_Exception<|--Quadro_Books_Exceptions_DocumentNodeException
+    class Quadro_Books_Exceptions_Exception
+    Exception<|--Quadro_Books_Exceptions_Exception
+    class Exception
+    class Throwable {
+         	&lt;&lt;interface&gt;&gt;
+    }
+    Stringable..|>Throwable
+    Throwable..|>Exception
+    class Quadro_Books_Exceptions_ResourceNodeException
+    Quadro_Books_Exceptions_Exception<|--Quadro_Books_Exceptions_ResourceNodeException
+    class Quadro_Books_ResourceNode {
+        +string MEDIA_TYPE_NOT_SUPPORTED = "Media-type not supported"
+        #?Volta\Component\Books\NodeInterface _next
+        #?Volta\Component\Books\NodeInterface _previous
+        #array _siblings
+        +getChildren():array
+        +getContent():string
+        +getContentAsStream():Psr\Http\Message\StreamInterface
+        +getContentType():string
+        +getMeta():Volta\Component\Books\Meta
+        +getNext():?Volta\Component\Books\NodeInterface
+        +getNode(string relativePath):?Volta\Component\Books\NodeInterface
+        +getPrevious():?Volta\Component\Books\NodeInterface
+        +getSiblings():array
+    }
+    Quadro_Books_ResourceNode *-- Quadro_Books_NodeInterface : #_next
+    Quadro_Books_ResourceNode *-- Quadro_Books_NodeInterface : #_previous
+    Quadro_Books_ResourceNode --> Psr_Http_Message_StreamInterface : +getContentAsStream()
+    Quadro_Books_ResourceNode --> Quadro_Books_Meta : +getMeta()
+    Quadro_Books_ResourceNode --> Quadro_Books_NodeInterface : +getNext()
+    Quadro_Books_ResourceNode --> Quadro_Books_NodeInterface : +getNode()
+    Quadro_Books_ResourceNode --> Quadro_Books_NodeInterface : +getPrevious()
+    Quadro_Books_Node<|--Quadro_Books_ResourceNode
+    class Quadro_Books_TocItem {
+        +string caption
+        +array children
+        +string uri
+        +__construct(string caption, string uri, array children)
+    }
+    class Quadro_Books_Xhtml_Element {
+        #array _attributes
+        #array _children=[0..*]
+        #string _name
+        #Volta\Component\Books\NodeInterface _node
+        #Volta\Component\Books\ContentParsers\XhtmlParser\Element|false _parent
+        #__construct(string name, array attributes, Volta\Component\Books\ContentParsers\XhtmlParser\Element|false parent)
+        #_attributesAsString():string
+        #_deepTrim(string data):string
+        #_getNode():Volta\Component\Books\NodeInterface
+        #_setNode(Volta\Component\Books\NodeInterface node):self
+        #_stripWhiteSpaces(string data):string
+        +factory(string elementName, Volta\Component\Books\NodeInterface node, array attributes=[], Volta\Component\Books\ContentParsers\XhtmlParser\Element|bool parent=):Volta\Component\Books\ContentParsers\XhtmlParser\Element
+        +addChild(Volta\Component\Books\ContentParsers\XhtmlParser\Element child):static
+        +getAttribute(string name, string default="):string
+        +getAttributes():array
+        +getChildren():array
+        +getName():string
+        +getParent():Volta\Component\Books\ContentParsers\XhtmlParser\Element|false
+        +hasAttribute(string name):bool
+        +isRoot():bool
+        +onTranslateData(string data):string
+        +onTranslateEnd():string
+        +onTranslateStart():string
+        +setParent(Volta\Component\Books\ContentParsers\XhtmlParser\Element|false parent):static
+    }
+    Quadro_Books_Xhtml_Element *-- Quadro_Books_NodeInterface : #_node
+    Quadro_Books_Xhtml_Element --> Quadro_Books_NodeInterface : #_getNode()
+    Quadro_Books_Xhtml_Element ..> Quadro_Books_NodeInterface : #_setNode(node)
+    Quadro_Books_Xhtml_Element --> Quadro_Books_Xhtml_Element : +factory()
+    Quadro_Books_Xhtml_Element ..> Quadro_Books_NodeInterface : +factory(..., node)
+    Quadro_Books_Xhtml_Element ..> Quadro_Books_Xhtml_Element : +addChild(child)
+    class Quadro_Books_Xhtml_Elements_Answer {
+        +int _counter$=0
+        +onTranslateData(string data):string
+        +onTranslateEnd():string
+        +onTranslateStart():string
+    }
+    Quadro_Books_Xhtml_Element<|--Quadro_Books_Xhtml_Elements_Answer
+    class Quadro_Books_Xhtml_Elements_Blockquote {
+        +onTranslateData(string data):string
+    }
+    Quadro_Books_Xhtml_Element<|--Quadro_Books_Xhtml_Elements_Blockquote
+    class Quadro_Books_Xhtml_Elements_Code {
+        +int counter$=0
+        +onTranslateEnd():string
+        +onTranslateStart():string
+    }
+    Quadro_Books_Xhtml_Element<|--Quadro_Books_Xhtml_Elements_Code
+    class Quadro_Books_Xhtml_Elements_Cpp
+    Quadro_Books_Xhtml_Elements_Language<|--Quadro_Books_Xhtml_Elements_Cpp
+    class Quadro_Books_Xhtml_Elements_Language {
+        +getCaption():string
+        +getLanguage():string
+        +onTranslateEnd():string
+        +onTranslateStart():string
+    }
+    Quadro_Books_Xhtml_Element<|--Quadro_Books_Xhtml_Elements_Language
+    class Quadro_Books_Xhtml_Elements_Cs
+    Quadro_Books_Xhtml_Elements_Language<|--Quadro_Books_Xhtml_Elements_Cs
+    class Quadro_Books_Xhtml_Elements_Exception
+    Exception<|--Quadro_Books_Xhtml_Elements_Exception
+    class Quadro_Books_Xhtml_Elements_Html
+    Quadro_Books_Xhtml_Elements_Language<|--Quadro_Books_Xhtml_Elements_Html
+    class Quadro_Books_Xhtml_Elements_Img {
+        +onTranslateData(string data):string
+        +onTranslateEnd():string
+        +onTranslateStart():string
+    }
+    Quadro_Books_Xhtml_Element<|--Quadro_Books_Xhtml_Elements_Img
+    class Quadro_Books_Xhtml_Elements_Java
+    Quadro_Books_Xhtml_Elements_Language<|--Quadro_Books_Xhtml_Elements_Java
+    class Quadro_Books_Xhtml_Elements_Js
+    Quadro_Books_Xhtml_Elements_Language<|--Quadro_Books_Xhtml_Elements_Js
+    class Quadro_Books_Xhtml_Elements_P {
+        +onTranslateData(string data):string
+    }
+    Quadro_Books_Xhtml_Element<|--Quadro_Books_Xhtml_Elements_P
+    class Quadro_Books_Xhtml_Elements_Php
+    Quadro_Books_Xhtml_Elements_Language<|--Quadro_Books_Xhtml_Elements_Php
+    class Quadro_Books_Xhtml_Elements_Py
+    Quadro_Books_Xhtml_Elements_Language<|--Quadro_Books_Xhtml_Elements_Py
+    class Quadro_Books_Xhtml_Elements_Question {
+        +int _counter$=0
+        +onTranslateData(string data):string
+        +onTranslateEnd():string
+        +onTranslateStart():string
+        +validate(string &message="):bool
+    }
+    Quadro_Books_Xhtml_Element<|--Quadro_Books_Xhtml_Elements_Question
+    class Quadro_Books_Xhtml_Elements_Quiz {
+        +int _counter$=0
+        +onTranslateData(string data):string
+        +onTranslateEnd():string
+        +onTranslateStart():string
+    }
+    Quadro_Books_Xhtml_Element<|--Quadro_Books_Xhtml_Elements_Quiz
+    class Quadro_Books_Xhtml_Elements_Strong {
+        +onTranslateData(string data):string
+    }
+    Quadro_Books_Xhtml_Element<|--Quadro_Books_Xhtml_Elements_Strong
+    class Quadro_Books_Xhtml_Elements_Toc {
+        +onTranslateData(string data):string
+        +onTranslateEnd():string
+        +onTranslateStart():string
+    }
+    Quadro_Books_Xhtml_Element<|--Quadro_Books_Xhtml_Elements_Toc
+    class Quadro_Books_Xhtml_Exception
+    Exception<|--Quadro_Books_Xhtml_Exception
+    class Quadro_Books_Xhtml_Parser {
+        #characterDataHandler(XmlParser xmlParser, string data):bool
+        #defaultHandler(XMLParser xmlParser, string data):bool
+        #elementEndHandler(XMLParser xmlParser, string name):bool
+        #elementStartHandler(XMLParser xmlParser, string name, array attribs):bool
+        +__construct(string file, Volta\Component\Books\NodeInterface node, bool verbose=false)
+        +getFile():string
+        +startParse():string
+    }
+    Quadro_Books_Xhtml_Parser ..> Quadro_Books_NodeInterface : +__construct(..., node)
+</div>
+    <script type="module">
+         import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+         mermaid.initialize({ startOnLoad: true });
+    </script>
+  </body>
+</html>
+<!-- (End HTML Volta\Component\UmlDoc\MermaidDiagram) -->
