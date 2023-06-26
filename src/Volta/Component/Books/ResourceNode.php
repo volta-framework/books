@@ -130,7 +130,9 @@ class ResourceNode extends Node
 
     public function getContentType(): string
     {
+
         $extension = pathinfo($this->getAbsolutePath(), PATHINFO_EXTENSION);
+
         return match($extension) {
 
             // textual files
