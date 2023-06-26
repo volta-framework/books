@@ -1,7 +1,7 @@
 # Volta\Component\Books
 
 A component which wil treat a collection of directories with a content file and containing resources as a Book. Where each
-directory or resource is considered a Node in the Book(the Book itself is also a Node). A **`ContentRenderer'** must be registered to render a specific type of content. Volta provides the following Renderers
+directory or resource is considered a Node in the Book(the Book itself is also a Node). To render a specific type of content(i.e. HTML or plain text) a renderer or parser for that type must be registred. A **`ContentRenderer'**. Volta provides the following Renderers
 
 * Markdown (`content.md`)
 * HTML (`content.html` | `content.htm`)
