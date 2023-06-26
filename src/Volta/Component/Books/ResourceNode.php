@@ -148,6 +148,7 @@ class ResourceNode extends Node
             'mov'  => 'video/quicktime',
 
             // images
+            'webp' => 'image/webp',
             'svg' => 'image/svg+xml',
             'bmp'  => 'image/bmp',
             'gif'  => 'image/gif',
