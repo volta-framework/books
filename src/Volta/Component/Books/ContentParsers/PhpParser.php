@@ -16,4 +16,8 @@ class PhpParser implements ContentParserInterface
 
         return include $file;
     }
+    public function getContentType(): string
+    {
+        return 'text/html';
+    }
 }

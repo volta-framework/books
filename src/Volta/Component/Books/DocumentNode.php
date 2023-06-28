@@ -19,12 +19,9 @@ declare(strict_types=1);
 namespace Volta\Component\Books;
 
 use DirectoryIterator;
-use Parsedown;
-use Psr\Http\Message\StreamInterface;
 use Volta\Component\Books\Exceptions\DocumentNodeException;
 use Volta\Component\Books\Exceptions\Exception;
 use Volta\Component\Books\Exceptions\ResourceNodeException;
-use Slim\Psr7\Factory\StreamFactory;
 
 /**
  *
@@ -32,29 +29,20 @@ use Slim\Psr7\Factory\StreamFactory;
 class DocumentNode extends Node
 {
 
-    /**
-     * @return string
-     * @throws Exception
-     */
-    public function getContent(): string
-    {
-        $contentFile = $this->getAbsolutePath() . DIRECTORY_SEPARATOR . $this->getContentFile();
-        $extension = pathinfo($contentFile, PATHINFO_EXTENSION);
-        $contentParser =  Settings::getContentParserFor($extension);
-        if ( false === $contentParser) {
-             throw new Exception(sprintf('No Content Parser found for *.%s files', $extension));
-        }
-        return $contentParser->getContent($contentFile, $this);
-    }
+
 
     /**
-     * @return StreamInterface
+     * @return int
      * @throws Exception
      */
-    public function getContentAsStream(): StreamInterface
+    public function getIndex(): int
     {
-        $streamFactory = new StreamFactory();
-        return $streamFactory->createStream($this->getContent());
+        foreach($this->getRoot()->getList() as $index => $node) {
+            if ($node->getAbsolutePath() === $this->getAbsolutePath()) {
+                return $index;
+            }
+        }
+        return 0;
     }
 
     /**
@@ -93,7 +81,7 @@ class DocumentNode extends Node
                 if (!$fileInfo->isDir()) continue;
                 try {
                     $child = Node::factory($fileInfo->getPathname());
-                    $this->_children[$child->getUri()] = $child;
+                    $this->_children[$child->getAbsolutePath()] = $child;
                 } catch (Exception|DocumentNodeException|ResourceNodeException $e) {
                     continue;
                 }
@@ -104,7 +92,7 @@ class DocumentNode extends Node
     }
 
     /**
-     * @var NodeInterface|null
+     * @var NodeInterface|null Lazy load memory cache
      */
     protected null|NodeInterface $_next;
 
@@ -114,25 +102,16 @@ class DocumentNode extends Node
      */
     public function getNext(): null|NodeInterface
     {
+        // lazy load, do cache the result
         if (!isset($this->_next)) {
             $this->_next = null;
-            if ($this->getParent() !== null) {
-                $next = false;
-                foreach ($this->getParent()->getChildren() as $uri => $child) {
-                    if ($next) {
-                        $this->_next = $child;
-                        break;
-                    }
-                    $next = ($this->getUri() === $uri);
-                }
-            }
-
-            // nothing found, get first child
-            if($this->_next === null) {
-                foreach ($this->getChildren() as $uri => $child) {
-                    $this->_next = $child;
+            $next = false;
+            foreach($this->getRoot()->getList() as $node) {
+                if ($next) {
+                    $this->_next = $node;
                     break;
                 }
+                $next = ($node->getAbsolutePath() === $this->getAbsolutePath());
             }
         }
         return $this->_next;
@@ -151,23 +130,22 @@ class DocumentNode extends Node
     {
         if (!isset($this->_previous)) {
             $this->_previous = null;
-            if ($this->getParent() !== null) {
-                foreach ($this->getParent()->getChildren() as $uri => $child) {
-                    if ($this->_previous === null && $this->getUri() === $uri) break;
-                    if ($this->getUri() === $uri) break;
-                    $this->_previous = $child;
-                }
-
-                // nothing found get parent if any
-                if($this->_previous === null) {
-                    if ($this->getParent() !== null) {
-                        $this->_previous = $this->getParent();
-                    }
-                }
-
+            foreach($this->getRoot()->getList() as $node) {
+                if ($this->_previous === null && $this->getAbsolutePath() === $node->getAbsolutePath()) break;
+                if ($this->getAbsolutePath() === $node->getAbsolutePath()) break;
+                $this->_previous = $node;
             }
         }
         return $this->_previous;
+    }
+
+    /**
+     * @return string
+     * @throws Exception
+     */
+    public function getContent(): string
+    {
+        return $this->_getContentParser()->getContent($this->getContentFile(), $this);
     }
 
     /**
@@ -184,19 +162,8 @@ class DocumentNode extends Node
     public function getContentFile(): string
     {
         if(!isset($this->_contentFile)) {
-            $path = $this->getAbsolutePath() . DIRECTORY_SEPARATOR;
-            if (is_file($path . 'content.xhtml'))
-                $this->_contentFile =  'content.xhtml';
-            if (is_file($path . 'content.html'))
-                $this->_contentFile =  'content.html';
-            if (is_file($path . 'content.php'))
-                $this->_contentFile = 'content.php';
-            if (is_file($path . 'content.phtml'))
-                $this->_contentFile = 'content.phtml';
-            if (is_file($path . 'content.txt'))
-                $this->_contentFile = 'content.txt';
-            if (is_file($path . 'content.md'))
-                $this->_contentFile = 'content.md';
+            $result = glob( $this->getAbsolutePath() . DIRECTORY_SEPARATOR . 'content.*');
+            return $this->_contentFile = $result[0];
 
             // NOTE:
             //     Document object cannot be instantiated without a content file present,
@@ -208,14 +175,26 @@ class DocumentNode extends Node
 
     /**
      * @return string
+     * @throws Exception
      */
     public function getContentType(): string
     {
-        $extension = pathinfo($this->getAbsolutePath(), PATHINFO_EXTENSION);
-        return match($extension) {
-            'xhtml', 'html', 'php',  => 'text/html',
-            'txt'  => 'text/plain',
-            default => 'text/html'
-        };
+        return $this->_getContentParser()->getContentType();
+    }
+
+
+    /**
+     * @return ContentParserInterface
+     * @throws Exception
+     */
+    protected function _getContentParser(): ContentParserInterface
+    {
+        $contentFile = $this->getAbsolutePath() . DIRECTORY_SEPARATOR . $this->getContentFile();
+        $extension = pathinfo($contentFile, PATHINFO_EXTENSION);
+        $contentParser =  Settings::getContentParserFor($extension);
+        if (false === $contentParser) {
+            throw new Exception(sprintf('No Content Parser found for *.%s files', $extension));
+        }
+        return $contentParser;
     }
 }

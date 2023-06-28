@@ -30,6 +30,14 @@ interface NodeInterface
     public function getToc(): array;
 
     /**
+     * @return array
+     */
+    public function getList(): array;
+
+
+    public function getIndex(): int;
+
+    /**
      * The relative path as a valid URI
      * @param bool $absolute
      * @return string
@@ -113,13 +121,6 @@ interface NodeInterface
      * @return string
      */
     public function getContent(): string;
-
-    /**
-     * Returns the content of the node a stream
-     *
-     * @return StreamInterface
-     */
-    public function getContentAsStream(): StreamInterface;
 
     /**
      * Meta information object

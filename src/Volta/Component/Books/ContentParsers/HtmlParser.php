@@ -16,4 +16,9 @@ class HtmlParser implements ContentParserInterface
 
         return file_get_contents($file);
     }
+
+    public function getContentType(): string
+    {
+        return 'text/html';
+    }
 }

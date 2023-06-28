@@ -22,6 +22,7 @@ declare(strict_types=1);
 namespace Volta\Component\Books\ContentParsers\XhtmlParser\Elements;
 
 use Volta\Component\Books\ContentParsers\XhtmlParser\Element as BaseElement;
+use Volta\Component\Books\Exceptions\Exception;
 use Volta\Component\Books\TocItem;
 
 class Toc extends BaseElement
@@ -33,9 +34,9 @@ class Toc extends BaseElement
     private function _printToc(array $items): string
     {
         $html = '';
-        if(count($items)) $html .= "\n<ul>";
+        if(count($items)) $html .= "\n<ul class=\"toc document-nodes\">";
         foreach($items as $item) {
-            $html .= "\n<li><a href=\"$item->uri\">{$item->caption}</a>";
+            $html .= "\n<li class=\"toc document-node\"><a  class=\"toc link\" href=\"$item->uri\">{$item->caption}</a>";
             $html .= $this->_printToc($item->children);
             $html .= "\n</li>";
         }
@@ -46,23 +47,33 @@ class Toc extends BaseElement
     /**
      * @inheritDoc
      * @throws Exception
+     * @throws Exception
      */
     public function onTranslateStart(): string
     {
-
-        if ($this->getAttribute('target', 'self') == 'parent') {
+        $target = $this->getAttribute('target', 'self') ;
+        $html = "\n<!-- TOC $target -->\n";
+        if ($target === 'parent') {
             if (null === $this->_getNode()->getParent()) {
-                throw new Exception('Target is set t o "parent" but the node does not have a parent.');
+                throw new Exception('TOC::target is set to "parent" but the node does not have a parent.');
             }
-            $toc = $this->_getNode()->getParent()->getToc();
-        } else if ($this->getAttribute('target', 'self') == 'root') {
-            $toc = $this->_getNode()->getRoot()->getToc();
+            $html .=  $this->_printToc($this->_getNode()->getParent()->getToc());
+
+        } else if ($target == 'root') {
+            $html .=  $this->_printToc($this->_getNode()->getRoot()->getToc());
+
+        } else if ($target == 'self') {
+            $html .= $this->_printToc($this->_getNode()->getRoot()->getToc());
         } else {
-            $toc = $this->_getNode()->getToc();
+            $node = $this->_getNode()->getChild($target);
+            if (null === $node) {
+                $html = "\nTOC unknown target, target expected to be parent, root, self or a valid relative path to self\n";
+            } else {
+                $html .= $this->_printToc($node->getToc());
+            }
+
         }
 
-
-        $html = $this->_printToc($toc);
         return $html;
     }
 

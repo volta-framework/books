@@ -20,26 +20,44 @@ namespace Volta\Component\Books;
 
 use Volta\Component\Books\Exceptions\DocumentNodeException;
 use Volta\Component\Books\Exceptions\Exception;
+use Volta\Component\Books\Exceptions\MimeTypeNotSupportedException;
 use Volta\Component\Books\Exceptions\ResourceNodeException;
 
 abstract class Node implements NodeInterface
 {
 
+
+    /**
+     * Global value for the UriOffset used when an absolute uri is requested
+     * @see Node::getUri();
+     * @var string $uriOffset
+     */
+    public static string $uriOffset = '';
+
+    /**
+     * @var string Internal cache for the absolute path
+     */
     protected readonly string $_absolutePath;
 
+    /**
+     * Nodes can only be created in the Node::factory() method where all
+     * checks are done and feedback is given on error.
+     *
+     * @param string $absolutePath
+     */
     protected function __construct(string $absolutePath)
     {
         $this->_absolutePath = $absolutePath;
     }
 
-
     /**
-     *  Memory cache in case we search for the same node again
+     * Memory cache in case we search for the same node again
      * @var array<string, NodeInterface>
      */
     protected static array $_nodesCache = [];
 
     /**
+     *
      * @param string $absolutePath
      * @return NodeInterface
      * @throws Exception
@@ -57,13 +75,9 @@ abstract class Node implements NodeInterface
 
         // file(resource) or directory(DocumentNode)
         if (is_dir($realPath)) {
-            if (!file_exists($realPath . DIRECTORY_SEPARATOR . 'content.txt') &&
-                !file_exists($realPath . DIRECTORY_SEPARATOR . 'content.md') &&
-                !file_exists($realPath . DIRECTORY_SEPARATOR . 'content.xhtml') &&
-                !file_exists($realPath . DIRECTORY_SEPARATOR . 'content.html') &&
-                !file_exists($realPath . DIRECTORY_SEPARATOR . 'content.phtml') &&
-                !file_exists($realPath . DIRECTORY_SEPARATOR . 'content.php'))
-                throw new DocumentNodeException('Path can not be identified as a node (Missing content.[html|xhtml|php|txt|md])');
+            $result = glob($absolutePath . DIRECTORY_SEPARATOR . 'content.*');
+            if ($result === false || count($result) === 0)
+                throw new DocumentNodeException('Path can not be identified as a node (Missing content.*)');
 
             if (!file_exists($realPath . DIRECTORY_SEPARATOR . 'meta.json'))
                 throw new DocumentNodeException('Path can not be identified as a document node (Missing meta.json)');
@@ -78,14 +92,18 @@ abstract class Node implements NodeInterface
 
         // if not it is a file and must be a resource
         else {
-
-            // TODO check file extensions
-            Node::$_nodesCache[$absolutePath] = new \Volta\Component\Books\ResourceNode($realPath);
+            $extension = pathinfo($realPath, PATHINFO_EXTENSION);
+            if (!array_key_exists($extension, Settings::$supportedResources)) {
+                throw new MimeTypeNotSupportedException('Resources "*.'.$extension.'" not supported ');
+            }
+            Node::$_nodesCache[$absolutePath] = new ResourceNode($realPath);
         }
 
         return Node::$_nodesCache[$absolutePath] ;
 
     }
+
+    const SLUG_SEPARATOR = '/';
 
     /**
      * {@inheritdoc}
@@ -93,8 +111,26 @@ abstract class Node implements NodeInterface
      */
     public function getUri(bool $absolute = true): string
     {
-        if ($absolute) return '/' . $this->getRoot()->getName() . str_replace(DIRECTORY_SEPARATOR, '/' , $this->getRelativePath());
-        return   trim(str_replace(DIRECTORY_SEPARATOR, '/' , $this->getRelativePath()), '/');
+        // create the relative uri for this node thus without a leading SLUG_SEPARATOR
+        $relativeUri = trim(str_replace(DIRECTORY_SEPARATOR, Node::SLUG_SEPARATOR,  $this->getRelativePath()), Node::SLUG_SEPARATOR);
+
+        // if we do not want the absolute uri return
+        if (false === $absolute)  return $relativeUri;
+
+        // if we want the absolute uri we need to add the slash and the uriOffset(stored in the global Node::$uriOffset)
+        // NOTE:
+        //    if the uriOffset is not in the correct format hence
+        //    - ending with a SLUG_SEPARATOR or
+        //    - not starting with a SLUG_SEPARATOR
+        //    throw an Exception
+        $uriOffset = Node::$uriOffset;
+        if ($uriOffset!== '' && !str_starts_with( $uriOffset, Node::SLUG_SEPARATOR))
+            throw new Exception('Settings::$uriOffset; must start with a forward slash');
+        if ($uriOffset!== '' &&  str_ends_with($uriOffset, Node::SLUG_SEPARATOR))
+            throw new Exception('Settings::$uriOffset; can not end with a forward slash');
+
+        return $uriOffset . Node::SLUG_SEPARATOR . $relativeUri;
+
     }
 
     /**
@@ -175,11 +211,14 @@ abstract class Node implements NodeInterface
     }
 
     /**
-     * @throws Exception
      */
     public function getChild(string $relativePath): null|NodeInterface
     {
-        return Node::factory($this->getAbsolutePath() . $relativePath);
+        try {
+            return Node::factory($this->getAbsolutePath() . $relativePath);
+        } catch(Exception $e){
+            return null;
+        }
     }
 
     protected null|NodeInterface $_root;
@@ -216,11 +255,14 @@ abstract class Node implements NodeInterface
         return $this->_root;
     }
 
-    public function findNode(string $uri): null|NodeInterface
+    public function getList(): array
     {
-        return null;
+        $list[] = $this;
+        foreach($this->getChildren() as $child) {
+            $list = array_merge($list, $child->getList());
+        }
+        return $list;
     }
-
 
     /**
      * @return string
@@ -266,7 +308,7 @@ abstract class Node implements NodeInterface
         foreach($node->getChildren() as $childNode) {
             $toc[] = new TocItem(
                 ucwords(str_replace(['_', '-'], ' ', $childNode->getName())),
-                $childNode->getUri(false),
+                $childNode->getUri(),
                 $this->getTocFromNode($childNode)
             );
         }

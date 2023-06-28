@@ -31,7 +31,7 @@ use XMLParser;
 /**
  * Class ContentParser
  * 
- * Parses DigiCademy Repository DocumentNode XHTML content and generates html for it.
+ * Parses DocumentNode XHTML content and generates html for it.
  * 
  * For each element found the parser checks if a matching Element Class is defined.
  * If not a default Element object is used if found a descendent of the default Element
@@ -39,10 +39,7 @@ use XMLParser;
  * 
  * An Element translates the starting tag, all data found and the end tag to 
  * what ever HTML the element finds appropriate.
- * 
- * 
- * @package Volta\Component\Repository
- * @author Rob <rob@jaribio.nl> 
+ *
  */
 class XhtmlParser implements ContentParserInterface
 {
@@ -251,5 +248,9 @@ class XhtmlParser implements ContentParserInterface
     }
 
 
+    public function getContentType(): string
+    {
+        return 'text/html';
+    }
 
 } // class

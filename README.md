@@ -1,20 +1,19 @@
 # Volta\Component\Books
+Website generation given a Book written in the Volta Book Format(VBF) 
 
+## Features
+- A portable Book Format
+- Customizable parsers
+
+##
 A component which wil treat a collection of directories with a content file and containing resources as a Book. Where each
-directory or resource is considered a Node in the Book(the Book itself is also a Node). To render a specific type of content(i.e. HTML or plain text) a renderer or parser for that type must be registred. A **`ContentRenderer'**. Volta provides the following Renderers
-
-* Markdown (`content.md`)
+directory or resource is considered a Node in the Book(the Book itself is also a Node). To render a specific type of content(i.e. HTML or plain text) a renderer or parser for that type must be registered. A **`ContentRenderer'**. Volta provides the following Renderers
+ 
 * HTML (`content.html` | `content.htm`)
 * XHTML (`content.xhtml`)
 * txt (`content.txt`)
 * PHP- (`content.php` | `content.phtml`)
-
-## When to use
-
-## When not to use
-
-## How to Use
-
+ 
 A directory containing a file named `content.*` and a file named `meta.json` is considered a **`DocumentNode`**. If the **`DocumentNode`** has no parent **`DocumentNode`** the **`Node`** is considered a **`BookNode`**. A **`DocumentNode`** is identified by the absolute path of the directory. Resources like images, videos etc. are of type **`ResourceNode`** and will be identified by the absolute path of the file and must reside in a **`DocumentNode`** .
 
 To get a **`Node`**, any **`Node`**, we pass the (absolute) path to the `Node::factory()` or the relative path to the `Node::getChild()` method of a **`Node`** instance. These methods will return a valid **`Node`** or will raise an Exception if the path does not contain a **`Node`**.

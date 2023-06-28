@@ -31,6 +31,20 @@ use Slim\Psr7\Factory\StreamFactory;
 class ResourceNode extends Node
 {
 
+
+    /**
+     * @return int
+     */
+    public function getIndex(): int
+    {
+        foreach($this->getSiblings() as $index => $node) {
+            if ($node->getAbsolutePath() === $this->getAbsolutePath()) {
+                return $index;
+            }
+        }
+        return 0;
+    }
+
     /**
      * @return string
      * @throws Exception
@@ -44,15 +58,6 @@ class ResourceNode extends Node
     }
 
     /**
-     * @return StreamInterface
-     */
-    public function getContentAsStream(): StreamInterface
-    {
-        $streamFactory = new StreamFactory();
-        return $streamFactory->createStreamFromFile($this->getAbsolutePath());
-    }
-
-    /**
      * A ResourceNode can not contain other nodes therefor it wil return an empty array
      *
      * @return array<mixed, mixed>
@@ -61,7 +66,6 @@ class ResourceNode extends Node
     {
         return [];
     }
-
 
     /**
      * @var array<string, NodeInterface>
@@ -81,7 +85,7 @@ class ResourceNode extends Node
                 try {
                     $sibling = Node::factory($fileInfo->getPathname());
                     if (is_a($sibling, static::class)) {
-                        $this->_siblings[$sibling->getUri()] = $sibling;
+                        $this->_siblings[$sibling->getAbsolutePath()] = $sibling;
                     }
                 } catch (Exception|DocumentNodeException|ResourceNodeException $e) {
                     continue;
@@ -99,12 +103,12 @@ class ResourceNode extends Node
         if (!isset($this->_next)) {
             $this->_next = null;
             $next = false;
-            foreach ($this->getSiblings() as $uri => $sibling) {
+            foreach ($this->getSiblings() as $absolutePath => $sibling) {
                 if ($next) {
                     $this->_next = $sibling;
                     break;
                 }
-                $next = ($this->getUri() === $uri);
+                $next = ($this->getAbsolutePath() === $absolutePath);
             }
         }
         return $this->_next;
@@ -113,13 +117,16 @@ class ResourceNode extends Node
 
     protected null|NodeInterface $_previous;
 
+    /**
+     * @throws Exception
+     */
     public function getPrevious(): null|NodeInterface
     {
         if (!isset($this->_previous)) {
             $this->_previous = null;
-            foreach ($this->getSiblings() as $uri => $sibling) {
-                if ($this->_previous === null && $this->getUri() === $uri) break;
-                if ($this->getUri() === $uri) break;
+            foreach ($this->getSiblings() as $absolutePath => $sibling) {
+                if ($this->_previous === null && $this->getAbsolutePath() === $absolutePath) break;
+                if ($this->getUri() === $absolutePath) break;
                 $this->_previous = $sibling;
             }
         }
@@ -130,39 +137,8 @@ class ResourceNode extends Node
 
     public function getContentType(): string
     {
-
         $extension = pathinfo($this->getAbsolutePath(), PATHINFO_EXTENSION);
-
-        return match($extension) {
-
-            // textual files
-            'html', 'htm'  => 'text/html',
-            'txt'  => 'text/plain',
-            'css'  => 'text/css',
-            'js'  => 'text/javascript',
-
-            // video's
-            'avi'  => 'video/x-msvideo',
-            'mpeg' => 'video/mpeg',
-            'mp4'  => 'video/mp4',
-            'mov'  => 'video/quicktime',
-
-            // images
-            'webp' => 'image/webp',
-            'svg' => 'image/svg+xml',
-            'bmp'  => 'image/bmp',
-            'gif'  => 'image/gif',
-            'ico'  => 'image/vnd.microsoft.icon',
-            'jpeg','jpg'  => 'image/jpeg',
-            'png'  => 'image/png',
-            default => ResourceNode::MEDIA_TYPE_NOT_SUPPORTED
-
-            // not supported extensions
-            //default:
-            //    header('HTTP/1.0 415 Media-type not supported');
-            //    exit($extension . ' Media-type not supported');
-
-        };
+        return Settings::$supportedResources[$extension];
     }
 
     public function getMeta(): Meta
