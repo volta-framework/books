@@ -1,4 +1,14 @@
 <?php
+/*
+ * This file is part of the Volta package.
+ *
+ * (c) Rob Demmenie <rob@volta-framework.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+declare(strict_types=1);
+
 /**
  * Start the PHP webserver in this directory like:
  *
@@ -7,14 +17,12 @@
  * this way the index.php wil act as a front controller and will serve
  * all the resources as well
  */
-declare(strict_types=1);
+
 
 /**
  * We want to see all errors hence it is an example
  */
-
 use Volta\Component\Books\Node;
-use Volta\Component\Books\Settings;
 use Volta\Component\Books\ResourceNode;
 
 ini_set('display_errors', 1);

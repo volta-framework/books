@@ -1,24 +1,16 @@
 <?php
-/**
- * This file is part of the Quadro library which is released under WTFPL.
- * See file LICENSE.txt or go to http://www.wtfpl.net/about/ for full license details.
+/*
+ * This file is part of the Volta package.
  *
- * There for we do not take any responsibility when used outside the Jaribio
- * environment(s).
+ * (c) Rob Demmenie <rob@volta-framework.com>
  *
- * If you have questions please do not hesitate to ask.
- *
- * Regards,
- *
- * Rob <rob@jaribio.nl>
- *
- * @license LICENSE.txt
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 declare(strict_types=1);
 
 namespace Volta\Component\Books;
 
-use Psr\Http\Message\StreamInterface;
 use Volta\Component\Books\Exceptions\Exception;
 
 interface NodeInterface
