@@ -1,5 +1,5 @@
 # Volta\Component\Books
-Website generation given a Book written in the Volta Book Format(VBF) 
+Website  given a Book written in the Volta Book Format(VBF) 
 
 ## Features
 - A portable Book Format
@@ -11,10 +11,9 @@ directory or resource is considered a Node in the Book(the Book itself is also a
  
 * HTML (`content.html` | `content.htm`)
 * XHTML (`content.xhtml`)
-* txt (`content.txt`)
 * PHP- (`content.php` | `content.phtml`)
  
-A directory containing a file named `content.*` and a file named `meta.json` is considered a **`DocumentNode`**. If the **`DocumentNode`** has no parent **`DocumentNode`** the **`Node`** is considered a **`BookNode`**. A **`DocumentNode`** is identified by the absolute path of the directory. Resources like images, videos etc. are of type **`ResourceNode`** and will be identified by the absolute path of the file and must reside in a **`DocumentNode`** .
+A directory containing a file named `content.*` and a file named `meta.json` is considered a **`DocumentNode`**. If the **`DocumentNode`** has no parent **`DocumentNode`** the **`Node`** is considered a **`BookNode`**. A **`DocumentNode`** is identified by the absolute path of the directory. Resources like images, videos etc. are of type **`ResourceNode`** and will be identified by the absolute path of the file and must reside in a the containing **`DocumentNode`** .
 
 To get a **`Node`**, any **`Node`**, we pass the (absolute) path to the `Node::factory()` or the relative path to the `Node::getChild()` method of a **`Node`** instance. These methods will return a valid **`Node`** or will raise an Exception if the path does not contain a **`Node`**.
 

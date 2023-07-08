@@ -124,7 +124,7 @@ abstract class Node implements NodeInterface
         //    - not starting with a SLUG_SEPARATOR
         //    throw an Exception
         $uriOffset = Node::$uriOffset;
-        if ($uriOffset!== '' && !str_starts_with( $uriOffset, Node::SLUG_SEPARATOR))
+        if ($uriOffset!== '' && !str_starts_with($uriOffset, Node::SLUG_SEPARATOR))
             throw new Exception('Settings::$uriOffset; must start with a forward slash');
         if ($uriOffset!== '' &&  str_ends_with($uriOffset, Node::SLUG_SEPARATOR))
             throw new Exception('Settings::$uriOffset; can not end with a forward slash');
@@ -143,10 +143,11 @@ abstract class Node implements NodeInterface
 
     /**
      * {@inheritdoc}
+     * @throws Exception
      */
     public function getDisplayName(): string
     {
-        return ucwords(str_replace(['_', '-'], ' ', $this->getName()));
+        return $this->getMeta()->get('displayName', ucwords(str_replace(['_', '-'], ' ', $this->getName())));
     }
 
 
@@ -307,7 +308,7 @@ abstract class Node implements NodeInterface
         $toc = [];
         foreach($node->getChildren() as $childNode) {
             $toc[] = new TocItem(
-                ucwords(str_replace(['_', '-'], ' ', $childNode->getName())),
+                ucwords(str_replace(['_', '-'], ' ', $childNode->getDisplayName())),
                 $childNode->getUri(),
                 $this->getTocFromNode($childNode)
             );

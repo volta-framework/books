@@ -23,26 +23,28 @@ error_reporting(E_ALL);
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
+
 try {
-    Node::$uriOffset  = '/book';
+    Node::$uriOffset = '/book';
 
     $book = Node::factory(__dir__ . '/../Book');
     
     $page =  str_replace(Node::$uriOffset, '', $_SERVER['REQUEST_URI']);
     $node = $book->getChild($page);
+
     if (null === $node){
         header('HTTP/1.0 404 Not found');
-        exit();
+        exit(1);
     }
     if (is_a($node,  ResourceNode::class)) {
         if ($node->getContentType() ===  ResourceNode::MEDIA_TYPE_NOT_SUPPORTED) {
             header('HTTP/1.0 415 Media-type not supported');
-            exit();
+            exit(1);
         }
         header('Content-Type: ' . $node->getContentType());
         header("Content-Length: " . filesize($node->getAbsolutePath()));
         readfile($node->getAbsolutePath());
-        exit();
+        exit(0);
     }
 } catch(\Throwable $e) {
     header('HTTP/1.0 500 Internal Server Error');
@@ -53,7 +55,7 @@ try {
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <title>Volta Component Books Example</title>
+    <title><?= $node->getRoot()->getDisplayName() . ': ' . $node->getDisplayName();?></title>
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <style>
         body {margin:auto; width:80vw; padding:20px; font-family: Verdana, serif; color:#252525; line-height: 1.8}
@@ -63,10 +65,11 @@ try {
         footer {text-align: center; color:#cccccc;  padding:10px;}
 
         /**/
-        img {width: 100%; height: auto;}
+        img {width: 100%; height: auto; margin:auto 0 auto 0; display: block;}
         h1, h2 { border-bottom: 1px solid #cccccc;}
         a:link, a:visited, a:active, a:hover { color:lightseagreen; text-decoration: none;}
         a:hover {text-decoration: underline;}
+        p {text-align: justify; }
         p:first-letter{padding-left: 15px; font-weight: bold; color:darkseagreen;}
 
         /**/
@@ -74,19 +77,15 @@ try {
     </style>
 </head>
 <body>
-    <header><?= $node->getName();?></header>
+    <header><?= $node->getDisplayName();?></header>
     <nav style="display:flex; justify-content: space-between">
         <?php if(null !== $node->getPrevious()): ?>
-            <?php if(null !== $node->getPrevious()->getParent()): ?>
-                <a href="<?= $node->getPrevious()->getUri();?>"><?= $node->getPrevious()->getName();?></a>
-            <?php else: ?>
-                <a href="/"><?= $node->getPrevious()->getName();?></a>
-            <?php endif; ?>
+            <a href="<?= $node->getPrevious()->getUri();?>"><?= $node->getPrevious()->getDisplayName();?></a>
         <?php else: ?>
             <div><!-- placeholder --></div>
         <?php endif; ?>
         <?php if(null !== $node->getNext()): ?>
-            <a href="<?= $node->getNext()->getUri();?>"><?= $node->getNext()->getName();?></a>
+            <a href="<?= $node->getNext()->getUri();?>"><?= $node->getNext()->getDisplayName();?></a>
         <?php else: ?>
             <div><!-- placeholder --></div>
         <?php endif; ?>
@@ -98,6 +97,8 @@ try {
         <blockquote class="error"><?= $e->getMessage(); ?></blockquote>
     <?php }; ?>
     </main>
-    <footer>- <?= $node->getIndex() ?>-</footer>
+    <footer>- <?= $node->getIndex() ?>-<br>
+        <?= $node->getRoot()->getMeta()->get('copyright', '')?>
+    </footer>
 </body>
 </html>
