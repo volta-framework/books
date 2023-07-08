@@ -1,5 +1,5 @@
 {
-  "name" : "volta-framework/composer-books",
+  "name" : "volta-framework/component-books",
   "type": "library",
   "description": "A component to read compose a book from a specified folder structure",
   "keywords": ["Framework", "PHP Components"],
