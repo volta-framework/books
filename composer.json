@@ -2,7 +2,7 @@
   "name" : "volta-framework/composer-books",
   "type": "library",
   "description": "A component to read compose a book from a specified folder structure",
-  "keywords": ["Framework, PHP Components"],
+  "keywords": ["Framework", "PHP Components"],
   "homepage": "https://github.com/volta-framework/component-books",
   "license": "MIT",
   "authors": [
