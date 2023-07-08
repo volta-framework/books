@@ -5,7 +5,6 @@
   "keywords": ["Framework, PHP Components"],
   "homepage": "https://github.com/volta-framework/component-books",
   "license": "MIT",
-  "version": "1.0.0",
   "authors": [
     {
       "name":"Rob Demmenie",
