@@ -25,40 +25,41 @@ class Bookshelf
     /**
      * Adds a book to the shelf and returns the BookNode.
      *
+     * @param string $bookIndex
      * @param string $absolutePath
      * @return NodeInterface
      * @throws Exception When there is no book found in the given path
      */
-    public function addBook(string $absolutePath): NodeInterface
+    public function addBook(string $bookIndex, string $absolutePath): NodeInterface
     {
         $node = Node::factory($absolutePath);
         if (!is_a($node, BookNode::class))
-            throw new Exception('Cannot add to book _shelf(Path does not point to a book)');
-        $this->_shelf[$node->getName()] = $node;
+            throw new Exception('Cannot add the book (Path does not point to a book)');
+        $this->_shelf[$bookIndex] = $node;
         return $node;
     }
 
     /**
      * Returns a book by its name or NULL when not exists
      *
-     * @param string $name
+     * @param string $bookIndex
      * @return NodeInterface|null
      */
-    public function getBook(string $name): null|NodeInterface
+    public function getBook(string $bookIndex): null|NodeInterface
     {
-        if (!isset($this->_shelf[$name])) return null;
-        return $this->_shelf[$name];
+        if (!isset($this->_shelf[$bookIndex])) return null;
+        return $this->_shelf[$bookIndex];
     }
 
     /**
      * Whether a book exists with the given name
      *
-     * @param string $name
+     * @param string $bookIndex
      * @return bool
      */
-    public function hasBook(string $name): bool
+    public function hasBook(string $bookIndex): bool
     {
-        return isset($this->_shelf[$name]);
+        return isset($this->_shelf[$bookIndex]);
     }
 
 
