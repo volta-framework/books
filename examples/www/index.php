@@ -35,7 +35,9 @@ require_once __DIR__ . '/../../vendor/autoload.php';
 try {
     Node::$uriOffset = '/book';
 
-    $book = Node::factory(__dir__ . '/../Book');
+    //$book = Node::factory(__dir__ . '/../Book');
+    $book = Node::factory('/home/rob/Development/PHP-REPOSITORIES/volta-framework/documentation/VoltaCookbook');
+
     
     $page =  str_replace(Node::$uriOffset, '', $_SERVER['REQUEST_URI']);
     $node = $book->getChild($page);
@@ -66,22 +68,36 @@ try {
     <title><?= $node->getRoot()->getDisplayName() . ': ' . $node->getDisplayName();?></title>
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <style>
-        body {margin:auto; width:80vw; padding:20px; font-family: Verdana, serif; color:#252525; line-height: 1.8}
-        header {text-align: center;  color:#cccccc;  padding:10px;}
+        body {margin:auto; width:80vw; padding:20px; font-family: Verdana, serif; color:darkslategrey; line-height: 1.8}
+        header {text-align: center;  color:lightgrey;  padding:10px;}
         nav {padding:10px;}
-        main {border:1px solid #eeeeee; min-height:80vh; padding:10px; border-radius: 10px;}
-        footer {text-align: center; color:#cccccc;  padding:10px;}
+        main {border:1px solid lightgrey; min-height:80vh; padding:10px; border-radius: 10px;}
+        footer {text-align: center; color:lightgrey;  padding:10px;}
+
+        /**/
+        main{counter-reset: h1}
+        h1{counter-reset: h2;}
+
+        h2{counter-reset: h3;} h2::before{ counter-increment: h2; content: counter(h2) ". "; }
+        h3{counter-reset: h4;} h3::before{ counter-increment: h3; content: counter(h2) "." counter(h3) ". "}
+        h4{counter-reset: h5;} h4::before{ counter-increment: h4; content: counter(h2) "." counter(h3) "." counter(h4) ". "}
 
         /**/
         img {width: 100%; height: auto; margin:auto 0 auto 0; display: block;}
-        h1, h2 { border-bottom: 1px solid #cccccc;}
+        h1, h2 { border-bottom: 1px solid lightgrey; color:sienna}
         a:link, a:visited, a:active, a:hover { color:lightseagreen; text-decoration: none;}
         a:hover {text-decoration: underline;}
         p {text-align: justify; }
         p:first-letter{padding-left: 15px; font-weight: bold; color:darkseagreen;}
+        blockquote{ border-left: 4px solid darkseagreen; border-radius: 4px; padding: 10px; }
 
         /**/
         .error {color:darkred;}
+        .footnotes { border-top: 1px solid lightgrey; padding: 20px; font-size: 8pt; margin: 40px 0 0 0 }
+        .footnotes li { padding 5px 0 5px 0 }
+        .footnote { border-bottom: 1px dotted lightseagreen}
+        .footnote > sup {padding: 0 0 0 4px; font-size: 8pt;}
+
     </style>
 </head>
 <body>
