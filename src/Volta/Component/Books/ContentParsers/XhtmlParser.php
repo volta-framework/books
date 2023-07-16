@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Volta\Component\Books\ContentParsers;
 
+use Closure;
 use Volta\Component\Books\ContentParserInterface;
 use Volta\Component\Books\ContentParsers\XhtmlParser\Element;
 use Volta\Component\Books\ContentParsers\XhtmlParser\Exception;
@@ -66,6 +67,51 @@ class XhtmlParser implements ContentParserInterface
 
     // -----------------------------------------------------------------------------
 
+
+    const EVENT_ON_FINISH = 'onFinish';
+
+    /**
+     * @var array<string, mixed>
+     */
+    protected array $_eventListeners = [];
+
+    /**
+     * @param string $event
+     * @param mixed $callback
+     * @return bool
+     * @throws Exception
+     */
+    public function addListener(string $event, mixed $callback): bool
+    {
+        if (!is_callable($callback)) {
+            throw new Exception(__CLASS__ . '::' . __METHOD__  .'() - Please provide a valid callback');
+        }
+        if (!isset($this->_eventListeners[$event])) {
+            $this->_eventListeners[$event] = [];
+        }
+        $this->_eventListeners[$event][] = $callback;
+        return true;
+    }
+
+    /**
+     * @param string $event
+     * @return void
+     * @throws Exception
+     */
+    protected function _notify(string $event): void
+    {
+        if (!isset($this->_eventListeners[$event])) return;
+        foreach($this->_eventListeners[$event] as $callback) {
+            $callbackReturn = call_user_func($callback, $this);
+            if ( !is_string($callbackReturn)) {
+                throw new Exception(__CLASS__ . '::' . __METHOD__  .'() - EventListener must return a string');
+            }
+            $this->_content .= $callbackReturn;
+        }
+    }
+
+    // -----------------------------------------------------------------------------
+
     /**
      * Starts the parsing of the XML file set in the constructor
      *
@@ -96,8 +142,27 @@ class XhtmlParser implements ContentParserInterface
 
         $stream = fopen($this->getFile(), 'r');
         if (false !== $stream) {
+
+            $start = true;
             while (($data = fread($stream, 16384))) {
-                if (!xml_parse($xmlParser, $data, feof($stream))) {
+
+                // add root element(xhtml) to the data if not done
+                if ($start ) {
+                    $data = ltrim($data);
+                    if (!str_starts_with(strtolower($data), '<xhtml>')) {
+                        $data = '<xhtml>' . $data;
+                    }
+                    $start = false;
+                }
+                $end = feof($stream);
+                if ($end) {
+                    $data = rtrim($data);
+                    if (!str_ends_with(strtolower($data), '</xhtml>')) {
+                        $data .= '</xhtml>' ;
+                    }
+                }
+
+                if (!xml_parse($xmlParser, $data, $end)) {
                     $errorCode = xml_get_error_code($xmlParser);
                     $errorMessage = match ($errorCode) {
                         XML_ERROR_NO_MEMORY => 'XML_ERROR_NO_MEMORY',
@@ -137,6 +202,8 @@ class XhtmlParser implements ContentParserInterface
                 } // if ...
             } // while ...
 
+            $this->_notify(self::EVENT_ON_FINISH);
+
             xml_parse($xmlParser, '', true); // finalize parsing
             xml_parser_free($xmlParser);
             fclose($stream);
@@ -174,8 +241,7 @@ class XhtmlParser implements ContentParserInterface
             $this->_content .= $element->onTranslateData($data);
         }
         return true;
-
-    } // characterDataHandler(...)
+    }
 
     /**
      * Receives the data and updates the result
@@ -193,7 +259,6 @@ class XhtmlParser implements ContentParserInterface
             $this->_content .= $element->onTranslateData($data);
         }
         return true;
-
     }
 
     /**
@@ -204,13 +269,15 @@ class XhtmlParser implements ContentParserInterface
      * @param string $name
      * @param array<string, string> $attribs
      * @return bool
+     * @throws XhtmlParser\Elements\Exception
      */
     protected function elementStartHandler(XmlParser $xmlParser, string $name, array $attribs): bool
     {
         $parent =  end($this->_stack);
-        array_push($this->_stack, Element::factory($name, $this->_node, $attribs));
+        $this->_stack[] = Element::factory($name, $this->_node, $attribs);
         $element = end($this->_stack);
         $element->setParent($parent);
+        $element->setParser($this);
         if(false !== $parent) $parent->addChild($element);
         if($this->_verbose) $this->_content .= "\n<!--OnElementStartHandler: {$element->getName()}-->\n";
         $this->_content .= $element->onTranslateStart();

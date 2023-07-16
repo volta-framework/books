@@ -52,6 +52,14 @@ class Bookshelf
     }
 
     /**
+     * @return array<string, NodeInterface>
+     */
+    public function getBooks(): array
+    {
+        return $this->_shelf;
+    }
+
+    /**
      * Whether a book exists with the given name
      *
      * @param string $bookIndex

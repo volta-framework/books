@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Volta\Component\Books\ContentParsers\XhtmlParser;
 
+use Volta\Component\Books\ContentParsers\XhtmlParser;
 use Volta\Component\Books\ContentParsers\XhtmlParser\Elements\Exception as Exception;
 use Volta\Component\Books\NodeInterface;
 
@@ -134,6 +135,19 @@ class Element
         return $this;
     }
 
+    protected XhtmlParser $_parser;
+
+    public function setParser(XhtmlParser $parser): static
+    {
+        $this->_parser = $parser;
+        return $this;
+    }
+    public function getParser(): XhtmlParser
+    {
+        return $this->_parser;
+    }
+
+
     // ----------------------------------------------------------------------
 
     /**
@@ -178,7 +192,7 @@ class Element
      * @param array<string, string> $attributes
      * @param Element|false $parent
      * @return Element
-     * @throws \Volta\Component\Books\ContentParsers\XhtmlParser\Elements\Exception
+     * @throws Exception
      */
     public static function factory(string $elementName, NodeInterface $node, array $attributes = [],   Element|bool $parent=false): Element
     {

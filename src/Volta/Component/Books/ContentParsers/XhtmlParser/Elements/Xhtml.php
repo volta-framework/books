@@ -11,7 +11,23 @@ declare(strict_types=1);
 
 namespace Volta\Component\Books\ContentParsers\XhtmlParser\Elements;
 
-class Xhtml
+use Volta\Component\Books\ContentParsers\XhtmlParser\Element as BaseElement;
+
+class Xhtml extends BaseElement
 {
+
+    public function onTranslateStart(): string
+    {
+        return '';
+    }
+
+
+    /**
+     * @return string
+     */
+    public function onTranslateEnd(): string
+    {
+        return '';
+    }
 
 }
