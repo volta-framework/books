@@ -73,7 +73,7 @@ abstract class Settings
      * @param string $class
      * @return bool
      */
-    public function registerContentParser(string $extension, string $class): bool
+    public static function registerContentParser(string $extension, string $class): bool
     {
         static::$contentParsers[$extension] = $class;
         return true;
