@@ -109,8 +109,11 @@ class Language extends BaseElement
      * @see BaseElement->onTranslateStart();
      */
     public function onTranslateStart(): string
-    { 
-        $html  = PHP_EOL .'<em>' . $this->getCaption() . '</em>';
+    {
+        $html = '';
+        if ($this->hasAttribute('caption')) {
+            $html .= PHP_EOL . '<em>' . $this->getAttribute('caption', $this->getCaption()) . '</em>';
+        }
         $html .= PHP_EOL .'<pre><code class="language-'. strtolower($this->getLanguage()) .'">';
         return $html;
     }

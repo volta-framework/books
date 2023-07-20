@@ -45,7 +45,7 @@ class Footnote  extends BaseElement
             'caption' => $this->getAttribute('caption', $href),
             'href' => $href
         ];
-        return sprintf( '<sup><a href="#footnote_%d">%d</a></sup></em>', $index+1, $index+1);
+        return sprintf( '<sup><a href="#footnote_%d">[%d]</a></sup></em>', $index+1, $index+1);
     }
 
 
