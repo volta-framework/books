@@ -42,10 +42,10 @@ try {
     Node::$uriOffset = '';
 
     //$book = Node::factory(__dir__ . '/../Book');
-    $book = Node::factory('/home/rob/Development/PHP-REPOSITORIES/volta-framework/documentation/VoltaCookbook');
-    //$book = Node::factory('C:\rob\DocumentenLokaal\volta-framework\documentation\VoltaCookbook');
+    //$book = Node::factory('/home/rob/Development/PHP-REPOSITORIES/volta-framework/documentation/VoltaCookbook');
+    $book = Node::factory('C:\rob\DocumentenLokaal\volta-framework\documentation\VoltaCookbook');
 
-    $page =  str_replace(Node::$uriOffset, '', $_SERVER['REQUEST_URI']);
+    $page =  str_replace(Node::$uriOffset, '',$uri );
     $node = $book->getChild($page);
 
     if (null === $node){
@@ -72,9 +72,12 @@ try {
 <head>
     <meta charset="UTF-8" />
     <title><?= $node->getRoot()->getDisplayName() . ': ' . $node->getDisplayName();?></title>
+
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css">
+    <link rel="stylesheet" title="Default" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css">
+<!--    <link rel="stylesheet"  href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/dark.min.css" >-->
     <link rel="stylesheet" href="/assets/css/book.css">
+
 </head>
 <body>
     <header><?= $node->getDisplayName();?></header>
@@ -93,12 +96,11 @@ try {
     </nav>
 
     <main>
-
         <ul id="favorites">
             <li><a href="<?= $node->getRoot()->getUri();?>">Home</a></li>
             <li><a href="<?= $node->getRoot()->getUri();?>00-index">Index</a></li>
         </ul>
-
+        <div id="pageTocContainer"></div>
         <?php try { ?>
             <?= $node->getContent(); ?>
         <?php } catch(Throwable $e) { ?>
@@ -120,6 +122,11 @@ try {
         await mermaid.run({
             querySelector: '.language-mermaid',
         });
+    </script>
+
+    <script type="module">
+        import {addPageToc} from '/assets/js/book.mjs';
+        addPageToc(document.getElementById("pageTocContainer"));
     </script>
 
 </body>

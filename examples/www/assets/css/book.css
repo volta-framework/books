@@ -1,13 +1,16 @@
 :root{
     --body-color: darkslategrey;
+    --body-max-width: 840px;
     --header-color: lightgrey;
     --main-border-color: lightgrey;
     --footer-color: lightgrey;
-    --box-bg-color:#f3f3f3;
+    --box-bg-color: #f3f3f3;
 
     --link-color: lightseagreen;
     --info-color: lightseagreen; /*lightseagreen, seagreen, darkseagreen; mediumseagreen, goldenrod*/
+    --note-color:lightgrey;
 
+    --code-bg-color:  #444; /* light theme*/
     --error-color: sienna;
     --h1-color: sienna;
     --h2-color: sienna;
@@ -17,7 +20,7 @@
 }
 
 /** Sections **/
-body {margin:auto; width:80vw; padding:var(--padding); font-family: Verdana, serif; color:var(--body-color); line-height: 1.8}
+body {margin:auto; width:80vw; max-width: var(--body-max-width); padding:var(--padding); font-family: Verdana, serif; color:var(--body-color); line-height: 1.8}
 header {text-align: center;  color:var(--header-color);  padding:var(--padding);}
 nav {padding:var(--padding); display:flex; justify-content: space-between}
 main {border:1px solid var(--main-border-color); min-height:80vh; padding:var(--padding); border-radius: var(--padding)}
@@ -39,23 +42,43 @@ img {width: 100%; height: auto; margin:auto 0 auto 0; display: block;}
 h1, h2 { border-bottom: 1px solid var(--main-border-color); color:var(--h1-color)}
 a:link, a:visited, a:active, a:hover { color:var(--link-color); text-decoration: none;}
 a:hover {text-decoration: underline;}
+a[target="_blank"]::after {content: '(\2197)'; font-size:8pt;vertical-align: super; color:var( --body-color);}
 p {text-align: justify; }
 p:first-letter{padding-left: var(--padding); font-weight: bold; color:var(--info-color);}
-blockquote{ border-left: 4px solid var(--info-color);
-    border-top: 1px solid var(--info-color);
-    border-right: 4px solid var(--info-color);
-    border-bottom: 1px solid var(--info-color);
-    border-radius: 4px; padding: var(--padding) }
-blockquote.error{ border-left: 4px solid var(--error-color);
-    border-top: 1px solid var(--error-color);
-    border-right: 4px solid var(--error-color);
-    border-bottom: 1px solid var(--error-color);
-    border-radius: 4px; padding: var(--padding);
-    color:var(--error-color);
-}
-pre{ border: 1px solid var(--main-border-color); color: #444; border-radius: 5px; padding: 5px; background-color: var(--box-bg-color)}
+blockquote{border: 1px solid var(--info-color); border-left-width: 4px; border-right-width: 4px; border-radius: 4px; padding: var(--padding); word-break: break-all; }
+blockquote.note{border-color: var(--note-color) }
+blockquote.error{border-color: var(--error-color); color:var(--error-color);}
+pre{border: 1px solid var(--main-border-color);   border-radius: 5px !important;  }
+code:not(pre > code) { border: 1px solid var(--main-border-color); padding: 4px;color: var(--code-bg-color); border-radius: 5px !important; }
+var {font-family: "Courier New", serif;}
 
-/* Footnotes bar (in footer section) */
-.footnotes { border-top: 1px solid var(--main-border-color); padding: 20px; font-size: 8pt; margin: 40px 0 0 0 }
+/* Quiz (in main section) */
+
+.quiz{}
+.quiz .question { margin:20px;}
+.quiz .question .question-data{  }
+.quiz .question .answer-container{}
+.quiz .question .answer-container .answer{}
+.quiz .question .answer-container .answer-data{}
+.quiz .question .answer-container .answer-status:before{ display:inline-block; width:1em; content: ' '}
+.quiz .question .answer-container .answer-status.unknown{}
+.quiz .question .answer-container .answer-status.correct{ color:green; }
+.quiz .question .answer-container .answer-status.error{ color: red; }
+.quiz .question .answer-container .answer-status.correct:before{ content: '\2713 ' }
+.quiz .question .answer-container .answer-status.error:before{ content: '\274c ' }
+.quiz .buttons > button{ padding:var(--padding); border:1px solid var(--main-border-color); border-radius: 5px;}
+.quiz .buttons > button:hover{ color: var(--link-color)}
+
+/* Footnotes bar (in main section) */
+.footnotes { padding: 20px; font-size: 8pt; margin: 50px 0 0 0 }
+.footnotes:before{ display:block; content: 'Footnotes:'; border-bottom: 1px solid var(--main-border-color);}
 .footnotes li { padding: 5px 0 5px 0 }
 .footnote > sup {padding: 0 0 0 4px; font-size: 8pt;}
+
+
+
+@media only screen and (max-width: 600px) {
+    p {text-align: left; }
+    blockquote{margin:0;}
+
+}

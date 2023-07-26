@@ -53,7 +53,7 @@ class Question extends BaseElement
     {
         $data = $this->_deepTrim($data);
         if (empty($data)) return '';
-        return PHP_EOL.'  <div class="question-data">' . $data . '</div>';
+        return PHP_EOL.'  <span class="question-data">' . $data . '</span>';
     }
 
     /**

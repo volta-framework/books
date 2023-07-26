@@ -209,9 +209,17 @@ class XhtmlParser implements ContentParserInterface
             fclose($stream);
         }
 
-        return $this->_content;
+        // https://www.w3schools.com/charsets/ref_emoji_smileys.asp
+        return str_replace(
+            [':-)', '8-)', ';-)', ':-('],
+            ['&#127773;', '&#128526;', '&#128521;', '&#128543;'],
+            $this->_content
+        );
 
     } // startParse(...)
+
+
+
 
     // -----------------------------------------------------------------------------
 

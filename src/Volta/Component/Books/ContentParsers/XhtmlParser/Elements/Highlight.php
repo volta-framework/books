@@ -70,7 +70,7 @@ use Volta\Component\Books\ContentParsers\XhtmlParser\Element as BaseElement;
  * @package Volta\Component\Books\ContentParsers
  * @author Rob <rob@jaribio.nl> 
  */
-class Language extends BaseElement
+class Highlight extends BaseElement
 {  
 
     /**
@@ -110,12 +110,19 @@ class Language extends BaseElement
      */
     public function onTranslateStart(): string
     {
-        $html = '';
-        if ($this->hasAttribute('caption')) {
-            $html .= PHP_EOL . '<em>' . $this->getAttribute('caption', $this->getCaption()) . '</em>';
-        }
-        $html .= PHP_EOL .'<pre><code class="language-'. strtolower($this->getLanguage()) .'">';
+        $html = PHP_EOL .'<pre><code class="language-'. $this->getAttribute('language', strtolower($this->getLanguage())) .'">';
         return $html;
+    }
+
+    private string $_data = '';
+    public function onTranslateData(string $data) : string
+    {
+        if ($this->_data === '' && strlen($data) > 0) {
+            $this->_data .= ltrim($data, "\n\r\0\x0B");
+        } else {
+            $this->_data .= $data;
+        }
+        return '';
     }
 
     /**
@@ -123,7 +130,7 @@ class Language extends BaseElement
      */
     public function onTranslateEnd(): string
     {   
-        return '</code></pre>';
+        return rtrim($this->_data) . '</code></pre>';
     }
 
 } // class

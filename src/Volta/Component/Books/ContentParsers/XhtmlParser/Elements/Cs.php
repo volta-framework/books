@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace Volta\Component\Books\ContentParsers\XhtmlParser\Elements;
 
-use Volta\Component\Books\ContentParsers\XhtmlParser\Elements\Language as BaseElement;
+use Volta\Component\Books\ContentParsers\XhtmlParser\Elements\Highlight as BaseElement;
 
 /**
  * @package Volta\Component\Books\ContentParsers

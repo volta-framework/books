@@ -42,7 +42,7 @@ class Quiz extends BaseElement
     public function onTranslateStart(): string
     {
         Quiz::$_counter++;
-        return PHP_EOL . '<form method="get"  class="quiz" id="quiz-'.Quiz::$_counter.'">'.PHP_EOL;
+        return PHP_EOL . '<form action="#quiz-'.Quiz::$_counter.'" method="get"  class="quiz" id="quiz-'.Quiz::$_counter.'">'.PHP_EOL;
     }
 
     public function onTranslateData(string $data): string

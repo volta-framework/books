@@ -17,35 +17,37 @@ use Volta\Component\Books\ContentParsers\XhtmlParser\Element as BaseElement;
 class Footnote  extends BaseElement
 {
 
+
     protected static array $_footnotes = [];
 
+    private int $_index = 0;
     public function onTranslateStart(): string
     {
+
+        $href = $this->getAttribute('href', '') ;
+
+        $this->_index = count(Footnote::$_footnotes);
+        if ($this->_index === 0 ) {
+            $this->getParser()->addListener(XhtmlParser::EVENT_ON_FINISH, [$this, 'addFootNotes']);
+        }
+        Footnote::$_footnotes[$this->_index] = [
+            'href' => $href,
+            'caption' => ''
+        ];
         return '<em class="footnote">';
+    }
+    public function onTranslateData(string $data): string
+    {
+        Footnote::$_footnotes[$this->_index]['caption'] .= $data;
+        return '';
     }
 
     /**
      * @return string
-     * @throws Exception
-     * @throws XhtmlParser\Exception
      */
     public function onTranslateEnd(): string
     {
-
-        if(!$this->hasAttribute('href') && !$this->hasAttribute('caption')) {
-            throw new Exception('Either the attribute "href" or "caption" must be present in a Footnote Element');
-        }
-        $href = $this->getAttribute('href', '') ;
-        $index = count(Footnote::$_footnotes);
-
-        if ( $index === 0 ) {
-            $this->getParser()->addListener(XhtmlParser::EVENT_ON_FINISH, [$this, 'addFootNotes']);
-        }
-        Footnote::$_footnotes[] = [
-            'caption' => $this->getAttribute('caption', $href),
-            'href' => $href
-        ];
-        return sprintf( '<sup><a href="#footnote_%d">[%d]</a></sup></em>', $index+1, $index+1);
+        return sprintf( '<sup><a href="#footnote_%d">[%d]</a></sup></em>', $this->_index+1, $this->_index+1);
     }
 
 
@@ -55,8 +57,13 @@ class Footnote  extends BaseElement
 
         $html =  PHP_EOL . '<ol class="footnotes">'  . PHP_EOL;
         foreach(Footnote::$_footnotes as $index => $footnote) {
-            $html .= sprintf('<li><a id="footnote_%d" href="%s" target="_blank">%s</a></li>' . PHP_EOL,
-                $index + 1, $footnote['href'], $footnote['caption']);
+            if (!empty($footnote['href'])) {
+                $html .= sprintf('<li><a id="footnote_%d" href="%s" target="_blank">%s</a></li>' . PHP_EOL,
+                    $index + 1, $footnote['href'], $footnote['caption']);
+            } else {
+                $html .= sprintf('<li><a id="footnote_%d"></a><em>%s</em></li>' . PHP_EOL,
+                    $index + 1, $footnote['caption']);
+            }
         }
         $html .= '</ol>' . PHP_EOL;
         return $html;
