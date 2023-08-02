@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Volta\Component\Books;
 
+use Psr\Cache\CacheItemPoolInterface;
 use Volta\Component\Books\ContentParsers\HtmlParser;
 use Volta\Component\Books\ContentParsers\PhpParser;
 use Volta\Component\Books\ContentParsers\XhtmlParser;
@@ -78,4 +79,19 @@ abstract class Settings
         static::$contentParsers[$extension] = $class;
         return true;
     }
+
+
+    private static null|CacheItemPoolInterface $_cachePool = null;
+
+    public static function getCache(): null|CacheItemPoolInterface
+    {
+        return Settings::$_cachePool;
+    }
+
+    public static function setCache(CacheItemPoolInterface $cachePool):void
+    {
+        Settings::$_cachePool = $cachePool;
+    }
+
+
 }

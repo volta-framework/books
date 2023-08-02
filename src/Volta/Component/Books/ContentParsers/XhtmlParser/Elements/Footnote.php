@@ -47,7 +47,7 @@ class Footnote  extends BaseElement
      */
     public function onTranslateEnd(): string
     {
-        return sprintf( '<sup><a href="#footnote_%d">[%d]</a></sup></em>', $this->_index+1, $this->_index+1);
+        return sprintf( '<sup><a title="%s" href="#footnote_%d">[%d]</a></sup></em>',  strip_tags(Footnote::$_footnotes[$this->_index]['caption']), $this->_index+1, $this->_index+1);
     }
 
 

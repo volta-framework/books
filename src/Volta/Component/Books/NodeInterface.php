@@ -121,4 +121,6 @@ interface NodeInterface
     public function getMeta(): Meta;
 
 
+    public function getModificationTime(): int|false;
+
 }

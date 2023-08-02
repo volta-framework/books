@@ -84,17 +84,6 @@ class Highlight extends BaseElement
 
 
     /**
-     * The caption for this Programming language.
-     * Defaults to the (shortname) name of this class.
-     * @return string
-     */
-    public function getCaption(): string
-    {
-        return $this->_getShortName();
-    }
-
-
-    /**
      * The Language
      * Defaults to the (shortname) name of this class.
      * @return string

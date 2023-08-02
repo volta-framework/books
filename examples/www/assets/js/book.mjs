@@ -7,7 +7,7 @@
  * @param start Header Level to start
  * @returns {*}
  */
-export function addPageToc(start = 1) // : any
+export function addPageToc(start = 1 ) // : any
 {
    let parent = document.querySelector('main');
    if(!parent) {

@@ -182,7 +182,7 @@ class DocumentNode extends Node
      */
     protected function _getContentParser(): ContentParserInterface
     {
-        $contentFile = $this->getAbsolutePath() . DIRECTORY_SEPARATOR . $this->getContentFile();
+        $contentFile =  $this->getContentFile();
         $extension = pathinfo($contentFile, PATHINFO_EXTENSION);
         $contentParser =  Settings::getContentParserFor($extension);
         if (false === $contentParser) {
@@ -190,4 +190,10 @@ class DocumentNode extends Node
         }
         return $contentParser;
     }
+
+    public function getModificationTime(): int|false
+    {
+        return filemtime($this->getContentFile());
+    }
+
 }

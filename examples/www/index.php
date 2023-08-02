@@ -18,17 +18,17 @@ declare(strict_types=1);
  * all the resources as well
  */
 
-
-/**
- * We want to see all errors hence it is an example
- */
+use Volta\Component\Books\Cache;
 use Volta\Component\Books\Node;
 use Volta\Component\Books\ResourceNode;
+use Volta\Component\Books\Settings;
 
+// We want to see all errors hence it is an example
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
+// Load all classes
 require_once __DIR__ . '/../../vendor/autoload.php';
 
 try {
@@ -38,20 +38,22 @@ try {
     if (false !== ($pos = strpos($uri, '?'))) $uri = substr($uri, 0, $pos);
     if (is_file(__DIR__ . $uri) && php_sapi_name() === 'cli-server') return false;
 
-    // in this example we want the bool to be the website
+    // in this example we want the book to be the website
     Node::$uriOffset = '';
 
     //$book = Node::factory(__dir__ . '/../Book');
     //$book = Node::factory('/home/rob/Development/PHP-REPOSITORIES/volta-framework/documentation/VoltaCookbook');
     $book = Node::factory('C:\rob\DocumentenLokaal\volta-framework\documentation\VoltaCookbook');
-
     $page =  str_replace(Node::$uriOffset, '',$uri );
     $node = $book->getChild($page);
 
+    //if the node is not found return a 404
     if (null === $node){
         header('HTTP/1.0 404 Not found');
         exit(1);
     }
+
+    // if the requested node is a resource pass through
     if (is_a($node,  ResourceNode::class)) {
         if ($node->getContentType() ===  ResourceNode::MEDIA_TYPE_NOT_SUPPORTED) {
             header('HTTP/1.0 415 Media-type not supported');
@@ -62,72 +64,47 @@ try {
         readfile($node->getAbsolutePath());
         exit(0);
     }
+
+    // cache pages for speed if the node can be cached
+    $start = microtime(true);
+    if ($node->getMeta()->get('isCacheable', true)) {
+
+        Settings::setCache(new Cache(realpath(__DIR__ . '/../__cache')));
+        $cachedNode = Settings::getCache()->getItem($node->getRelativePath());
+
+        // check if we need to invalidate the cache
+
+        if ($cachedNode->isHit()) {
+            if ( $node->getModificationTime() > (int)@filemtime($cachedNode->getKey())) {
+                echo "<pre>";
+                echo "\n {$node->getAbsolutePath()} :" . $node->getModificationTime();
+                echo "\n {$cachedNode->getKey()} :" . filemtime($cachedNode->getKey());
+                echo "</pre>";
+                Settings::getCache()->deleteItem($node->getRelativePath());
+            }
+        }
+
+
+        if ($cachedNode->isHit()) {
+            echo $cachedNode->get();
+            echo "\n<!-- retrieved from cache in:  " . number_format(microtime(true) - $start, 10) . " seconds -->";
+        } else {
+            ob_start();
+            include __DIR__ . '/../template.phtml';
+            $cachedNode->set(ob_get_contents());
+            ob_end_flush();
+            echo "\n<!-- generated in:  " . number_format(microtime(true) - $start, 10) . " seconds -->";
+        }
+    } else {
+        include __DIR__ . '/../template.phtml';
+        echo "\n<!-- generated in:  " . number_format(microtime(true) - $start, 10) . " seconds (page set not be cached)-->";
+    }
+
+    exit(0);
+
+
 } catch(\Throwable $e) {
     header('HTTP/1.0 500 Internal Server Error');
+    ob_end_flush();
     exit($e->getMessage());
 }
-?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8" />
-    <title><?= $node->getRoot()->getDisplayName() . ': ' . $node->getDisplayName();?></title>
-
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <link rel="stylesheet" title="Default" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css">
-<!--    <link rel="stylesheet"  href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/dark.min.css" >-->
-    <link rel="stylesheet" href="/assets/css/book.css">
-
-</head>
-<body>
-    <header><?= $node->getDisplayName();?></header>
-
-    <nav>
-        <?php if(null !== $node->getPrevious()): ?>
-            <a href="<?= $node->getPrevious()->getUri();?>"><?= $node->getPrevious()->getDisplayName();?></a>
-        <?php else: ?>
-            <div><!-- placeholder --></div>
-        <?php endif; ?>
-        <?php if(null !== $node->getNext()): ?>
-            <a href="<?= $node->getNext()->getUri();?>"><?= $node->getNext()->getDisplayName();?></a>
-        <?php else: ?>
-            <div><!-- placeholder --></div>
-        <?php endif; ?>
-    </nav>
-
-    <main>
-        <ul id="favorites">
-            <li><a href="<?= $node->getRoot()->getUri();?>">Home</a></li>
-            <li><a href="<?= $node->getRoot()->getUri();?>00-index">Index</a></li>
-        </ul>
-        <div id="pageTocContainer"></div>
-        <?php try { ?>
-            <?= $node->getContent(); ?>
-        <?php } catch(Throwable $e) { ?>
-            <blockquote class="error"><?= $e->getMessage(); ?></blockquote>
-        <?php }; ?>
-    </main>
-
-    <footer>- <?= $node->getIndex() ?>-<br>
-        <?= $node->getRoot()->getMeta()->get('copyright', '')?>
-    </footer>
-
-    <!-- https://highlightjs.org/usage/ -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.4.0/highlight.min.js"></script>
-    <script>hljs.highlightAll();</script>
-
-    <script type="module">
-        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
-        mermaid.initialize({ startOnLoad: false });
-        await mermaid.run({
-            querySelector: '.language-mermaid',
-        });
-    </script>
-
-    <script type="module">
-        import {addPageToc} from '/assets/js/book.mjs';
-        addPageToc(document.getElementById("pageTocContainer"));
-    </script>
-
-</body>
-</html>

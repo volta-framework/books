@@ -42,10 +42,10 @@ img {width: 100%; height: auto; margin:auto 0 auto 0; display: block;}
 h1, h2 { border-bottom: 1px solid var(--main-border-color); color:var(--h1-color)}
 a:link, a:visited, a:active, a:hover { color:var(--link-color); text-decoration: none;}
 a:hover {text-decoration: underline;}
-a[target="_blank"]::after {content: '(\2197)'; font-size:8pt;vertical-align: super; color:var( --body-color);}
+a[target="_blank"]::after {content: '\2197'; font-size:8pt;vertical-align: super; color:var( --body-color);}
 p {text-align: justify; }
 p:first-letter{padding-left: var(--padding); font-weight: bold; color:var(--info-color);}
-blockquote{border: 1px solid var(--info-color); border-left-width: 4px; border-right-width: 4px; border-radius: 4px; padding: var(--padding); word-break: break-all; }
+blockquote{border: 1px solid var(--info-color); border-left-width: 4px; border-right-width: 4px; border-radius: 4px; padding: var(--padding); word-break: break-word; }
 blockquote.note{border-color: var(--note-color) }
 blockquote.error{border-color: var(--error-color); color:var(--error-color);}
 pre{border: 1px solid var(--main-border-color);   border-radius: 5px !important;  }
@@ -53,7 +53,6 @@ code:not(pre > code) { border: 1px solid var(--main-border-color); padding: 4px;
 var {font-family: "Courier New", serif;}
 
 /* Quiz (in main section) */
-
 .quiz{}
 .quiz .question { margin:20px;}
 .quiz .question .question-data{  }
@@ -79,6 +78,5 @@ var {font-family: "Courier New", serif;}
 
 @media only screen and (max-width: 600px) {
     p {text-align: left; }
-    blockquote{margin:0;}
-
+    blockquote{margin:0;  word-break: break-all;}
 }

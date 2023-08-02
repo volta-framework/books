@@ -141,4 +141,9 @@ class ResourceNode extends Node
     {
         return null;
     }
+
+    public function getModificationTime(): int|false
+    {
+        return filemtime($this->getAbsolutePath());
+    }
 }
