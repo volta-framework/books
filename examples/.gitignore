@@ -1,5 +1,0 @@
-__*
-.idea
-vendor/
-composer.lock
-phpunit.xml.dist

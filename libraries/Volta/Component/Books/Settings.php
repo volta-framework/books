@@ -15,11 +15,12 @@ use Psr\Cache\CacheItemPoolInterface;
 use Volta\Component\Books\ContentParsers\HtmlParser;
 use Volta\Component\Books\ContentParsers\PhpParser;
 use Volta\Component\Books\ContentParsers\XhtmlParser;
+use Volta\Component\Books\Exceptions\Exception;
 
 abstract class Settings
 {
 
-    public static array $supportedResources = [
+    private static array $_supportedResources = [
         // textual files
         'html', 'htm'  => 'text/html',
         'txt'  => 'text/plain',
@@ -42,10 +43,31 @@ abstract class Settings
         'png'  => 'image/png',
     ];
 
+    public static function isResourceSupported(string $extension): bool
+    {
+        return isset(Settings::$_supportedResources[$extension]);
+    }
+
+
+    public static function getSupportedResources(): array
+    {
+        return Settings::$_supportedResources;
+    }
+
+    public static function setSupportedResource(string $extension, string $mimeType): void
+    {
+        Settings::$_supportedResources[$extension] = $mimeType;
+    }
+
+    // -----------------------------------------------------------------------------------------------------------
+
     /**
+     * List of all content parsers. Set to private to enforce the use of the
+     * registerContentParser() and getContentParserFor() methods
+     *
      * @var array<string, string> Defaults to build in parsers
      */
-    public static array $contentParsers = [
+    private static array $_contentParsers = [
         'php' => PhpParser::class,
         'phtml' => PhpParser::class,
         'xhtml' => XhtmlParser::class,
@@ -54,40 +76,58 @@ abstract class Settings
     ];
 
     /**
+     * Returns the ContentParser, false if not set for this type of file
      * @param string $extension
      * @return false|ContentParserInterface
      */
     public static function getContentParserFor(string $extension): false|ContentParserInterface
     {
-        if (isset(static::$contentParsers[$extension])) {
-            $parser = static::$contentParsers[$extension];
-            $instance =  new $parser();
-            if (is_a($instance, ContentParserInterface::class)) {
-                return $instance;
-            }
+        if (isset(static::$_contentParsers[$extension])) {
+            $parser = static::$_contentParsers[$extension];
+            return  new $parser();
         }
         return false;
     }
 
     /**
-     * @param string $extension
-     * @param string $class
+     * @param string $extension File extension
+     * @param string $class The name of the class which must implement ContentParserInterface
      * @return bool
+     * @throws Exception
      */
     public static function registerContentParser(string $extension, string $class): bool
     {
-        static::$contentParsers[$extension] = $class;
+        $interfaces = class_implements($class);
+        if (!isset($interfaces[ContentParserInterface::class])) {
+            throw new Exception('DocumentNode Content Parser must implement ' . ContentParserInterface::class);
+        }
+        static::$_contentParsers[$extension] = $class;
         return true;
     }
 
+    // -----------------------------------------------------------------------------------------------------------
 
+    /**
+     * Cache object reference Set to private to enforce the use of the
+     * getCache() and setCache() methods
+     *
+     * @ignore Do not show up in generated documentation
+     * @var CacheItemPoolInterface|null 
+     */
     private static null|CacheItemPoolInterface $_cachePool = null;
 
+    /**
+     * @return CacheItemPoolInterface|null
+     */
     public static function getCache(): null|CacheItemPoolInterface
     {
         return Settings::$_cachePool;
     }
 
+    /**
+     * @param CacheItemPoolInterface $cachePool
+     * @return void
+     */
     public static function setCache(CacheItemPoolInterface $cachePool):void
     {
         Settings::$_cachePool = $cachePool;

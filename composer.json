@@ -19,7 +19,7 @@
   },
 
   "autoload": {
-    "psr-4": { "Volta\\Component\\Books\\": "src/Volta/Component/Books/" }
+    "psr-4": { "Volta\\Component\\Books\\": "libraries/Volta/Component/Books/"}
   }
 
 

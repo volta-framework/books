@@ -14,8 +14,8 @@ declare(strict_types=1);
  *
  *  php -S localhost:8080 index.php
  *
- * this way the index.php wil act as a front controller and will serve
- * all the resources as well
+ * This way the index.php wil act as a front controller and will serve
+ * all the static resources as well
  */
 
 use Volta\Component\Books\Cache;
@@ -29,7 +29,7 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 // Load all classes
-require_once __DIR__ . '/../../vendor/autoload.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 try {
 
