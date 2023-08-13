@@ -1,0 +1,22 @@
+<?php
+declare(strict_types=1);
+if (!isset($node))  return 'placeholder $node not set.';
+?>
+<!DOCTYPE html>
+<html lang="<?=$node->getRoot()->getMeta()->get('language', 'en')?>">
+<head>
+    <meta charset="UTF-8" />
+    <title><?= $node->getRoot()->getDisplayName() . ': ' . $node->getDisplayName();?></title>
+</head>
+<body>
+<header><?= $node->getDisplayName();?></header>
+    <main>
+        <?php try { ?>
+            <?= $node->getContent(); ?>
+        <?php } catch(Throwable $e) { ?>
+            <blockquote class="error"><?= $e->getMessage(); ?></blockquote>
+        <?php }; ?>
+    </main>
+</body>
+</html>
+

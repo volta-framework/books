@@ -11,12 +11,7 @@ declare(strict_types=1);
 
 namespace Volta\Component\Books\ContentParsers\XhtmlParser\Elements;
 
-use Volta\Component\Books\ContentParsers\XhtmlParser\Elements\Highlight as BaseElement;
+class Br
+{
 
-/**
- * @package Volta\Component\Books\ContentParsers
- * @author Rob <rob@jaribio.nl> 
- */
-class Html extends BaseElement
-{ 
 }
