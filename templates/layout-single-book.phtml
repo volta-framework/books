@@ -1,3 +1,7 @@
+<?php
+declare(strict_types=1);
+if (!isset($node))  return 'placeholder $node not set.';
+?>
 <!DOCTYPE html>
 <html lang="<?=$node->getRoot()->getMeta()->get('language', 'en')?>">
 <head>
@@ -29,7 +33,7 @@
     <main>
         <ul id="favorites">
             <li><a href="<?= $node->getRoot()->getUri();?>">Home</a></li>
-            <li><a href="<?= $node->getRoot()->getUri();?>00-index">Index</a></li>
+            <li><a href="<?= $node->getRoot()->getUri();?>index">Index</a></li>
         </ul>
 
         <?php try { ?>

@@ -2,7 +2,7 @@
 /*
  * This file is part of the Volta package.
  *
- * (c) Rob Demmenie <rob@volta-framework.com>
+ * (c) Rob Demmenie <rob@volta-server-framework.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -35,7 +35,7 @@ class Answer extends BaseElement
         }
 
         $html  = PHP_EOL.'  <div class="answer-container">';
-        $html .= PHP_EOL.'    <input type="radio" '. $_selected .' name="'. $_elementName .'" class="answer" id="'. $_id .'" value="'. $_id .'">';
+        $html .= PHP_EOL.'    <input type="radio" '. $_selected .' name="'. $_elementName .'" class="answer" id="'. $_id .'" value="'. $_id .'"/>';
         $html .= PHP_EOL.'    <span class="answer-status  '.$_status.'">&nbsp;</span><label for="answer-'.Quiz::$_counter.'-'.Question::$_counter.'-'.Answer::$_counter.'" class="answer-data">';
         return $html;
     }

@@ -2,7 +2,7 @@
 /*
  * This file is part of the Volta package.
  *
- * (c) Rob Demmenie <rob@volta-framework.com>
+ * (c) Rob Demmenie <rob@volta-server-framework.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -186,15 +186,21 @@ class XhtmlParser implements ContentParserInterface
                         XML_ERROR_INCORRECT_ENCODING => 'XML_ERROR_INCORRECT_ENCODING',
                         XML_ERROR_UNCLOSED_CDATA_SECTION => 'XML_ERROR_UNCLOSED_CDATA_SECTION',
                         XML_ERROR_EXTERNAL_ENTITY_HANDLING => 'XML_ERROR_EXTERNAL_ENTITY_HANDLING',
+
+                        // see for  others:  https://gnome.pages.gitlab.gnome.org/libxml2/devhelp/libxml2-xmlerror.html
+
+                        26 => 'XML_ERR_UNDECLARED_ENTITY',
+
+
                         default => "UNKNOWN ERROR"
                     };
 
                     $exceptionMessage = sprintf(
-                        'XML error(%d) at line %d column %d: %s',
+                        'XML error(%d) at line %d column %d: %s (%s)',
                         $errorCode,
                         xml_get_current_line_number($xmlParser),
                         xml_get_current_column_number($xmlParser),
-                        $errorMessage
+                        $errorMessage,$file
                     );
                     xml_parser_free($xmlParser);
                     fclose($stream);

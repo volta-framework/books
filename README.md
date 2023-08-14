@@ -37,7 +37,7 @@ require_once __DIR__ . '/../../vendor/autoload.php';
 
 try {
     $bookName = 'Book';
-    $bookshelf = new Volta\Component\Books\Bookshelf();
+    $bookshelf = new Volta\Component\Books\BookCase();
     $bookshelf->addBook(__dir__ . '/../' . $bookName);
     $book = $bookshelf->getBook($bookName);
     $page = $_SERVER['REQUEST_URI'];

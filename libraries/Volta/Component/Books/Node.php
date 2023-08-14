@@ -2,7 +2,7 @@
 /*
  * This file is part of the Volta package.
  *
- * (c) Rob Demmenie <rob@volta-framework.com>
+ * (c) Rob Demmenie <rob@volta-server-framework.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -61,19 +61,19 @@ abstract class Node implements NodeInterface
 
         // must be a valid path, readable and slug-able
         $realPath = realpath($absolutePath);
-        if (false === $realPath) throw new Exception('Path can not be identified as a node (Invalid path)');
-        if (!is_readable($realPath)) throw new Exception('Path can not be identified as a node (Not readable)');
+        if (false === $realPath) throw new Exception('Path("'.$absolutePath.'") can not be identified as a node: Invalid path');
+        if (!is_readable($realPath)) throw new Exception('Path("'.$absolutePath.'") can not be identified as a node: Not readable');
         if (false === preg_match('/[^a-zA-Z0-9_-]/', basename($realPath)))
-            throw new Exception('Path can not be identified as a node (Name contains character other then a-z, A-Z, 0-9 hyphen or underscore)');
+            throw new Exception('Path("'.$absolutePath.'") can not be identified as a node: Name contains character other then a-z, A-Z, 0-9 hyphen or underscore');
 
         // file(resource) or directory(DocumentNode)
         if (is_dir($realPath)) {
             $result = glob($absolutePath . DIRECTORY_SEPARATOR . 'content.*');
             if ($result === false || count($result) === 0)
-                throw new DocumentNodeException('Path can not be identified as a node (Missing content.*)');
+                throw new DocumentNodeException('Path("'.$absolutePath.'") can not be identified as a node: Missing content.*');
 
             if (!file_exists($realPath . DIRECTORY_SEPARATOR . 'meta.json'))
-                throw new DocumentNodeException('Path can not be identified as a document node (Missing meta.json)');
+                throw new DocumentNodeException('Path("'.$absolutePath.'") can not be identified as a document node: Missing meta.json');
 
             $node = new DocumentNode($realPath);
             if ($node->getParent() === null) {
@@ -86,7 +86,7 @@ abstract class Node implements NodeInterface
         // if not it is a file and must be a resource
         else {
             $extension = pathinfo($realPath, PATHINFO_EXTENSION);
-            if (!array_key_exists($extension, Settings::$supportedResources)) {
+            if (!Settings::isResourceSupported($extension)) {
                 throw new MimeTypeNotSupportedException('Resources "*.'.$extension.'" not supported ');
             }
             Node::$_nodesCache[$absolutePath] = new ResourceNode($realPath);
@@ -109,20 +109,7 @@ abstract class Node implements NodeInterface
 
         // if we do not want the absolute uri return
         if (false === $absolute)  return $relativeUri;
-
-        // if we want the absolute uri we need to add the slash and the uriOffset(stored in the global Node::$uriOffset)
-        // NOTE:
-        //    if the uriOffset is not in the correct format hence
-        //    - ending with a SLUG_SEPARATOR or
-        //    - not starting with a SLUG_SEPARATOR
-        //    throw an Exception
-        $uriOffset = Node::$uriOffset;
-        if ($uriOffset!== '' && !str_starts_with($uriOffset, Node::SLUG_SEPARATOR))
-            throw new Exception('Settings::$uriOffset; must start with a forward slash');
-        if ($uriOffset!== '' &&  str_ends_with($uriOffset, Node::SLUG_SEPARATOR))
-            throw new Exception('Settings::$uriOffset; can not end with a forward slash');
-
-        return $uriOffset . Node::SLUG_SEPARATOR . $relativeUri;
+        return $this->getRoot()->getUriOffset() . Node::SLUG_SEPARATOR . $relativeUri;
 
     }
 
@@ -215,13 +202,13 @@ abstract class Node implements NodeInterface
         }
     }
 
-    protected null|NodeInterface $_root;
+    protected null|BookNode $_root;
 
     /**
      * {@inheritdoc}
      * @throws Exception
      */
-    public function getRoot(): NodeInterface
+    public function getRoot(): BookNode
     {
         // do this only ones in the live time of this Node
         if (!isset($this->_root)) {
@@ -240,10 +227,14 @@ abstract class Node implements NodeInterface
                     $parentNode = Node::factory($possibleParentPath);
                     if (is_a($parentNode, DocumentNode::class)) $currentNode = $parentNode;
                 } catch (Exception|DocumentNodeException|ResourceNodeException $e) {
-                    $next = ($currentNode->getType() === \Volta\Component\Books\ResourceNode::class);
+                    $next = ($currentNode->getType() === ResourceNode::class);
                 }
                 array_pop($directories);
             };
+
+            if (!is_a($currentNode, BookNode::class)) {
+                throw new Exception('Unexpected Error, found node is not of type BookNode');
+            }
             $this->_root = $currentNode;
         }
         return $this->_root;

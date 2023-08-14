@@ -2,7 +2,7 @@
 /*
  * This file is part of the Volta package.
  *
- * (c) Rob Demmenie <rob@volta-framework.com>
+ * (c) Rob Demmenie <rob@volta-server-framework.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -17,12 +17,10 @@ use Volta\Component\Books\Exceptions\Exception;
 use Volta\Component\Books\Exceptions\ResourceNodeException;
 
 /**
- *
+ * A DocumentNode represents a page in the book
  */
 class DocumentNode extends Node
 {
-
-
 
     /**
      * @return int

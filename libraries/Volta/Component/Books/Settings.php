@@ -2,7 +2,7 @@
 /*
  * This file is part of the Volta package.
  *
- * (c) Rob Demmenie <rob@volta-framework.com>
+ * (c) Rob Demmenie <rob@volta-server-framework.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -43,17 +43,50 @@ abstract class Settings
         'png'  => 'image/png',
     ];
 
+    /**
+     * DocumentNodes can have resources embedded in their content. But depending on the implementation a resource
+     * identified by their file extension may or may not be supported in the current application.
+     *
+     * @param string $extension
+     * @return bool True when the resource is supported false otherwise
+     */
     public static function isResourceSupported(string $extension): bool
     {
         return isset(Settings::$_supportedResources[$extension]);
     }
 
+    /**
+     * If the resource identified by its file extension the corresponding mimetype is returned. False if
+     * the resource is not supported
+     *
+     * @param string $extension
+     * @return bool|string Mimetype, false if resource is not supported
+     */
+    public static function getResourceMimeType(string $extension): bool|string
+    {
+        if (Settings::isResourceSupported($extension)){
+            return Settings::$_supportedResources[$extension];
+        }
+        return false;
+    }
 
+    /**
+     * Lists all the supported resources
+     *
+     * @return array|string[]
+     */
     public static function getSupportedResources(): array
     {
         return Settings::$_supportedResources;
     }
 
+    /**
+     * Add or overwrite a resource
+     *
+     * @param string $extension
+     * @param string $mimeType
+     * @return void
+     */
     public static function setSupportedResource(string $extension, string $mimeType): void
     {
         Settings::$_supportedResources[$extension] = $mimeType;

@@ -2,7 +2,7 @@
 /*
  * This file is part of the Volta package.
  *
- * (c) Rob Demmenie <rob@volta-framework.com>
+ * (c) Rob Demmenie <rob@volta-server-framework.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -14,6 +14,7 @@ namespace Volta\Component\Books;
 use DirectoryIterator;
 use Volta\Component\Books\Exceptions\DocumentNodeException;
 use Volta\Component\Books\Exceptions\Exception;
+use Volta\Component\Books\Exceptions\MimeTypeNotSupportedException;
 use Volta\Component\Books\Exceptions\ResourceNodeException;
 
 /**
@@ -126,10 +127,17 @@ class ResourceNode extends Node
 
     const MEDIA_TYPE_NOT_SUPPORTED = 'Media-type not supported';
 
+    /**
+     * @return string
+     * @throws MimeTypeNotSupportedException
+     */
     public function getContentType(): string
     {
         $extension = pathinfo($this->getAbsolutePath(), PATHINFO_EXTENSION);
-        return Settings::$supportedResources[$extension];
+        if (!Settings::isResourceSupported($extension)) {
+            throw new MimeTypeNotSupportedException('Mime Type for "'.$extension.'" not supported');
+        }
+        return Settings::getResourceMimeType($extension);
     }
 
     public function getMeta(): Meta

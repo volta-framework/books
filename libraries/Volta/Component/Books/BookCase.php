@@ -2,7 +2,7 @@
 /*
  * This file is part of the Volta package.
  *
- * (c) Rob Demmenie <rob@volta-framework.com>
+ * (c) Rob Demmenie <rob@volta-server-framework.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -17,24 +17,37 @@ use Volta\Component\Books\Exceptions\Exception;
 /**
  * Represents a collection of BookNodes(books).
  */
-class Bookshelf
+class BookCase
 {
 
     /** @var $_shelf array<string, NodeInterface> */
     private array $_shelf = [];
 
-    private readonly string $_layoutPage;
+
 
     /**
-     * @param string $layoutPage
+     * @param string $pageTemplate
      * @throws Exception
      */
-    public function __construct(string $layoutPage)
+    public function __construct(string $pageTemplate)
     {
-        if (!is_file($layoutPage)) {
-            throw new Exception('Invalid page layout');
+
+        $this->setPageTemplate($pageTemplate);
+    }
+
+    private string $_pageTemplate;
+
+    public function setPageTemplate(string $pageTemplate): BookCase
+    {
+        if (!is_file($pageTemplate)) {
+            throw new Exception('Invalid page template');
         }
-        $this->_layoutPage = $layoutPage;
+        $this->_pageTemplate = $pageTemplate;
+        return $this;
+    }
+    public function getPageTemplate(): string
+    {
+        return $this->_pageTemplate;
     }
 
 
@@ -48,11 +61,14 @@ class Bookshelf
      */
     public function addBook(string $bookIndex, string $absolutePath): NodeInterface
     {
-        $node = Node::factory($absolutePath);
-        if (!is_a($node, BookNode::class))
+        $bookNode = Node::factory($absolutePath);
+
+        if (!is_a($bookNode, BookNode::class))
             throw new Exception(sprintf('Cannot add the book "%s" (Path does not point to a book)', $bookIndex));
-        $this->_shelf[$bookIndex] = $node;
-        return $node;
+
+        $bookNode->setUrlOffset($bookIndex);
+        $this->_shelf[$bookIndex] = $bookNode;
+        return $bookNode;
     }
 
     /**
@@ -128,7 +144,8 @@ class Bookshelf
 
         // cache pages for speed if the node can be cached
         $start = microtime(true);
-        if ($node->getMeta()->get('isCacheable', true)) {
+
+        if ($node->getMeta()->get('isCacheable', true) && Settings::getCache() !== null) {
             $cachedNode = Settings::getCache()->getItem($node->getRelativePath());
 
             // check if we need to invalidate the cache
@@ -144,16 +161,16 @@ class Bookshelf
 
             if ($cachedNode->isHit()) {
                 echo $cachedNode->get();
-                echo "\n<!-- retrieved from cache in:  " . number_format(microtime(true) - $start, 10) . " seconds -->";
+                echo "\n<!-- Retrieved from cache in:  " . number_format(microtime(true) - $start, 10) . " seconds -->";
             } else {
                 ob_start();
-                include $this->_layoutPage;
+                include $this->getPageTemplate();
                 $cachedNode->set(ob_get_contents());
                 ob_end_flush();
                 echo "\n<!-- generated in:  " . number_format(microtime(true) - $start, 10) . " seconds -->";
             }
         } else {
-            include $this->_layoutPage;
+            include $this->getPageTemplate();
             echo "\n<!-- generated in:  " . number_format(microtime(true) - $start, 10) . " seconds (page set not be cached)-->";
         }
 
