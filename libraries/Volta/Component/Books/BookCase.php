@@ -62,7 +62,6 @@ class BookCase
     public function addBook(string $bookIndex, string $absolutePath): NodeInterface
     {
         $node = Node::factory($absolutePath);
-
         if (!$node->isBook())
             throw new Exception(sprintf('Cannot add the book "%s" (Path does not point to a book)', $bookIndex));
 

@@ -58,13 +58,26 @@ class Epub implements LoggerAwareInterface
      */
     public function export(string $destination): bool
     {
-        $this->_setup();                      #1
-        $this->_setDestination($destination); #2
-        $this->_createOpenContainer();        #3
-        $this->_createEpubContent();          #4
-        $this->_createEpubToc();              #5
-        $this->_addResources();               #6
-        $this->_zipIt();                      #7
+        $this->getLogger()->notice('#1 SETUP');
+        $this->_setup();
+
+        $this->getLogger()->notice('#2 DESTINATION');
+        $this->_setDestination($destination);
+
+        $this->getLogger()->notice('#3 OPEN CONTAINER');
+        $this->_createOpenContainer();
+
+        $this->getLogger()->notice('#4 CONTENT');
+        $this->_createEpubContent();
+
+        $this->getLogger()->notice('#5 TOC');
+        $this->_createEpubToc();
+
+        $this->getLogger()->notice('#6 ADD RESOURCES');
+        $this->_addResources();
+
+        $this->getLogger()->notice('#6 ZIP IT');
+        $this->_zipIt();
 
         return true;
     }
@@ -436,6 +449,11 @@ class Epub implements LoggerAwareInterface
         return $name ;
     }
 
+    /**
+     * Formats the name of the content directory
+     *
+     * @return string
+     */
     private function _getContentDir(): string
     {
         return $this->_contentDir . DIRECTORY_SEPARATOR;
