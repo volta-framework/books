@@ -35,7 +35,8 @@ class BookNode extends DocumentNode
     /**
      *
      * if we want the absolute uri we need to add the slash and the
-     *  uriOffset(stored in the Root BookNode::$uriOffset)
+     * uriOffset(stored in the Root BookNode::$uriOffset)
+     *
      * NOTE:
      *     if the uriOffset is not in the correct format hence
      *     - ending with a SLUG_SEPARATOR or
@@ -55,6 +56,8 @@ class BookNode extends DocumentNode
         $this->_uriOffset = $uriOffset;
         return $this;
     }
+
+
 
 
 }

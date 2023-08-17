@@ -57,10 +57,10 @@ abstract class Node implements NodeInterface
      */
     public static function factory(string $absolutePath): NodeInterface
     {
+        $realPath = realpath($absolutePath);
         if (isset(Node::$_nodesCache[$absolutePath])) return Node::$_nodesCache[$absolutePath];
 
         // must be a valid path, readable and slug-able
-        $realPath = realpath($absolutePath);
         if (false === $realPath) throw new Exception('Path("'.$absolutePath.'") can not be identified as a node: Invalid path');
         if (!is_readable($realPath)) throw new Exception('Path("'.$absolutePath.'") can not be identified as a node: Not readable');
         if (false === preg_match('/[^a-zA-Z0-9_-]/', basename($realPath)))
@@ -79,11 +79,10 @@ abstract class Node implements NodeInterface
             if ($node->getParent() === null) {
                 $node = new BookNode($realPath);
             }
-
             Node::$_nodesCache[$absolutePath] = $node;
         }
 
-        // if not it is a file and must be a resource
+        // if the request is a file it must be a resource
         else {
             $extension = pathinfo($realPath, PATHINFO_EXTENSION);
             if (!Settings::isResourceSupported($extension)) {
@@ -106,6 +105,11 @@ abstract class Node implements NodeInterface
     {
         // create the relative uri for this node thus without a leading SLUG_SEPARATOR
         $relativeUri = trim(str_replace(DIRECTORY_SEPARATOR, Node::SLUG_SEPARATOR,  $this->getRelativePath()), Node::SLUG_SEPARATOR);
+
+        //if it is a DocumentNode add the trailing slash except for the RootNode
+        if($this->isDocument() && !$this->isBook()) {
+            $relativeUri .= "/";
+        }
 
         // if we do not want the absolute uri return
         if (false === $absolute)  return $relativeUri;
@@ -137,6 +141,21 @@ abstract class Node implements NodeInterface
     public function getType(): string
     {
         return static::class;
+    }
+
+    public function isDocument(): bool
+    {
+        return $this->getType() === DocumentNode::class;
+    }
+
+    public function isBook() : bool
+    {
+        return $this->getType() === BookNode::class;
+    }
+
+    public function isResource() : bool
+    {
+        return $this->getType() === ResourceNode::class;
     }
 
     /**
@@ -179,7 +198,7 @@ abstract class Node implements NodeInterface
                 $possibleParentPath = implode(DIRECTORY_SEPARATOR, $directories);
                 try {
                     $parentNode = Node::factory($possibleParentPath);
-                    if (is_a($parentNode, DocumentNode::class)) {
+                    if ($parentNode->isDocument()) {
                         $this->_parent  = $parentNode;
                         $next = false;
                     }
@@ -192,6 +211,8 @@ abstract class Node implements NodeInterface
     }
 
     /**
+     * @param string $relativePath
+     * @return NodeInterface|null
      */
     public function getChild(string $relativePath): null|NodeInterface
     {
@@ -225,13 +246,14 @@ abstract class Node implements NodeInterface
                 $possibleParentPath = implode(DIRECTORY_SEPARATOR, $directories);
                 try {
                     $parentNode = Node::factory($possibleParentPath);
-                    if (is_a($parentNode, DocumentNode::class)) $currentNode = $parentNode;
+                    if ($parentNode->isDocument()) $currentNode = $parentNode;
                 } catch (Exception|DocumentNodeException|ResourceNodeException $e) {
                     $next = ($currentNode->getType() === ResourceNode::class);
                 }
                 array_pop($directories);
             };
 
+            // NOTE : we use is_a to suppress code inspection errors
             if (!is_a($currentNode, BookNode::class)) {
                 throw new Exception('Unexpected Error, found node is not of type BookNode');
             }
@@ -240,9 +262,15 @@ abstract class Node implements NodeInterface
         return $this->_root;
     }
 
+    /**
+     * List all the DocumentNodes in a one dimensional array
+     *
+     * @return array
+     */
     public function getList(): array
     {
         $list[] = $this;
+
         foreach($this->getChildren() as $child) {
             $list = array_merge($list, $child->getList());
         }
@@ -276,6 +304,7 @@ abstract class Node implements NodeInterface
 
     /**
      * @return array|TocItem[]
+     * @throws Exception
      */
     public function getToc(): array
     {
@@ -286,6 +315,7 @@ abstract class Node implements NodeInterface
     /**
      * @param NodeInterface $node
      * @return array|TocItem[]
+     * @throws Exception
      */
     protected function getTocFromNode(NodeInterface $node): array
     {

@@ -55,6 +55,24 @@ interface NodeInterface
     public function getType(): string;
 
     /**
+     * Shortcut to getType for documents only
+     * @return bool
+     */
+    public function isDocument(): bool;
+
+    /**
+     * Shortcut to getType for books only
+     * @return bool
+     */
+    public function isBook() : bool;
+
+    /**
+     * Shortcut to getType for resources only
+     * @return bool
+     */
+    public function isResource() : bool;
+
+    /**
      * Returns the node content type
      * @return string
      */
@@ -103,7 +121,8 @@ interface NodeInterface
 
     /**
      * List of child nodes.
-     * @return array<mixed, mixed>
+     *
+     * @return array<string, DocumentNode>
      */
     public function getChildren(): array;
 

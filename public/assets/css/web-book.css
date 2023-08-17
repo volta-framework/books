@@ -74,7 +74,9 @@ var {font-family: "Courier New", serif;}
 .footnotes li { padding: 5px 0 5px 0 }
 .footnote > sup {padding: 0 0 0 4px; font-size: 8pt;}
 
-
+.chuck{ font-size:8pt; font-family: "Courier New", serif; text-align: center}
+.chuck:before{content: '"'}
+.chuck:after{content: '"'}
 
 @media only screen and (max-width: 600px) {
     p {text-align: left; }

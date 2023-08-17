@@ -20,26 +20,66 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use Volta\Component\Books\Exceptions\Exception;
 
+
+/**
+ * @see https://ebookflightdeck.com/
+ * @see https://en.wikipedia.org/wiki/EPUB
+ */
 class Epub implements LoggerAwareInterface
 {
 
     use LoggerAwareTrait;
 
-    public function  __construct()
-    {
 
+    private BookNode $_book;
+    private string $_template;
+    private string $_style;
+    private string $_bookId;
+    private string $_contentDir = 'OEBPS';
+    private string $_metadataFileName = 'metadata.opf';
+    private string $_tocFileName = 'toc.ncx';
+    private string $_sourceDirName = 'src';
+
+    public function  __construct(BookNode $book, string $template, string $style)
+    {
+        $this->_book = $book;
+        $this->_template = $template;
+        $this->_style = $style;
+        $this->_bookId = sha1(uniqid('VOLTA', true));
     }
 
+    /**
+     * Exports a Volta Book to an epub file
+     *
+     * @see https://en.wikipedia.org/wiki/EPUB
+     * @param string $destination Existing empty writable directory
+     * @return bool True on success, false otherwise
+     * @throws Exception When an invalid destination is given
+     */
+    public function export(string $destination): bool
+    {
+        $this->_setup();                      #1
+        $this->_setDestination($destination); #2
+        $this->_createOpenContainer();        #3
+        $this->_createEpubContent();          #4
+        $this->_createEpubToc();              #5
+        $this->_addResources();               #6
+        $this->_zipIt();                      #7
 
+        return true;
+    }
+
+    #region - #1 Setup and Teardown
+
+    /**
+     * Setup environment for creating the EPUB
+     *
+     * @return void
+     */
     private function _setup():void
     {
-        // create error and exception handlers
-        $errorHandler = function(
-            int $code, string $message,
-            null|string $file = null,
-            null|int $line = null,
-            null|array $context = null
-        ): bool {
+        $this->getLogger()->info('Set temporarily error handler', [__METHOD__]);
+        $errorHandler = function(int $code, string $message, null|string $file = null, null|int $line = null, null|array $context = null ): bool {
             $this->getLogger()->error("$message in $file @ $line");
             $this->_teardown();
             exit(1);
@@ -47,8 +87,8 @@ class Epub implements LoggerAwareInterface
         $errorHandler->bindTo($this);
         set_error_handler($errorHandler);
 
-        $exceptionHandler = function(\Throwable $exception
-        ): void {
+        $this->getLogger()->info('Set temporarily exception handler', [__METHOD__]);
+        $exceptionHandler = function(\Throwable $exception): void {
             $this->getLogger()->error(get_class($exception) . ' - ' . $exception->getMessage());
             $this->_teardown();
             exit();
@@ -57,66 +97,204 @@ class Epub implements LoggerAwareInterface
         set_exception_handler($exceptionHandler);
     }
 
+    /**
+     * Restore environment
+     *
+     * @return void
+     */
     private function _teardown():void
     {
+        $this->getLogger()->info('Restore error and exception handler', [__METHOD__]);
         restore_error_handler();
         restore_exception_handler();
     }
 
+    #endregion
+    #region - #2 Validate and Sanitize  Destination
 
-    private BookNode $_book;
-    private string $_template;
-    private string $_bookId;
-    private string $_contentDir = 'OEBPS/';
-    private string $_metadataFileName = 'metadata.opf';
-    private string $_tocFileName = 'toc.ncx';
-
+    private string $_destination;
 
     /**
-     * Exports a Volta Book to epub
      *
-     * @see https://en.wikipedia.org/wiki/EPUB
-     * @param BookNode $book
-     * @param string $destination Existing empty writable directory
-     * @param string $template
-     * @param string|null $style
-     * @return bool True on success, false otherwise
-     * @throws Exception When an invalid destination is given
+     * @return string
      */
-    public function export(BookNode $book, string $destination, string $template, null|string $style=null): bool
+    public function getSourceDir(): string
     {
-        $this->_book = $book;
-        $this->_template = $template;
-        $this->_bookId = sha1(uniqid('VOLTA', true));
-
-        $this->_setup();
-        $this->_setDestination($destination);
-        $this->_createOpenContainer();
-        $this->_createEpubContent();
-        $this->_createEpubToc();
-        $this->_addStyle();
-
-        return true;
+        return $this->_destination . $this->_sourceDirName . DIRECTORY_SEPARATOR;
     }
 
-    private function _getResourceId(NodeInterface $node): string
+    public function getDestination(): string
     {
-        return 'V' .sha1($node->getUri());
+        return $this->_destination;
     }
 
-    private function _getFileName(NodeInterface $node):string
+    /**
+     * @param string $destination
+     * @return self
+     * @throws Exception
+     */
+    private function _setDestination(string $destination): self
     {
-        if (!is_dir($this->_getDestination() . $this->_contentDir . $node->getRelativePath())) {
-            mkdir($this->_getDestination() . $this->_contentDir . $node->getRelativePath(), 0777, true);
-            $this->getLogger()->debug('Created ' . $this->_contentDir . trim($node->getRelativePath(),  DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR );
+        // Validate the destination directory
+        if (!is_dir($destination) || !is_writable($destination)) {
+            throw new Exception('Destination not pointing to an existing writable directory ' . count(scandir($destination)) );
         }
-        $name = str_replace('//' , '/' , $this->_contentDir . trim($node->getRelativePath(),  DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'content');
-        return  $name . '.xhtml';
-    }
-    private function _addStyle():void
-    {}
 
-    #region - Create EPUB TOC
+        // Sanitize the destination directory
+        $destination = realpath($destination) . DIRECTORY_SEPARATOR;
+        $it = new RecursiveDirectoryIterator($destination, FilesystemIterator::SKIP_DOTS);
+        $files = new RecursiveIteratorIterator($it, RecursiveIteratorIterator::CHILD_FIRST);
+        foreach($files as $file) {
+            if ($file->isDir()){
+                rmdir($file->getRealPath());
+            } else {
+                unlink($file->getRealPath());
+            }
+        }
+
+        if (count(scandir($destination)) > 2) {
+            throw new Exception('Destination not pointing to an empty directory');
+        }
+        $this->getLogger()->debug('Destination made empty');
+        $this->_destination = $destination;
+
+        // add the src dir
+        mkdir($this->_destination . $this->_sourceDirName);
+        $this->getLogger()->info('Destination set to ' . $this->_destination);
+
+        return $this;
+    }
+
+    #endregion
+    #region - #3 Create Basic Open Container Organisation
+
+    /**
+     * @return void
+     * @throws Exception
+     */
+    private function _createOpenContainer(): void
+    {
+        // creating the required mimetype file
+        $fh = fopen($this->getSourceDir(). 'mimetype', 'w');
+        fwrite($fh, 'application/epub+zip'); // application/epub+zip
+        fclose($fh);
+        $this->getLogger()->info('Created ' . 'mimetype');
+
+        // creating the required container file
+        if (false === mkdir($this->getSourceDir() . 'META-INF')) {
+            throw new Exception('Failed to create required directory META-INF');
+        }
+        $fh = fopen($this->getSourceDir(). 'META-INF'. DIRECTORY_SEPARATOR . 'container.xml', 'w');
+        fwrite($fh, '<?xml version="1.0" encoding="UTF-8" ?>' . PHP_EOL);
+        fwrite($fh, '<container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">' . PHP_EOL);
+        fwrite($fh, '  <rootfiles>' . PHP_EOL);
+        fwrite($fh, '    <rootfile full-path="' . $this->_metadataFileName. '" media-type="application/oebps-package+xml"/>' . PHP_EOL);
+        fwrite($fh, '  </rootfiles>' . PHP_EOL);
+        fwrite($fh, '</container>' . PHP_EOL);
+        fclose($fh);
+        $this->getLogger()->info('Created ' . 'META-INF'. DIRECTORY_SEPARATOR . 'container.xml');
+
+        // creating the required root file(s)
+        if (false === mkdir($this->getSourceDir() . 'OEBPS')) {
+            throw new Exception('Failed to create required directory OEBPS');
+        }
+    }
+    #endregion
+    #region - #4 Create EPUB Content
+
+    /**
+     * @return void
+     * @throws Exception
+     */
+    private function _createEpubContent(): void
+    {
+        // - build manifest
+        $manifest = [];
+        $this->_createManifest($this->_book,  $manifest);
+
+        // build the metadata file
+        $xml = [];
+        $xml[] = '<?xml version="1.0" encoding="UTF-8"?>';
+        $xml[] = '<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="pub-id">';
+        $xml[] = '  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">';
+        $xml[] = '    <dc:identifier id="pub-id" opf:scheme="uuid">' .$this->_bookId . '</dc:identifier>';
+        $xml[] = '    <meta refines="#pub-id" property="identifier-type" scheme="xsd:string">uuid</meta>';
+        $xml[] = '    <meta property="dcterms:modified">2014-04-04T14:09:43Z</meta>';
+
+        $xml[] = '    <dc:title id="title1">' . $this->_book->getName() . '</dc:title>';
+        $xml[] = '    <meta refines="#title1" property="title-type">main</meta>';
+        $xml[] = '    <meta refines="#title1" property="display-seq">1</meta>';
+
+        $xml[] = '    <dc:language>e' . $this->_book->getMeta()->get('language', 'en-US'). '</dc:language>';
+
+
+        $xml[] = '    <dc:creator opf:file-as="' .$this->_book->getMeta()->get('author', 'anonymous'). '" opf:role="aut">' .$this->_book->getMeta()->get('author', 'anonymous'). '</dc:creator>';
+        $xml[] = '  </metadata>';
+        $xml[] = '  <manifest>';
+        foreach($manifest as $item) {
+            $xml[] = '    <item id="'.$item['id'].'" href="'.$item['href'].'" media-type="'.$item['media-type'].'"/>';
+        }
+        $xml[] = '    <item id="cover" properties="cover-image" href="cover.png" media-type="image/png" />';
+        $xml[] = '    <item id="ncx" href="' . $this->_tocFileName . '" media-type="application/x-dtbncx+xml"/>';
+        $xml[] = '  </manifest>';
+        $xml[] = '  <spine toc="ncx">';
+        foreach($manifest as $item) {
+            $xml[] = '    <itemref idref="'.$item['id'].'"/>';
+        }
+        $xml[] = '  </spine>';
+        $xml[] = '</package>';
+
+        // write the file
+        $fh = fopen( $this->getSourceDir() . $this->_metadataFileName, 'w');
+        fwrite($fh, trim(implode(PHP_EOL, $xml)));
+        fclose($fh);
+        $this->getLogger()->info('Created ' . $this->_metadataFileName, [__METHOD__]);
+
+    }
+
+
+    private function _createManifest(NodeInterface $node, array &$manifest): void
+    {
+        foreach($this->_book->getList() as $node) {
+
+            $file = $this->_getFileName($node);;
+            $manifest[] = [
+                'id' => $this->_getResourceId($node),
+                'href' => $file,
+                'media-type' => 'application/xhtml+xml'
+            ];
+            $fh = fopen($this->getSourceDir() . $file, 'w');
+
+            ob_start();
+            include $this->_template;
+            $content = ob_get_contents();
+            ob_end_clean();
+
+            if (false !== fwrite($fh, $content)) {
+                $this->getLogger()->info('Created ' . $file);
+            } else {
+                $this->getLogger()->error('Failed creating ' . $file);
+            }
+            fclose($fh);
+
+
+            foreach($node->getResources() as $resource) {
+                $file = $this->_getFileName($resource);;
+                $manifest[] = [
+                    'id' => $this->_getResourceId($resource),
+                    'href' =>  $file,
+                    'media-type' => $resource->getContentType()
+                ];
+                copy($resource->getAbsolutePath(), $this->getSourceDir() .  $file);
+                $this->getLogger()->info('Created ' . $file);
+
+            }
+
+        }
+    }
+
+    #endregion
+    #region - #5 Create EPUB TOC
     private function _createEpubToc(): void
     {
         $navMap = [];
@@ -162,157 +340,66 @@ class Epub implements LoggerAwareInterface
         $xml[] = '  </navMap>';
         $xml[] = '</ncx>';
 
-        $fh = fopen(  $this->_destination . $this->_tocFileName, 'w');
+        $fh = fopen(  $this->getSourceDir() . $this->_tocFileName, 'w');
         fwrite($fh, trim(implode(PHP_EOL, $xml)));
         fclose($fh);
-        $this->getLogger()->info('Created '. $this->_tocFileName);
+        $this->getLogger()->info('Created '. $this->_tocFileName, [__METHOD__]);
 
     }
-
     #endregion
-    #region - Create EPUB Content
+    #region - #6 Add resources to EPUB
 
-    private function _createEpubContent(): void
+    private function _addResources():void
     {
-
-        $metadata = [
-            'title' => $this->_book->getName(),
-            'language' => $this->_book->getMeta()->get('language', 'en'),
-            'identifier' =>$this->_bookId,
-            'creator' => $this->_book->getMeta()->get('author', 'anonymous')
-        ];
-
-        $manifest = [];
-        $addToManifest = function(NodeInterface $node) use(&$manifest, &$addToManifest) {
-            $file = $this->_getFileName($node);;
-            $manifest[]  = [
-                'id' => $this->_getResourceId($node),
-                'href' => $file,
-                'media-type' => 'application/xhtml+xml'
-            ];
-            $fh = fopen($this->_getDestination() . $file, 'w');
-
-            ob_start();
-            include $this->_template;
-            $content = ob_get_contents();
-            ob_end_clean();
-
-            if(false !== fwrite($fh, $content)) {
-                $this->getLogger()->info('Created ' . $file);
-            }
-            fclose($fh);
-
-            foreach($node->getChildren() as $child) {
-                $addToManifest($child);
-            }
-        };
-        $addToManifest->bindTo($this);
-        $addToManifest($this->_book);
-
-
-
-        $xml = [];
-        $xml[] = '<?xml version="1.0"?>';
-        $xml[] = '<package version="2.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="' .$this->_bookId . '">';
-        $xml[] = '  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">';
-        $xml[] = '    <dc:title>' .$metadata['title']. '</dc:title>';
-        $xml[] = '    <dc:language>e' .$metadata['language']. '</dc:language>';
-        $xml[] = '    <dc:identifier id="'.$this->_bookId.'" opf:scheme="uuid">' .$this->_bookId . '</dc:identifier>';
-        $xml[] = '    <dc:creator opf:file-as="' .$metadata['creator']. '" opf:role="aut">' .$metadata['creator']. '</dc:creator>';
-        $xml[] = '  </metadata>';
-        $xml[] = '  <manifest>';
-        foreach($manifest as $item) {
-            $xml[] = '    <item id="'.$item['id'].'" href="'.$item['href'].'" media-type="'.$item['media-type'].'"/>';
-        }
-        $xml[] = '    <item id="ncx" href="' . $this->_tocFileName . '" media-type="application/x-dtbncx+xml"/>';
-        $xml[] = '  </manifest>';
-        $xml[] = '  <spine toc="ncx">';
-        foreach($manifest as $item) {
-            $xml[] = '    <itemref idref="'.$item['id'].'"/>';
-        }
-        $xml[] = '  </spine>';
-        $xml[] = '</package>';
-
-        $fh = fopen( $this->_destination . $this->_metadataFileName, 'w');
-        fwrite($fh, trim(implode(PHP_EOL, $xml)));
+        // style sheet
+        $cssContent = (is_file($this->_style)) ? file_get_contents($this->_style) : '';
+        $fh = fopen($this->getSourceDir() . 'epub-book.css', 'w');
+        fwrite($fh, $cssContent);
         fclose($fh);
-        $this->getLogger()->info('Created ' . $this->_metadataFileName);
+        $this->getLogger()->info("Added style");
+
+        // cover file if anny otherwise generate default
+        $coverFile = $this->_book->getChild('/cover.png');
+        if (NULL !== $coverFile) {
+            $this->getLogger()->debug('Found cover @ ' . $coverFile->getAbsolutePath());
+        } else {
+            $coverFile = realpath(__DIR__ . '/../../../../public/assets/media/cover.png');
+        }
+
+        if(copy($coverFile->getAbsolutePath(),$this->getSourceDir() . 'cover.png')) {
+            $this->getLogger()->info('Successfully copied cover file');
+        }
+
 
     }
 
     #endregion
-    #region - Create Basic Open Container Organisation
-    private function _createOpenContainer(): void
+    #region - #7 Compress data and zip to epub
+
+    /**
+     *  NOTE:
+     *    On Windows I tried to do it with the 'tar' command, but it adds the absolute path in the epub and I can not
+     *    find how to change them and make all paths relative. If done manually calibre still complains
+     *    it is not in the right zip format. So on a Window's machine you should use something like 7-zip to compress
+     *    the files and change the file extension to 'epub'
+     */
+    private function _zipIt(): void
     {
-        // creating the required mimetype file
-        $fh = fopen($this->_getDestination(). 'mimetype', 'w');
-        fwrite($fh, 'application/epub+zip'); // application/epub+zip
-        fclose($fh);
-        $this->getLogger()->info('Created ' . 'mimetype');
+        $epubFileName = $this->_book->getName()  . '.epub';
 
-        // creating the required container file
-        if (false === mkdir($this->_getDestination() . 'META-INF')) {
-            throw new Exception('Failed to create required directory META-INF');
-        }
-        $fh = fopen($this->_getDestination(). 'META-INF'. DIRECTORY_SEPARATOR . 'container.xml', 'w');
-        fwrite($fh, '<?xml version="1.0" encoding="UTF-8" ?>' . PHP_EOL);
-        fwrite($fh, '<container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">' . PHP_EOL);
-        fwrite($fh, '  <rootfiles>' . PHP_EOL);
-        fwrite($fh, '    <rootfile full-path="' . $this->_metadataFileName. '" media-type="application/oebps-package+xml"/>' . PHP_EOL);
-        fwrite($fh, '  </rootfiles>' . PHP_EOL);
-        fwrite($fh, '</container>' . PHP_EOL);
-        fclose($fh);
-        $this->getLogger()->info('Created ' . 'META-INF'. DIRECTORY_SEPARATOR . 'container.xml');
+        if(is_file( $this->getDestination() . $epubFileName)) unlink(__DIR__ . DIRECTORY_SEPARATOR . $epubFileName);
+        $this->getlogger()->info("Try to Creat epub file " . $this->getDestination() . $epubFileName . " from  " . $this->getSourceDir());
+        $cmd = 'zip ' . $this->getDestination() . $epubFileName .$this->getSourceDir() .'* ';
+        shell_exec($cmd);
 
-        // creating the required root file(s)
-        if (false === mkdir($this->_getDestination() . 'OEBPS')) {
-            throw new Exception('Failed to create required directory OEBPS');
-        }
-    }
-    #endregion
-    #region - Validate and Sanitize  Destination
-
-    private string $_destination;
-
-    private function _getDestination(): string
-    {
-        return $this->_destination;
-    }
-
-    private function _setDestination(string $destination): self
-    {
-        // Validate the destination directory
-        if (!is_dir($destination) || !is_writable($destination)) {
-            throw new Exception('Destination not pointing to an existing writable directory ' . count(scandir($destination)) );
-        }
-
-        // Sanitize the destination directory
-        $destination = realpath($destination) . DIRECTORY_SEPARATOR;
-        $it = new RecursiveDirectoryIterator($destination, FilesystemIterator::SKIP_DOTS);
-        $files = new RecursiveIteratorIterator($it, RecursiveIteratorIterator::CHILD_FIRST);
-        foreach($files as $file) {
-            if ($file->isDir()){
-                rmdir($file->getRealPath());
-            } else {
-                unlink($file->getRealPath());
-            }
-        }
-
-        if (count(scandir($destination)) > 2) {
-            throw new Exception('Destination not pointing to an empty directory');
-        }
-        $this->getLogger()->debug('Destination made empty');
-
-        $this->_destination = $destination;
-        $this->getLogger()->info('Destination set to ' . $this->_destination);
-
-        return $this;
     }
 
     #endregion
-    #region - LoggerAwareInterface  helpers
+    #region - helpers
 
-
+    /**
+     * @return LoggerInterface
+     */
     public function getLogger(): LoggerInterface
     {
         if(!isset($this->logger)) {
@@ -321,7 +408,38 @@ class Epub implements LoggerAwareInterface
         return $this->logger;
     }
 
+    private function _getResourceId(NodeInterface $node): string
+    {
+        return 'V' .sha1($node->getUri());
+    }
 
+    /**
+     * @param NodeInterface $node
+     * @return string
+     */
+    private function _getFileName(NodeInterface $node):string
+    {
+        if ($node->isDocument()) {
+            if (!is_dir($this->getSourceDir() . $this->_getContentDir() . $node->getRelativePath())) {
+                mkdir($this->getSourceDir() . $this->_getContentDir() . $node->getRelativePath(), 0777, true);
+                $this->getLogger()->debug('Created ' . $this->_getContentDir() . $node->getRelativePath());
+            }
+            $name = str_replace(DIRECTORY_SEPARATOR . DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR, $this->_getContentDir() . trim($node->getRelativePath(), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'content.xhtml');
+
+        } else {
+            if (!is_dir($this->getSourceDir() . $this->_getContentDir() . dirname($node->getRelativePath()))) {
+                mkdir($this->getSourceDir() . $this->_getContentDir() . dirname($node->getRelativePath()), 0777, true);
+                $this->getLogger()->debug('Created ' . $this->_getContentDir() . $node->getRelativePath());
+            }
+            $name = str_replace(DIRECTORY_SEPARATOR . DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR, $this->_getContentDir() . trim($node->getRelativePath(), DIRECTORY_SEPARATOR));
+        }
+        return $name ;
+    }
+
+    private function _getContentDir(): string
+    {
+        return $this->_contentDir . DIRECTORY_SEPARATOR;
+    }
 
     #endregion
 }

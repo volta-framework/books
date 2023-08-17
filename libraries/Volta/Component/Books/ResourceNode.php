@@ -25,6 +25,7 @@ class ResourceNode extends Node
 
 
     /**
+     * Returns the index in the list
      * @return int
      */
     public function getIndex(): int
@@ -52,7 +53,7 @@ class ResourceNode extends Node
     /**
      * A ResourceNode can not contain other nodes therefor it wil return an empty array
      *
-     * @return array<mixed, mixed>
+     * @return array<string, DocumentNode>
      */
     public function getChildren(): array
     {
@@ -65,7 +66,7 @@ class ResourceNode extends Node
     protected array $_siblings;
 
     /**
-     * @return NodeInterface[]
+     * @return ResourceNode[]
      */
     public function getSiblings(): array
     {
@@ -76,7 +77,7 @@ class ResourceNode extends Node
                 if (!$fileInfo->isFile()) continue;
                 try {
                     $sibling = Node::factory($fileInfo->getPathname());
-                    if (is_a($sibling, static::class)) {
+                    if ($sibling->isResource()) {
                         $this->_siblings[$sibling->getAbsolutePath()] = $sibling;
                     }
                 } catch (Exception|DocumentNodeException|ResourceNodeException $e) {
@@ -88,9 +89,9 @@ class ResourceNode extends Node
         return $this->_siblings;
     }
 
-    protected null|NodeInterface $_next;
+    protected null|ResourceNode $_next;
 
-    public function getNext(): null|NodeInterface
+    public function getNext(): null|ResourceNode
     {
         if (!isset($this->_next)) {
             $this->_next = null;
@@ -107,12 +108,12 @@ class ResourceNode extends Node
     }
 
 
-    protected null|NodeInterface $_previous;
+    protected null|ResourceNode $_previous;
 
     /**
      * @throws Exception
      */
-    public function getPrevious(): null|NodeInterface
+    public function getPrevious(): null|ResourceNode
     {
         if (!isset($this->_previous)) {
             $this->_previous = null;

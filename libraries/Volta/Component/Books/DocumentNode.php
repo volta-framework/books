@@ -23,6 +23,8 @@ class DocumentNode extends Node
 {
 
     /**
+     * Returns the index in the list
+     *
      * @return int
      * @throws Exception
      */
@@ -60,7 +62,7 @@ class DocumentNode extends Node
     protected array $_children;
 
     /**
-     * @return array<string, NodeInterface>
+     * @return array<string, DocumentNode>
      */
     public function getChildren(): array
     {
@@ -83,15 +85,71 @@ class DocumentNode extends Node
     }
 
     /**
-     * @var NodeInterface|null Lazy load memory cache
+     * @var array<string, ResourceNode>
      */
-    protected null|NodeInterface $_next;
+    private array $_resources;
 
     /**
-     * @return NodeInterface|null
+     * @return array<string, ResourceNode>
      * @throws Exception
      */
-    public function getNext(): null|NodeInterface
+    public function getResources(): array
+    {
+        if(!isset($this->_resources)) {
+            $this->_resources = [];
+
+            // loop through files in this directory and subdirectories which are not DocumentNodes
+            $flags = \FilesystemIterator::SKIP_DOTS;
+            $dir = new \DirectoryIterator($this->getAbsolutePath());
+            foreach ($dir as $file) {
+                if($file->isDir()) {
+                    try {
+                        $docNode = Node::factory($file->getPathname());
+                        continue;
+                    } catch(Exception $e){
+
+                        // recursive iterate
+                        $dir = new \RecursiveDirectoryIterator($file->getPathname(), $flags);
+                        $files = new \RecursiveIteratorIterator($dir);
+                        foreach ($files as $resourceFile) {
+                            try {
+                                $resource = Node::factory($resourceFile->getPathname());
+                            } catch(Exception $e){
+                                continue;
+                            }
+                            $this->_resources[] = $resource;
+                        }
+
+                    }
+                } else {
+                    if (strtolower($file->getFilename()) === 'meta.json') continue;
+                    if (str_starts_with($file->getFilename(), '_')) continue;
+                    if (str_starts_with($file->getFilename(), '.')) continue;
+                    if (preg_match('/^content\..*/', $file->getFilename())) continue;
+                    try {
+                        $resource = Node::factory($file->getPathname());
+                    } catch (Exception $e) {
+                        continue;
+                    }
+                    $this->_resources[] = $resource;
+                }
+
+            }
+
+        }
+        return $this->_resources;
+    }
+
+    /**
+     * @var DocumentNode|null Lazy load memory cache
+     */
+    protected null|DocumentNode $_next;
+
+    /**
+     * @return DocumentNode|null
+     * @throws Exception
+     */
+    public function getNext(): null|DocumentNode
     {
         // lazy load, do cache the result
         if (!isset($this->_next)) {
@@ -136,7 +194,11 @@ class DocumentNode extends Node
      */
     public function getContent(): string
     {
-        return $this->_getContentParser()->getContent($this->getContentFile(), $this);
+        return str_replace(
+            [ '{{URI_OFFSET}}'],
+            [Node::$uriOffset . $this->getUri()],
+            $this->_getContentParser()->getContent($this->getContentFile(), $this)
+        );
     }
 
     /**

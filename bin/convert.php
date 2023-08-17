@@ -9,19 +9,45 @@
  */
 declare(strict_types=1);
 
+use Psr\Log\LoggerInterface;
+use Psr\Log\LogLevel;
 use Volta\Component\Books\BookNode;
 use Volta\Component\Books\Epub;
 use Volta\Component\Books\Node;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-class tempLogger implements \Psr\Log\LoggerInterface
+class tempLogger implements LoggerInterface
 {
     use Psr\Log\LoggerTrait;
-
     public function log($level, \Stringable|string $message, array $context = []): void
     {
-        fwrite(STDOUT, sprintf("%-10s %s\n", $level, $message));
+
+        $w = 120;
+        switch ($level) {
+            case LogLevel::CRITICAL: // no break
+            case LogLevel::ERROR :
+                fwrite(STDOUT, sprintf("\n\t\e[31m%s\e[0m\n", wordwrap($message, $w, "\n\t")));
+                break;
+
+            case LogLevel::ALERT: // no break;
+            case LogLevel::WARNING :
+                fwrite(STDERR, sprintf("\n\t\e[33m%s\e[0m", wordwrap($message, $w, "\n\t")));
+                break;
+
+            case LogLevel::DEBUG :
+                fwrite(STDOUT, sprintf("\e[32m%-10s%s\e[0m", $level, wordwrap($message, $w, "\n\t")));
+                break;
+
+            default:
+                fwrite(STDOUT, sprintf("%-10s%s", $level, wordwrap($message, $w, "\n           ")));
+
+        }
+        if (!empty($context[0])) {
+            fwrite(STDOUT, sprintf("\n         \e[3m\e[90m (%s) \e[0m\n", $context[0] ?? 'no context'));
+        } else {
+            fwrite(STDOUT, "\n");
+        }
     }
 }
 
@@ -58,13 +84,18 @@ try {
         exit(1);
     }
 
-    $epub = new Epub();
-    $epub->setLogger(new  tempLogger());;
-    $epub->export($book, $destination, __DIR__ . '/../templates/epub.phtml');
+
+    /*
+     * Add the book, template, style and the logger instance to the epub instance. Then export the generated epub to the
+     * $destination location passed as an argument to this script. In this folder there will be a sub folder called
+     * "src" ( retrieved through the function  $epub->getSourceDir() )  which will contains the uncompressed epub files.
+     */
+    $epub = new Epub($book,  __DIR__ . '/../templates/epub-book.phtml',  __DIR__ . '/../public/assets/css/epub-book.css' );
+    $epub->setLogger($logger);;
+    $epub->export($destination);
 
 
-    if(is_file(__DIR__ . '/converted.epub')) unlink(__DIR__ . '/converted.epub');
-    shell_exec('zip converted.epub ' . $destination .'* ');
+    fwrite(STDOUT, "\n\n");
 
 } catch(\Throwable $e) {
     $logger->error($e->getMessage());

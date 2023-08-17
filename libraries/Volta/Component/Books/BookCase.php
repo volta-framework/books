@@ -61,14 +61,14 @@ class BookCase
      */
     public function addBook(string $bookIndex, string $absolutePath): NodeInterface
     {
-        $bookNode = Node::factory($absolutePath);
+        $node = Node::factory($absolutePath);
 
-        if (!is_a($bookNode, BookNode::class))
+        if (!$node->isBook())
             throw new Exception(sprintf('Cannot add the book "%s" (Path does not point to a book)', $bookIndex));
 
-        $bookNode->setUrlOffset($bookIndex);
-        $this->_shelf[$bookIndex] = $bookNode;
-        return $bookNode;
+        $node->setUrlOffset($bookIndex);
+        $this->_shelf[$bookIndex] = $node;
+        return $node;
     }
 
     /**
@@ -121,6 +121,11 @@ class BookCase
         Node::$uriOffset = $bookIndex;
         $book = $this->_shelf[$bookIndex];
         $page =  str_replace(Node::$uriOffset, '', $page);
+
+        // If a DocumentNode is requested there will be no ending slash which is needed for the
+        // relative URI in the page. This means if the request ends with a file extension
+
+
         $node = $book->getChild($page);
 
         //if the node is not found return a 404
@@ -131,7 +136,7 @@ class BookCase
         }
 
         // if the requested node is a resource pass through
-        if (is_a($node,  ResourceNode::class)) {
+        if ($node->isResource()) {
             if ($node->getContentType() ===  ResourceNode::MEDIA_TYPE_NOT_SUPPORTED) {
                 header('HTTP/1.0 415 Media-type not supported');
                 return;
@@ -163,6 +168,8 @@ class BookCase
                 echo $cachedNode->get();
                 echo "\n<!-- Retrieved from cache in:  " . number_format(microtime(true) - $start, 10) . " seconds -->";
             } else {
+
+                $uriOffset =
                 ob_start();
                 include $this->getPageTemplate();
                 $cachedNode->set(ob_get_contents());
