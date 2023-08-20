@@ -33,7 +33,7 @@ if (!isset($node))  return 'placeholder $node not set.';
     <main>
         <ul id="favorites">
             <li><a href="<?= $node->getRoot()->getUri();?>">Home</a></li>
-            <li><a href="<?= $node->getRoot()->getUri();?>index">Index</a></li>
+            <li><a href="<?= $node->getRoot()->getUri();?>index/">Index</a></li>
         </ul>
 
         <?php try { ?>

@@ -58,6 +58,7 @@ class Epub implements LoggerAwareInterface
      */
     public function export(string $destination): bool
     {
+
         $this->getLogger()->notice('#1 SETUP');
         $this->_setup();
 
@@ -84,6 +85,7 @@ class Epub implements LoggerAwareInterface
 
     #region - #1 Setup and Teardown
 
+    private int $_oldPublishingMode = 0;
     /**
      * Setup environment for creating the EPUB
      *
@@ -91,6 +93,9 @@ class Epub implements LoggerAwareInterface
      */
     private function _setup():void
     {
+        $this->_oldPublishingMode = Settings::getPublishingMode();
+        Settings::setPublishingMode(Settings::PUBLISHING_EPUB);
+
         $this->getLogger()->info('Set temporarily error handler', [__METHOD__]);
         $errorHandler = function(int $code, string $message, null|string $file = null, null|int $line = null, null|array $context = null ): bool {
             $this->getLogger()->error("$message in $file @ $line");
@@ -118,6 +123,8 @@ class Epub implements LoggerAwareInterface
     private function _teardown():void
     {
         $this->getLogger()->info('Restore error and exception handler', [__METHOD__]);
+
+        Settings::setPublishingMode($this->_oldPublishingMode);
         restore_error_handler();
         restore_exception_handler();
     }
@@ -221,11 +228,7 @@ class Epub implements LoggerAwareInterface
      */
     private function _createEpubContent(): void
     {
-        // - build manifest
-        $manifest = [];
-        $this->_createManifest($this->_book,  $manifest);
-
-        // build the metadata file
+        // build the opf data
         $xml = [];
         $xml[] = '<?xml version="1.0" encoding="UTF-8"?>';
         $xml[] = '<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="pub-id">';
@@ -233,20 +236,23 @@ class Epub implements LoggerAwareInterface
         $xml[] = '    <dc:identifier id="pub-id" opf:scheme="uuid">' .$this->_bookId . '</dc:identifier>';
         $xml[] = '    <meta refines="#pub-id" property="identifier-type" scheme="xsd:string">uuid</meta>';
         $xml[] = '    <meta property="dcterms:modified">2014-04-04T14:09:43Z</meta>';
-
         $xml[] = '    <dc:title id="title1">' . $this->_book->getName() . '</dc:title>';
         $xml[] = '    <meta refines="#title1" property="title-type">main</meta>';
         $xml[] = '    <meta refines="#title1" property="display-seq">1</meta>';
-
         $xml[] = '    <dc:language>e' . $this->_book->getMeta()->get('language', 'en-US'). '</dc:language>';
-
-
         $xml[] = '    <dc:creator opf:file-as="' .$this->_book->getMeta()->get('author', 'anonymous'). '" opf:role="aut">' .$this->_book->getMeta()->get('author', 'anonymous'). '</dc:creator>';
         $xml[] = '  </metadata>';
         $xml[] = '  <manifest>';
+
+        // - build manifest
+        $manifest = [];
+        $this->_createManifest($this->_book,  $manifest);
         foreach($manifest as $item) {
             $xml[] = '    <item id="'.$item['id'].'" href="'.$item['href'].'" media-type="'.$item['media-type'].'"/>';
         }
+
+
+        // add special entries
         $xml[] = '    <item id="cover" properties="cover-image" href="cover.png" media-type="image/png" />';
         $xml[] = '    <item id="ncx" href="' . $this->_tocFileName . '" media-type="application/x-dtbncx+xml"/>';
         $xml[] = '  </manifest>';
@@ -266,17 +272,24 @@ class Epub implements LoggerAwareInterface
     }
 
 
+
+    /**
+     * Create all the content files and stores the in the manifest array
+     * @param NodeInterface $node
+     * @param array $manifest
+     * @return void
+     */
     private function _createManifest(NodeInterface $node, array &$manifest): void
     {
         foreach($this->_book->getList() as $node) {
-
-            $file = $this->_getFileName($node);;
-            $manifest[] = [
+            $file = $this->_getFileName($node);
+            $manifest[$node->getUri()] = [
                 'id' => $this->_getResourceId($node),
                 'href' => $file,
                 'media-type' => 'application/xhtml+xml'
             ];
             $fh = fopen($this->getSourceDir() . $file, 'w');
+            $level = count(explode('/', $node->getUri())) -1;
 
             ob_start();
             include $this->_template;
@@ -293,7 +306,7 @@ class Epub implements LoggerAwareInterface
 
             foreach($node->getResources() as $resource) {
                 $file = $this->_getFileName($resource);;
-                $manifest[] = [
+                $manifest[$resource->getUri()] = [
                     'id' => $this->_getResourceId($resource),
                     'href' =>  $file,
                     'media-type' => $resource->getContentType()
@@ -332,18 +345,15 @@ class Epub implements LoggerAwareInterface
             $addToNavMap($child, 0);
         }
 
-        $head = [];
-        $head[] = '    <meta name="dtb:uid" content="'.$this->_bookId.'"/>';
-        $head[] = '    <meta name="dtb:depth" content="'.$depth.'"/>';
-        $head[] = '    <meta name="dtb:generator" content="Volta Books"/>';
-        $head[] = '    <meta name="dtb:totalPageCount" content="0"/>';
-        $head[] = '    <meta name="dtb:maxPageNumber" content="0"/>';
-
         $xml = [];
         $xml[] = '<?xml version="1.0" encoding="utf-8"?>';
         $xml[] = '<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1" xml:lang="enl">';
         $xml[] = '  <head>';
-        $xml = array_merge($xml, $head);
+        $xml[] = '    <meta name="dtb:uid" content="'.$this->_bookId.'"/>';
+        $xml[] = '    <meta name="dtb:depth" content="'.$depth.'"/>';
+        $xml[] = '    <meta name="dtb:generator" content="Volta Books"/>';
+        $xml[] = '    <meta name="dtb:totalPageCount" content="0"/>';
+        $xml[] = '    <meta name="dtb:maxPageNumber" content="0"/>';
         $xml[] = '  </head>';
         $xml[] = '  <docTitle>';
         $xml[] = '    <text>'.$this->_book->getMeta()->get('title', $this->_book->getName()).'</text>';
@@ -382,8 +392,6 @@ class Epub implements LoggerAwareInterface
         if(copy($coverFile->getAbsolutePath(),$this->getSourceDir() . 'cover.png')) {
             $this->getLogger()->info('Successfully copied cover file');
         }
-
-
     }
 
     #endregion
@@ -399,12 +407,11 @@ class Epub implements LoggerAwareInterface
     private function _zipIt(): void
     {
         $epubFileName = $this->_book->getName()  . '.epub';
-
         if(is_file( $this->getDestination() . $epubFileName)) unlink(__DIR__ . DIRECTORY_SEPARATOR . $epubFileName);
         $this->getlogger()->info("Try to Creat epub file " . $this->getDestination() . $epubFileName . " from  " . $this->getSourceDir());
-        $cmd = 'zip ' . $this->getDestination() . $epubFileName .$this->getSourceDir() .'* ';
-        shell_exec($cmd);
-
+        $cmd = "cd {$this->getSourceDir()}; pwd; zip -r ../{$epubFileName} .";
+        $this->getlogger()->info($cmd);
+        echo shell_exec($cmd);
     }
 
     #endregion
@@ -432,17 +439,17 @@ class Epub implements LoggerAwareInterface
      */
     private function _getFileName(NodeInterface $node):string
     {
-        if ($node->isDocument()) {
+        if ($node->isDocument() ) {
             if (!is_dir($this->getSourceDir() . $this->_getContentDir() . $node->getRelativePath())) {
                 mkdir($this->getSourceDir() . $this->_getContentDir() . $node->getRelativePath(), 0777, true);
-                $this->getLogger()->debug('Created ' . $this->_getContentDir() . $node->getRelativePath());
+                //$this->getLogger()->debug('Created ' . $this->_getContentDir() . $node->getRelativePath());
             }
             $name = str_replace(DIRECTORY_SEPARATOR . DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR, $this->_getContentDir() . trim($node->getRelativePath(), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'content.xhtml');
 
         } else {
             if (!is_dir($this->getSourceDir() . $this->_getContentDir() . dirname($node->getRelativePath()))) {
                 mkdir($this->getSourceDir() . $this->_getContentDir() . dirname($node->getRelativePath()), 0777, true);
-                $this->getLogger()->debug('Created ' . $this->_getContentDir() . $node->getRelativePath());
+                //$this->getLogger()->debug('Created ' . $this->_getContentDir() . $node->getRelativePath());
             }
             $name = str_replace(DIRECTORY_SEPARATOR . DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR, $this->_getContentDir() . trim($node->getRelativePath(), DIRECTORY_SEPARATOR));
         }

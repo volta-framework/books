@@ -139,6 +139,7 @@ abstract class Settings
     }
 
     // -----------------------------------------------------------------------------------------------------------
+    #region - Caching settings
 
     /**
      * Cache object reference Set to private to enforce the use of the
@@ -164,6 +165,23 @@ abstract class Settings
     public static function setCache(CacheItemPoolInterface $cachePool):void
     {
         Settings::$_cachePool = $cachePool;
+    }
+
+    #endregion
+    // -----------------------------------------------------------------------------------------------------------
+
+    const PUBLISHING_WEB = 1;
+    const PUBLISHING_EPUB = 2;
+
+    private static int $_publishingMode = Settings::PUBLISHING_WEB;
+
+    public static function setPublishingMode(int $publishingMode) : void
+    {
+        Settings::$_publishingMode  = $publishingMode;
+    }
+    public static function getPublishingMode(): int
+    {
+        return  Settings::$_publishingMode;
     }
 
 

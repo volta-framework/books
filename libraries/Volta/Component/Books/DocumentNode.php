@@ -66,19 +66,13 @@ class DocumentNode extends Node
      */
     public function getChildren(): array
     {
-
-
-
         if (!isset($this->_children)) {
-            echo "{$this->getType()} - {$this->getAbsolutePath()}";
             $this->_children = [];
             $dir  = new DirectoryIterator($this->getAbsolutePath());
             foreach($dir as $fileInfo) {
                 if ($fileInfo->isDot()) continue;
                 if (!$fileInfo->isDir()) continue;
                 try {
-
-
                     $child = Node::factory($fileInfo->getPathname());
                     $this->_children[$child->getAbsolutePath()] = $child;
                 } catch (Exception|DocumentNodeException|ResourceNodeException $e) {
@@ -123,7 +117,7 @@ class DocumentNode extends Node
                             } catch(Exception $e){
                                 continue;
                             }
-                            $this->_resources[] = $resource;
+                            $this->_resources[$resource->getUri()] = $resource;
                         }
 
                     }
@@ -137,7 +131,7 @@ class DocumentNode extends Node
                     } catch (Exception $e) {
                         continue;
                     }
-                    $this->_resources[] = $resource;
+                    $this->_resources[$resource->getUri()] = $resource;
                 }
 
             }

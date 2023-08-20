@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace Volta\Component\Books\ContentParsers\XhtmlParser\Elements;
 
 use Volta\Component\Books\ContentParsers\XhtmlParser\Element as BaseElement;
+use Volta\Component\Books\Settings;
 
 /**
  * XHTML tag
@@ -27,11 +28,14 @@ class Php extends BaseElement
      */
     public function onTranslateStart(): string
     {
-        return PHP_EOL .'<pre>';
+        return PHP_EOL;
     }
+
+    private string $_data = '';
     public function onTranslateData(string $data) : string
     {
-        return highlight_string($data, true);
+        $this->_data .= $data;
+        return '';
     }
 
     /**
@@ -39,7 +43,11 @@ class Php extends BaseElement
      */
     public function onTranslateEnd(): string
     {
-        return '</pre>';
+        $this->_data = highlight_string("<?php\n" . trim($this->_data, "\n\r\0\x0B"), true);
+        if (Settings::getPublishingMode() === Settings::PUBLISHING_EPUB) {
+            $this->_data = str_replace(['&nbsp;'], [' '], $this->_data);
+        }
+        return trim($this->_data, "\n\r\0\x0B");
     }
 
 } // class

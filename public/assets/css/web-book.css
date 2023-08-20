@@ -49,7 +49,9 @@ blockquote{border: 1px solid var(--info-color); border-left-width: 4px; border-r
 blockquote.note{border-color: var(--note-color) }
 blockquote.error{border-color: var(--error-color); color:var(--error-color);}
 pre{border: 1px solid var(--main-border-color);   border-radius: 5px !important;  }
-code:not(pre > code) { border: 1px solid var(--main-border-color); padding: 4px;color: var(--code-bg-color); border-radius: 5px !important; }
+code:not(pre > code) { display:block;border: 1px solid var(--main-border-color); padding: 4px; border-radius: 5px; background-color: var(--box-bg-color)}
+code:is(p > code) { border: 1px solid var(--main-border-color); padding: 4px;color: var(--code-bg-color); border-radius: 5px !important; }
+
 var {font-family: "Courier New", serif;}
 
 /* Quiz (in main section) */

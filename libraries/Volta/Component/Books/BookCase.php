@@ -120,11 +120,6 @@ class BookCase
         Node::$uriOffset = $bookIndex;
         $book = $this->_shelf[$bookIndex];
         $page =  str_replace(Node::$uriOffset, '', $page);
-
-        // If a DocumentNode is requested there will be no ending slash which is needed for the
-        // relative URI in the page. This means if the request ends with a file extension
-
-
         $node = $book->getChild($page);
 
         //if the node is not found return a 404
@@ -146,6 +141,11 @@ class BookCase
             exit(0);
         }
 
+        if (!str_ends_with($page, '/'))
+        {
+            //header("HTTP/1.1 301 Moved Permanently");
+            //header('Location: '. $bookIndex . $page . '/');
+        }
         // cache pages for speed if the node can be cached
         $start = microtime(true);
 

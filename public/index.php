@@ -45,8 +45,7 @@ try {
     /**
      * when using the cli-server serve static pages by returning false
      */
-    if (is_file(__DIR__ . $uri) && php_sapi_name() === 'cli-server')
-        return false;
+    if (is_file(__DIR__ . $uri) && php_sapi_name() === 'cli-server') return false;
 
     /**
      * initialize a cache pool. place comment markers before the line to disable the cache
@@ -57,8 +56,8 @@ try {
      * configure our BookCase and add some books
      */
     $bs = new BookCase(__DIR__ . '/../templates/web-book.phtml');
-    //$bs->addBook('', '/home/rob/Development/PHP-REPOSITORIES/volta-framework/documentation/VoltaCookbook');
-    $bs->addBook('', 'C:\rob\DocumentenLokaal\volta-framework\documentation\VoltaCookbook');
+    $bs->addBook('', '/home/rob/Development/PHP-REPOSITORIES/volta-framework/documentation/VoltaCookbook');
+    //$bs->addBook('', 'C:\rob\DocumentenLokaal\volta-framework\documentation\VoltaCookbook');
 
     /**
      * Ask the bookCase to send the content of the requested page of the requested book

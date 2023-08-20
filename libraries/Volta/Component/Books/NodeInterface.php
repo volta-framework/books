@@ -55,7 +55,7 @@ interface NodeInterface
     public function getType(): string;
 
     /**
-     * Shortcut to getType for documents only
+     * Shortcut to getType for documents only(NOTE: a BookNode is a DocumentNode)
      * @return bool
      */
     public function isDocument(): bool;
@@ -91,15 +91,15 @@ interface NodeInterface
     public function getAbsolutePath(): string;
 
     /**
-     * @return NodeInterface|null The parent node
+     * @return DocumentNode|null The parent node
      */
-    public function getParent(): null|NodeInterface;
+    public function getParent(): null|DocumentNode;
 
     /**
      * When null is returned it is the root node
-     * @return NodeInterface
+     * @return DocumentNode
      */
-    public function getRoot(): NodeInterface;
+    public function getRoot(): DocumentNode;
 
     /**
      * Previous sibling, null when it is the first

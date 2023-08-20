@@ -21,7 +21,7 @@ interface ContentParserInterface
     public function getNode(): NodeInterface;
 
     /**
-     * Returns the (parsed) content
+     * Returns the (parsed) content for the selected node
      *
      * @param string $file
      * @param NodeInterface $node

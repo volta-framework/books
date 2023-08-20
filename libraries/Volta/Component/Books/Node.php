@@ -134,7 +134,6 @@ abstract class Node implements NodeInterface
         return $this->getMeta()->get('displayName', ucwords(str_replace(['_', '-'], ' ', $this->getName())));
     }
 
-
     /**
      * {@inheritdoc}
      */
@@ -143,19 +142,28 @@ abstract class Node implements NodeInterface
         return static::class;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function isDocument(): bool
     {
-        return $this->getType() === DocumentNode::class;
+        return is_a($this, DocumentNode::class);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function isBook() : bool
     {
-        return $this->getType() === BookNode::class;
+        return is_a($this, BookNode::class);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function isResource() : bool
     {
-        return $this->getType() === ResourceNode::class;
+        return is_a($this, ResourceNode::class);
     }
 
     /**
@@ -175,9 +183,9 @@ abstract class Node implements NodeInterface
         return $this->_absolutePath;
     }
 
-    protected null|NodeInterface $_parent;
+    protected null|DocumentNode $_parent;
 
-    public function getParent(): null|NodeInterface
+    public function getParent(): null|DocumentNode
     {
         // do this only ones in the live time of this Node
         if (!isset($this->_parent)) {
@@ -198,7 +206,10 @@ abstract class Node implements NodeInterface
                 $possibleParentPath = implode(DIRECTORY_SEPARATOR, $directories);
                 try {
                     $parentNode = Node::factory($possibleParentPath);
-                    if ($parentNode->isDocument()) {
+
+                    // NOTE : we use is_a to suppress code inspection errors
+                    // if (!$parentNode->isDocument()) {
+                    if (is_a($parentNode, DocumentNode::class)) {
                         $this->_parent  = $parentNode;
                         $next = false;
                     }
@@ -254,6 +265,7 @@ abstract class Node implements NodeInterface
             };
 
             // NOTE : we use is_a to suppress code inspection errors
+            //      if (!$currentNode->isBook()) {
             if (!is_a($currentNode, BookNode::class)) {
                 throw new Exception('Unexpected Error, found node is not of type BookNode');
             }
@@ -270,7 +282,6 @@ abstract class Node implements NodeInterface
     public function getList(): array
     {
         $list[] = $this;
-
         foreach($this->getChildren() as $child) {
             $list = array_merge($list, $child->getList());
         }

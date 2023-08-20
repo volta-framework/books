@@ -1,16 +1,41 @@
-.cover-container {
-    margin: 0;
-    padding: 0;
-}
-section.cover {
-    display: block;
-    text-align: center;
-    height: 95%;
-}
-img#coverimage {
-    height: 95%;
+/*
+ Cover image settings
+ Resizes teh cover image to the current window size
+ */
+.cover-container { margin: 0; padding: 0; }
+section.cover { display: block; text-align: center; height: 95%; }
+img#coverimage { height: 95%; }
+/*overrides the previous setting, but only in newer systems that support CSS3 */
+img#coverimage:only-of-type { height: 95vh; }
+
+/*
+
+If you add an explicit line-height to elements, your CSS may break Kobo’s – and possibly others’ – user setting.
+By adding it to body and letting elements inherit from it, this problem is solved.
+
+If you are targeting Kindle, please note the Publishing Guidelines recommends against setting a line-height on body.
+
+@see https://friendsofepub.github.io/eBookTricks/
+
+*/
+body { line-height: 1.5; }
+body * { line-height: inherit; }
+
+/*
+    Sub- and superscript will affect line-height if you just use their dedicated keyword for vertical-align.
+    By decreasing line-height to the minimum value Kindle supports (i.e. 1.2) and using % for vertical-align,
+    we solve this problem and can vertically-align sub- and superscript more accurately.
+*/
+sub {
+    font-size: 0.675em;
+    line-height: 1.2;
+    vertical-align: sub;
+    vertical-align: -20%;
 }
 
-img#coverimage:only-of-type { /*overrides the previous setting, but only in newer systems that support CSS3 */
-    height: 95vh;
+sup {
+    font-size: 0.675em;
+    line-height: 1.2;
+    vertical-align: super;
+    vertical-align: 35%;
 }
