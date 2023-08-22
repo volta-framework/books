@@ -38,7 +38,9 @@ main #favorites { top: -10px;right: -10px; position:relative; display:flex; just
 main #favorites > li{ display: inline-block;  border-left:1px solid var(--main-border-color); border-bottom:1px solid var(--main-border-color); padding:4px var(--padding) 4px var(--padding)}
 
 /** Basic textual markup (in main section) **/
-img {width: 100%; height: auto; margin:auto 0 auto 0; display: block;}
+figure { border:1px solid var(--main-border-color); padding: 5px; border-radius: 5px;}
+figcaption { text-align: center; font-style: italic; font-size: 8pt; color: var(--code-bg-color)}
+img {width: 95%; height: auto; margin:auto; display: block;}
 h1, h2 { border-bottom: 1px solid var(--main-border-color); color:var(--h1-color)}
 a:link, a:visited, a:active, a:hover { color:var(--link-color); text-decoration: none;}
 a:hover {text-decoration: underline;}

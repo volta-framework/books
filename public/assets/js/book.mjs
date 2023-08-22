@@ -29,19 +29,21 @@ export function addPageToc(start = 1 ) // : any
 
       if (child.tagName === 'H' + (level+1)) {
           level++;
-          tocHtml += "<ul>";
+          tocHtml += "<ol>";
       }
       if (start === level) {
          level++;
          continue;
       }
       if (child.tagName === 'H' + level) {
-         child.setAttribute('id', 'id_' + index);
+         if (!child.getAttribute('id')) {
+            child.setAttribute('id', 'id_' + index);
+         }
          tocHtml += `<li>${'  '.repeat((level+2))}<a href="#${child.id}">${child.innerText.trim()}</a>`;
       }
       if (child.tagName === 'H' + (level-1)) {
          level--;
-         tocHtml += "</li></ul>";
+         tocHtml += "</li></ol>";
       }
       index++;
    }

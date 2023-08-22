@@ -12,8 +12,9 @@ declare(strict_types=1);
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 use Volta\Component\Books\BookNode;
-use Volta\Component\Books\Epub;
 use Volta\Component\Books\Node;
+use Volta\Component\Books\Publisher;
+use Volta\Component\Books\Publishers\Epub;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
@@ -70,15 +71,19 @@ try {
         exit(1);
     }
 
-
     /*
      * Add the book, template, style and the logger instance to the epub instance. Then export the generated epub to the
      * $destination location passed as an argument to this script. In this folder there will be a sub folder called
      * "src" ( retrieved through the function  $epub->getSourceDir() )  which will contains the uncompressed epub files.
      */
-    $epub = new Epub($book,  __DIR__ . '/../templates/epub-book.phtml',  __DIR__ . '/../public/assets/css/epub-book.css' );
-    $epub->setLogger($logger);;
-    $epub->export($destination);
+    $publisher = Publisher::factory(Epub::class, [
+        'destination' => $destination,
+    ]);
+    $publisher->addBook('', $book);
+    $publisher->setPageTemplate(__DIR__ . '/../templates/epub-book.phtml');
+    $publisher->setPageStyle(__DIR__ . '/../public/assets/css/epub-book.css');
+    $publisher->setLogger($logger);;
+    $publisher->exportBook('');
 
 
     fwrite(STDOUT, "\n\n");

@@ -57,6 +57,25 @@ class BookNode extends DocumentNode
         return $this;
     }
 
+    protected string $_uuid;
+
+    /**
+     * @return string
+     * @throws Exception
+     */
+    public function getUuid(): string
+    {
+        if(!isset($this->_uuid)) {
+            $this->_uuid = $this->getMeta()->get('uuid', sha1(uniqid('VOLTA', true)));
+        }
+        return $this->_uuid;
+    }
+
+    public function setUuid(string $uuid): BookNode
+    {
+        $this->_uuid = $uuid;
+        return $this;
+    }
 
 
 

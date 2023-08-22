@@ -19,7 +19,7 @@ use Volta\Component\Books\Settings;
  * epub the link wil pointing to a content.xhtml file, If it is published on the web it wil point to
  * the directory.
  */
-class Ref extends BaseElement
+class Node extends BaseElement
 {
 
     private string $_caption = '';
@@ -37,8 +37,8 @@ class Ref extends BaseElement
 
     public function onTranslateEnd(): string
     {
-        $href = $this->getAttribute('href', '/');
-        $title = $this->getAttribute('title', '');
+        $href = $this->getAttribute('path', '/');
+        $title = $this->getAttribute('title', $this->_getNode()->getName());
         $supportedResources = trim(implode('|', array_keys(Settings::getSupportedResources())), '|');
 
         // if it is a resource do nothing...

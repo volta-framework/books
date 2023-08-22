@@ -2,138 +2,70 @@
 /*
  * This file is part of the Volta package.
  *
- * (c) Rob Demmenie <rob@volta-server-framework.com>
+ * (c) Rob Demmenie <rob@volta-framework.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
 declare(strict_types=1);
 
-namespace Volta\Component\Books;
+namespace Volta\Component\Books\Publishers;
 
-use Psr\Cache\InvalidArgumentException;
-use Volta\Component\Books\Exceptions\Exception;
+use Volta\Component\Books\Node;
+use Volta\Component\Books\Publisher;
+use Volta\Component\Books\ResourceNode;
+use Volta\Component\Books\Settings;
 
-/**
- * Represents a collection of BookNodes(books).
- */
-class BookCase
+class Web extends Publisher
 {
 
-    /** @var $_shelf array<string, NodeInterface> */
-    private array $_shelf = [];
-
-
-
     /**
-     * @param string $pageTemplate
-     * @throws Exception
+     * @param array $options
      */
-    public function __construct(string $pageTemplate)
+    protected function __construct(array $options)
     {
+        parent::__construct($options);
+        Settings::setPublishingMode(Settings::PUBLISHING_WEB);
 
-        $this->setPageTemplate($pageTemplate);
-    }
-
-    private string $_pageTemplate;
-
-    public function setPageTemplate(string $pageTemplate): BookCase
-    {
-        if (!is_file($pageTemplate)) {
-            throw new Exception('Invalid page template');
+        if (isset($options['cache'])) {
+            Settings::setCache($options['cache']);
         }
-        $this->_pageTemplate = $pageTemplate;
-        return $this;
-    }
-    public function getPageTemplate(): string
-    {
-        return $this->_pageTemplate;
+
     }
 
 
-    /**
-     * Adds a book to the shelf and returns the BookNode.
-     *
-     * @param string $bookIndex
-     * @param string $absolutePath
-     * @return NodeInterface
-     * @throws Exception When there is no book found in the given path
-     */
-    public function addBook(string $bookIndex, string $absolutePath): NodeInterface
-    {
-        $node = Node::factory($absolutePath);
-        if (!$node->isBook())
-            throw new Exception(sprintf('Cannot add the book "%s" (Path does not point to a book)', $bookIndex));
 
-        $node->setUrlOffset($bookIndex);
-        $this->_shelf[$bookIndex] = $node;
-        return $node;
+
+    public function exportBook(string $bookIndex): bool
+    {
+        return false;
     }
 
-    /**
-     * Returns a book by its name or NULL when not exists
-     *
-     * @param string $bookIndex
-     * @return NodeInterface|null
-     */
-    public function getBook(string $bookIndex): null|NodeInterface
+    public function exportPage(string $bookIndex, string $path): bool
     {
-        if (!isset($this->_shelf[$bookIndex])) return null;
-        return $this->_shelf[$bookIndex];
-    }
-
-    /**
-     * @return array<string, NodeInterface>
-     */
-    public function getBooks(): array
-    {
-        return $this->_shelf;
-    }
-
-    /**
-     * Whether a book exists with the given name
-     *
-     * @param string $bookIndex
-     * @return bool
-     */
-    public function hasBook(string $bookIndex): bool
-    {
-        return isset($this->_shelf[$bookIndex]);
-    }
-
-    /**
-     * @param string $bookIndex
-     * @param string $page
-     * @return void
-     * @throws Exception
-     * @throws Exceptions\CacheException
-     * @throws InvalidArgumentException
-     */
-    public function sendContent(string $bookIndex, string $page): void
-    {
-        if (!isset($this->_shelf[$bookIndex])) {
+        if (!isset($this->_bookCollection[$bookIndex])) {
             header('HTTP/1.0 404 Not found');
             echo "Book '$bookIndex' Not found";
-            return;
+            return false;
         }
 
         Node::$uriOffset = $bookIndex;
-        $book = $this->_shelf[$bookIndex];
-        $page =  str_replace(Node::$uriOffset, '', $page);
+        $book = $this->_bookCollection[$bookIndex];
+        $page =  str_replace(Node::$uriOffset, '', $path);
         $node = $book->getChild($page);
 
         //if the node is not found return a 404
         if (null === $node){
             header('HTTP/1.0 404 Not found');
             echo "Page '$bookIndex/$page' Not found";
-            return;
+            return false;
         }
 
         // if the requested node is a resource pass through
         if ($node->isResource()) {
             if ($node->getContentType() ===  ResourceNode::MEDIA_TYPE_NOT_SUPPORTED) {
                 header('HTTP/1.0 415 Media-type not supported');
-                return;
+                return false;
             }
             header('Content-Type: ' . $node->getContentType());
             header("Content-Length: " . filesize($node->getAbsolutePath()));
@@ -141,7 +73,7 @@ class BookCase
             exit(0);
         }
 
-        if (!str_ends_with($page, '/'))
+        if (!str_ends_with($path, '/'))
         {
             //header("HTTP/1.1 301 Moved Permanently");
             //header('Location: '. $bookIndex . $page . '/');
@@ -169,7 +101,7 @@ class BookCase
             } else {
 
                 $uriOffset =
-                ob_start();
+                    ob_start();
                 include $this->getPageTemplate();
                 $cachedNode->set(ob_get_contents());
                 ob_end_flush();
@@ -179,9 +111,7 @@ class BookCase
             include $this->getPageTemplate();
             echo "\n<!-- generated in:  " . number_format(microtime(true) - $start, 10) . " seconds (page set not be cached)-->";
         }
-
+        return true;
 
     }
-
-
 }

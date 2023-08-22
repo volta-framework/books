@@ -9,61 +9,68 @@
  */
 declare(strict_types=1);
 
-namespace Volta\Component\Books;
+namespace Volta\Component\Books\Publishers;
 
 use FilesystemIterator;
-use Psr\Log\LoggerAwareInterface;
-use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use Volta\Component\Books\BookNode;
 use Volta\Component\Books\Exceptions\Exception;
+use Volta\Component\Books\NodeInterface;
+use Volta\Component\Books\Publisher;
+use Volta\Component\Books\Settings;
 
 
 /**
  * @see https://ebookflightdeck.com/
  * @see https://en.wikipedia.org/wiki/EPUB
  */
-class Epub implements LoggerAwareInterface
+class Epub extends Publisher
 {
 
-    use LoggerAwareTrait;
 
 
-    private BookNode $_book;
-    private string $_template;
-    private string $_style;
-    private string $_bookId;
+
+
     private string $_contentDir = 'OEBPS';
     private string $_metadataFileName = 'metadata.opf';
     private string $_tocFileName = 'toc.ncx';
     private string $_sourceDirName = 'src';
 
-    public function  __construct(BookNode $book, string $template, string $style)
+    public function  __construct(array $options)
     {
-        $this->_book = $book;
-        $this->_template = $template;
-        $this->_style = $style;
-        $this->_bookId = sha1(uniqid('VOLTA', true));
+        parent::__construct($options);
+
+        Settings::setPublishingMode(Settings::PUBLISHING_EPUB);
+
+        $this->_contentDir = $options['contentDir'] ?? 'OEBPS';
+        $this->_metadataFileName  = $options['metadataFileName'] ?? 'metadata.opf';
+        $this->_tocFileName = $options['tocFileName'] ?? 'toc.ncx';
+        $this->_sourceDirName = $options['sourceDirName'] ?? 'src';
+
+        $this->_setDestination($options['destination'] ?? '');
+
     }
+
+    private BookNode $_currentBook;
 
     /**
      * Exports a Volta Book to an epub file
      *
      * @see https://en.wikipedia.org/wiki/EPUB
-     * @param string $destination Existing empty writable directory
      * @return bool True on success, false otherwise
      * @throws Exception When an invalid destination is given
      */
-    public function export(string $destination): bool
+    public function exportBook(string $bookIndex): bool
     {
 
+        $this->_currentBook = $this->getBook($bookIndex);
+        
         $this->getLogger()->notice('#1 SETUP');
         $this->_setup();
 
-        $this->getLogger()->notice('#2 DESTINATION');
-        $this->_setDestination($destination);
 
         $this->getLogger()->notice('#3 OPEN CONTAINER');
         $this->_createOpenContainer();
@@ -83,9 +90,22 @@ class Epub implements LoggerAwareInterface
         return true;
     }
 
+
+    /**
+     * @param string $bookIndex
+     * @param string $path
+     * @return bool
+     * @throws Exception
+     */
+    public function exportPage(string $bookIndex, string $path): bool
+    {
+        throw new Exception(__METHOD__ . ' not implemented in '  . __CLASS__);
+        //return false;
+    }
+
     #region - #1 Setup and Teardown
 
-    private int $_oldPublishingMode = 0;
+
     /**
      * Setup environment for creating the EPUB
      *
@@ -93,9 +113,6 @@ class Epub implements LoggerAwareInterface
      */
     private function _setup():void
     {
-        $this->_oldPublishingMode = Settings::getPublishingMode();
-        Settings::setPublishingMode(Settings::PUBLISHING_EPUB);
-
         $this->getLogger()->info('Set temporarily error handler', [__METHOD__]);
         $errorHandler = function(int $code, string $message, null|string $file = null, null|int $line = null, null|array $context = null ): bool {
             $this->getLogger()->error("$message in $file @ $line");
@@ -123,8 +140,6 @@ class Epub implements LoggerAwareInterface
     private function _teardown():void
     {
         $this->getLogger()->info('Restore error and exception handler', [__METHOD__]);
-
-        Settings::setPublishingMode($this->_oldPublishingMode);
         restore_error_handler();
         restore_exception_handler();
     }
@@ -150,10 +165,10 @@ class Epub implements LoggerAwareInterface
 
     /**
      * @param string $destination
-     * @return self
+     * @return void
      * @throws Exception
      */
-    private function _setDestination(string $destination): self
+    private function _setDestination(string $destination): void
     {
         // Validate the destination directory
         if (!is_dir($destination) || !is_writable($destination)) {
@@ -182,7 +197,6 @@ class Epub implements LoggerAwareInterface
         mkdir($this->_destination . $this->_sourceDirName);
         $this->getLogger()->info('Destination set to ' . $this->_destination);
 
-        return $this;
     }
 
     #endregion
@@ -215,8 +229,8 @@ class Epub implements LoggerAwareInterface
         $this->getLogger()->info('Created ' . 'META-INF'. DIRECTORY_SEPARATOR . 'container.xml');
 
         // creating the required root file(s)
-        if (false === mkdir($this->getSourceDir() . 'OEBPS')) {
-            throw new Exception('Failed to create required directory OEBPS');
+        if (false === mkdir($this->getSourceDir() . $this->_contentDir)) {
+            throw new Exception('Failed to create required directory ' . $this->_contentDir);
         }
     }
     #endregion
@@ -233,20 +247,20 @@ class Epub implements LoggerAwareInterface
         $xml[] = '<?xml version="1.0" encoding="UTF-8"?>';
         $xml[] = '<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="pub-id">';
         $xml[] = '  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">';
-        $xml[] = '    <dc:identifier id="pub-id" opf:scheme="uuid">' .$this->_bookId . '</dc:identifier>';
+        $xml[] = '    <dc:identifier id="pub-id" opf:scheme="uuid">' .$this->_currentBook->getUuid() . '</dc:identifier>';
         $xml[] = '    <meta refines="#pub-id" property="identifier-type" scheme="xsd:string">uuid</meta>';
         $xml[] = '    <meta property="dcterms:modified">2014-04-04T14:09:43Z</meta>';
-        $xml[] = '    <dc:title id="title1">' . $this->_book->getName() . '</dc:title>';
+        $xml[] = '    <dc:title id="title1">' . $this->_currentBook->getName() . '</dc:title>';
         $xml[] = '    <meta refines="#title1" property="title-type">main</meta>';
         $xml[] = '    <meta refines="#title1" property="display-seq">1</meta>';
-        $xml[] = '    <dc:language>e' . $this->_book->getMeta()->get('language', 'en-US'). '</dc:language>';
-        $xml[] = '    <dc:creator opf:file-as="' .$this->_book->getMeta()->get('author', 'anonymous'). '" opf:role="aut">' .$this->_book->getMeta()->get('author', 'anonymous'). '</dc:creator>';
+        $xml[] = '    <dc:language>e' . $this->_currentBook->getMeta()->get('language', 'en-US'). '</dc:language>';
+        $xml[] = '    <dc:creator opf:file-as="' .$this->_currentBook->getMeta()->get('author', 'anonymous'). '" opf:role="aut">' .$this->_currentBook->getMeta()->get('author', 'anonymous'). '</dc:creator>';
         $xml[] = '  </metadata>';
         $xml[] = '  <manifest>';
 
         // - build manifest
         $manifest = [];
-        $this->_createManifest($this->_book,  $manifest);
+        $this->_createManifest($this->_currentBook,  $manifest);
         foreach($manifest as $item) {
             $xml[] = '    <item id="'.$item['id'].'" href="'.$item['href'].'" media-type="'.$item['media-type'].'"/>';
         }
@@ -272,16 +286,16 @@ class Epub implements LoggerAwareInterface
     }
 
 
-
     /**
      * Create all the content files and stores the in the manifest array
      * @param NodeInterface $node
      * @param array $manifest
      * @return void
+     * @throws Exception
      */
     private function _createManifest(NodeInterface $node, array &$manifest): void
     {
-        foreach($this->_book->getList() as $node) {
+        foreach($this->_currentBook->getList() as $node) {
             $file = $this->_getFileName($node);
             $manifest[$node->getUri()] = [
                 'id' => $this->_getResourceId($node),
@@ -292,7 +306,7 @@ class Epub implements LoggerAwareInterface
             $level = count(explode('/', $node->getUri())) -1;
 
             ob_start();
-            include $this->_template;
+            include $this->getPageTemplate();
             $content = ob_get_contents();
             ob_end_clean();
 
@@ -321,6 +335,11 @@ class Epub implements LoggerAwareInterface
 
     #endregion
     #region - #5 Create EPUB TOC
+
+    /**
+     * @return void
+     * @throws Exception
+     */
     private function _createEpubToc(): void
     {
         $navMap = [];
@@ -341,7 +360,7 @@ class Epub implements LoggerAwareInterface
         };
         $addToNavMap->bindTo($this);
 
-        foreach($this->_book->getChildren() as $child) {
+        foreach($this->_currentBook->getChildren() as $child) {
             $addToNavMap($child, 0);
         }
 
@@ -349,14 +368,14 @@ class Epub implements LoggerAwareInterface
         $xml[] = '<?xml version="1.0" encoding="utf-8"?>';
         $xml[] = '<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1" xml:lang="enl">';
         $xml[] = '  <head>';
-        $xml[] = '    <meta name="dtb:uid" content="'.$this->_bookId.'"/>';
+        $xml[] = '    <meta name="dtb:uid" content="'.$this->_currentBook->getUuid().'"/>';
         $xml[] = '    <meta name="dtb:depth" content="'.$depth.'"/>';
         $xml[] = '    <meta name="dtb:generator" content="Volta Books"/>';
         $xml[] = '    <meta name="dtb:totalPageCount" content="0"/>';
         $xml[] = '    <meta name="dtb:maxPageNumber" content="0"/>';
         $xml[] = '  </head>';
         $xml[] = '  <docTitle>';
-        $xml[] = '    <text>'.$this->_book->getMeta()->get('title', $this->_book->getName()).'</text>';
+        $xml[] = '    <text>'.$this->_currentBook->getMeta()->get('title', $this->_currentBook->getName()).'</text>';
         $xml[] = '  </docTitle>';
         $xml[] = '  <navMap>';
         $xml = array_merge($xml, $navMap);
@@ -375,14 +394,14 @@ class Epub implements LoggerAwareInterface
     private function _addResources():void
     {
         // style sheet
-        $cssContent = (is_file($this->_style)) ? file_get_contents($this->_style) : '';
+        $cssContent = file_get_contents($this->getPageStyle());
         $fh = fopen($this->getSourceDir() . 'epub-book.css', 'w');
         fwrite($fh, $cssContent);
         fclose($fh);
         $this->getLogger()->info("Added style");
 
         // cover file if anny otherwise generate default
-        $coverFile = $this->_book->getChild('/cover.png');
+        $coverFile = $this->_currentBook->getChild('/cover.png');
         if (NULL !== $coverFile) {
             $this->getLogger()->debug('Found cover @ ' . $coverFile->getAbsolutePath());
         } else {
@@ -406,7 +425,7 @@ class Epub implements LoggerAwareInterface
      */
     private function _zipIt(): void
     {
-        $epubFileName = $this->_book->getName()  . '.epub';
+        $epubFileName = $this->_currentBook->getName()  . '.epub';
         if(is_file( $this->getDestination() . $epubFileName)) unlink(__DIR__ . DIRECTORY_SEPARATOR . $epubFileName);
         $this->getlogger()->info("Try to Creat epub file " . $this->getDestination() . $epubFileName . " from  " . $this->getSourceDir());
         $cmd = "cd {$this->getSourceDir()}; pwd; zip -r ../{$epubFileName} .";

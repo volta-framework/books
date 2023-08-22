@@ -18,6 +18,9 @@ declare(strict_types=1);
  * all the static resources as well
  */
 use Volta\Component\Books\BookCase;
+use Volta\Component\Books\Cache;
+use Volta\Component\Books\Publisher;
+use Volta\Component\Books\Publishers\Web;
 
 /**
  * As this is an example we want to see all errors.
@@ -48,22 +51,19 @@ try {
     if (is_file(__DIR__ . $uri) && php_sapi_name() === 'cli-server') return false;
 
     /**
-     * initialize a cache pool. place comment markers before the line to disable the cache
+     * configure our Publisher and add some books
      */
-    //Settings::setCache(new Cache(realpath(__DIR__ . '/../__cache')));
-
-    /**
-     * configure our BookCase and add some books
-     */
-    $bs = new BookCase(__DIR__ . '/../templates/web-book.phtml');
-    $bs->addBook('', '/home/rob/Development/PHP-REPOSITORIES/volta-framework/documentation/VoltaCookbook');
-    //$bs->addBook('', 'C:\rob\DocumentenLokaal\volta-framework\documentation\VoltaCookbook');
+    $publisher = Publisher::factory(Web::class, [
+        //'cache' => new  Cache(realpath(__DIR__ . '/../__cache'))
+    ]);
+    //$bs->addBook('', '/home/rob/Development/PHP-REPOSITORIES/volta-framework/documentation/VoltaCookbook');
+    $publisher->addBook('', 'C:\rob\DocumentenLokaal\volta-framework\documentation\VoltaCookbook');
 
     /**
      * Ask the bookCase to send the content of the requested page of the requested book
      */
     // TODO make this a PSR http compliant HTTP message
-    $bs->sendContent('', $uri);
+    $publisher->exportPage('', $uri);
 
 } catch(\Throwable $e) {
 

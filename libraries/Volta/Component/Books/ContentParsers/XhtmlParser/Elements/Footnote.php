@@ -18,12 +18,13 @@ class Footnote  extends BaseElement
 {
 
     protected static array $_footnotes = [];
+    protected string $_ref = '';
 
     private int $_index = 0;
     public function onTranslateStart(): string
     {
-
         $href = $this->getAttribute('href', '') ;
+        $ref = $this->getAttribute('ref', '') ;
 
         $this->_index = count(Footnote::$_footnotes);
         if ($this->_index === 0 ) {
@@ -31,7 +32,7 @@ class Footnote  extends BaseElement
         }
         Footnote::$_footnotes[$this->_index] = [
             'href' => $href,
-            'caption' => ''
+            'caption' => '',
         ];
         return '<em class="footnote">';
     }
