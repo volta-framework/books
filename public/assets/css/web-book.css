@@ -82,6 +82,11 @@ var {font-family: "Courier New", serif;}
 .chuck:before{content: '"'}
 .chuck:after{content: '"'}
 
+.code-snippets{font-size: 8pt;}
+
+.anchor:before{content: '# '}
+.anchor::footnote-call
+
 @media only screen and (max-width: 600px) {
     p {text-align: left; }
     blockquote{margin:0;  word-break: break-all;}

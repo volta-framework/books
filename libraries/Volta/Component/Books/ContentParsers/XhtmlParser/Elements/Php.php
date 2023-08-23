@@ -43,10 +43,21 @@ class Php extends BaseElement
      */
     public function onTranslateEnd(): string
     {
+        // remove leading indentation of each line
+//        $indents = (int) $this->getAttribute('trim', "1");
+//        $lines = explode(PHP_EOL, $this->_data);
+//        foreach($lines as $line){
+//            $this->_data .= ""
+//        }
+
+
         $this->_data = highlight_string("<?php\n" . trim($this->_data, "\n\r\0\x0B"), true);
         if (Settings::getPublishingMode() === Settings::PUBLISHING_EPUB) {
             $this->_data = str_replace(['&nbsp;'], [' '], $this->_data);
         }
+
+
+
         return trim($this->_data, "\n\r\0\x0B");
     }
 
