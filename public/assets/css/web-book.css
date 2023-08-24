@@ -74,7 +74,7 @@ var {font-family: "Courier New", serif;}
 
 /* Footnotes bar (in main section) */
 .footnotes { padding: 20px; font-size: 8pt; margin: 50px 0 0 0 }
-.footnotes:before{ display:block; content: 'Footnotes:'; border-bottom: 1px solid var(--main-border-color);}
+.footnotes:before{ display:block; content: 'FOOTNOTES:'; border-bottom: 1px solid var(--main-border-color);}
 .footnotes li { padding: 5px 0 5px 0 }
 .footnote > sup {padding: 0 0 0 4px; font-size: 8pt;}
 

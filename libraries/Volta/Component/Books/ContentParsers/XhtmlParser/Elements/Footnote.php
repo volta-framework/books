@@ -24,7 +24,6 @@ class Footnote  extends BaseElement
     public function onTranslateStart(): string
     {
         $href = $this->getAttribute('href', '') ;
-        $ref = $this->getAttribute('ref', '') ;
 
         $this->_index = count(Footnote::$_footnotes);
         if ($this->_index === 0 ) {
