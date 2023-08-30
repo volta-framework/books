@@ -14,12 +14,13 @@ namespace Volta\Component\Books\ContentParsers\XhtmlParser;
 use Volta\Component\Books\ContentParsers\XhtmlParser;
 use Volta\Component\Books\ContentParsers\XhtmlParser\Elements\Exception as Exception;
 use Volta\Component\Books\NodeInterface;
+use Volta\Component\Books\Settings;
 
 /**
  * Class Element
  *
  * When a BookNode DocumentNode Node is written in xHTMl each xHTML element is translated through
- * a default element instance or one of its descendent. (Located in the Elements Folder)
+ * a default element instance or one of its descendents. (Located in the Elements Folder)
  *
  * @package Volta\Component\Books\ContentParsers
  * @author Rob <rob@jaribio.nl> 
@@ -38,7 +39,14 @@ class Element
      */
     protected function __construct(string $name, array $attributes, Element|false $parent)
     {
-        $this->_name = $name;
+        $namespaceSeparatorPos = strpos($name, ':');
+        if (false !== $namespaceSeparatorPos) {
+            $this->_nameSpace = substr($name, 0 , $namespaceSeparatorPos);
+            $this->_name = substr($name, $namespaceSeparatorPos);
+        } else {
+            $this->_nameSpace = '';
+            $this->_name = $name;
+        }
         $this->_attributes = $attributes;
         $this->_parent = $parent;
     }
@@ -61,7 +69,23 @@ class Element
      * @ignore (do not show up in generated documentation)
      * @var string
      */
-    protected string $_name;
+    protected readonly string $_nameSpace;
+
+    /**
+     * @return string
+     */
+    public function getNameSpace():string
+    {
+        return $this->_nameSpace;
+    }
+
+    // ----------------------------------------------------------------------
+
+    /**
+     * @ignore (do not show up in generated documentation)
+     * @var string
+     */
+    protected readonly string $_name;
 
     /**
      * @return string
@@ -77,7 +101,7 @@ class Element
      * @ignore (do not show up in generated documentation)
      * @var array<string, string>
      */
-    protected array $_attributes;
+    protected readonly array $_attributes;
 
     /**
      * @return array<string, string>
@@ -187,6 +211,13 @@ class Element
     // ----------------------------------------------------------------------
 
     /**
+     * Store the valid element classnames
+     *
+     * @var array
+     */
+    protected static array $_elementCache = [];
+
+    /**
      * @param string $elementName
      * @param NodeInterface $node
      * @param array<string, string> $attributes
@@ -196,18 +227,40 @@ class Element
      */
     public static function factory(string $elementName, NodeInterface $node, array $attributes = [],   Element|bool $parent=false): Element
     {
-        $elementFile = __DIR__ . DIRECTORY_SEPARATOR . 'Elements' . DIRECTORY_SEPARATOR . ucfirst($elementName) . '.php';
-        $elementClass = Element::class . 's\\' . ucfirst($elementName);
-        if (is_file($elementFile)){
-            $element  = new $elementClass($elementName, $attributes, $parent);
-            $element->_setNode($node);
-            if (is_a($element, Element::class)) {
-                return $element;
+
+        $element = null;
+
+        if (isset(Element::$_elementCache[$elementName])) {
+            $elementClass = Element::$_elementCache[$elementName];
+            $element = new $elementClass($elementName, $attributes, $parent);
+
+        } else {
+            $namespaceSeparatorPos = strpos($elementName, ':');
+            if (false !== $namespaceSeparatorPos) {
+                $namespacePrefix = substr($elementName, 0, $namespaceSeparatorPos);
+                $elementName = substr($elementName, $namespaceSeparatorPos + 1);
             } else {
-                throw new Exception(sprintf('Element %s not found.', $elementName));
+                $namespacePrefix = '';
+            }
+
+            if (false !== $nameSpace = Settings::getXhtmlNamespace($namespacePrefix)) {
+                $elementFile = $nameSpace[1] . ucfirst($elementName) . '.php';
+                $elementClass = $nameSpace[2] . '\\' . ucfirst($elementName);
+                if (is_file($elementFile)) {
+                    $element = new $elementClass($elementName, $attributes, $parent);
+                    if (!is_a($element, Element::class)) {
+                        throw new Exception(sprintf('Element %s not found.', $elementName));
+                    }
+                    Element::$_elementCache[$elementName] = $elementClass;
+                }
+
             }
         }
-        $element =  new Element($elementName, $attributes, $parent);
+
+        if(null === $element) {
+            $element = new Element($elementName, $attributes, $parent);
+        }
+
         $element->_setNode($node);
         return $element;
     }

@@ -52,7 +52,7 @@ blockquote.note{border-color: var(--note-color) }
 blockquote.error{border-color: var(--error-color); color:var(--error-color);}
 pre{border: 1px solid var(--main-border-color);   border-radius: 5px !important;  }
 code:not(pre > code) { display:block;border: 1px solid var(--main-border-color); padding: 4px; border-radius: 5px; background-color: var(--box-bg-color)}
-code:is(p > code) { border: 1px solid var(--main-border-color); padding: 4px;color: var(--code-bg-color); border-radius: 5px !important; }
+code:is(p > code) { font-size: 11pt; border:0; background-color: transparent; display: inline-block; padding: 4px;color: var(--code-bg-color);   }
 
 var {font-family: "Courier New", serif;}
 
@@ -72,12 +72,13 @@ var {font-family: "Courier New", serif;}
 .quiz .buttons > button{ padding:var(--padding); border:1px solid var(--main-border-color); border-radius: 5px;}
 .quiz .buttons > button:hover{ color: var(--link-color)}
 
-/* Footnotes bar (in main section) */
+/* <volta:footnote> Footnotes bar (in main section) */
 .footnotes { padding: 20px; font-size: 8pt; margin: 50px 0 0 0 }
 .footnotes:before{ display:block; content: 'FOOTNOTES:'; border-bottom: 1px solid var(--main-border-color);}
 .footnotes li { padding: 5px 0 5px 0 }
 .footnote > sup {padding: 0 0 0 4px; font-size: 8pt;}
 
+/**/
 .chuck{ font-size:8pt; font-family: "Courier New", serif; text-align: center}
 .chuck:before{content: '"'}
 .chuck:after{content: '"'}

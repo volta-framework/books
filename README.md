@@ -1,9 +1,10 @@
 # Volta\Component\Books
-Website  given a Book written in the Volta Book Format(VBF) 
+ 
 
 ## Features
 - A portable Book Format
 - Customizable parsers
+- Web and EPUB publisher
 
 ##
 A component which wil treat a collection of directories with a content file and containing resources as a Book. Where each

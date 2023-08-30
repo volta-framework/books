@@ -168,7 +168,10 @@ abstract class Settings
     }
 
     #endregion
+
     // -----------------------------------------------------------------------------------------------------------
+
+    #region - Publishing modes
 
     const PUBLISHING_WEB = 1;
     const PUBLISHING_EPUB = 2;
@@ -184,5 +187,61 @@ abstract class Settings
         return  Settings::$_publishingMode;
     }
 
+    #endregion
+
+    // -----------------------------------------------------------------------------------------------------------
+
+    #region - XHTML Elements namespaces
+
+    /**
+     * A list indexed by the prefix of the XML namespaces with an array where the first index(0)
+     * contains the uri name, the second index(1) the library location with the
+     * class definitions of the elements and the third(2) the PHP namespace of these classes
+     *
+     * @var array
+     */
+    private static array $_xhtmlNamespaces = [
+        'volta' => [
+            'https://volta-framework.com/component-books/xhtml',
+            __DIR__ . '/ContentParsers/XhtmlParser/Elements/',
+           'Volta\Component\Books\ContentParsers\XhtmlParser\Elements'
+        ],
+
+        'v' => [
+            'https://volta-framework.com/component-books/xhtml',
+            __DIR__ . '/ContentParsers/XhtmlParser/Elements/',
+            'Volta\Component\Books\ContentParsers\XhtmlParser\Elements'
+        ]
+    ];
+
+    /**
+     * @param string $prefix
+     * @param string $uri
+     * @param string $libraryDirectory
+     * @return void
+     * @throws XhtmlParser\Exception
+     */
+    public static function addXhtmlNamespace(string $prefix, string $uri, string $libraryDirectory): void
+    {
+        if(!is_dir($libraryDirectory)) {
+            throw new XhtmlParser\Exception('Library for Xhtml namespace elements is not a directory');
+        }
+
+        Settings::$_xhtmlNamespaces[$prefix] = [
+            $uri, $libraryDirectory
+        ];
+
+        // return;
+
+    }
+
+    public static function getXhtmlNamespace(string $prefix): bool|array
+    {
+        if (isset(Settings::$_xhtmlNamespaces[$prefix])) {
+            return Settings::$_xhtmlNamespaces[$prefix];
+        }
+        return false;
+    }
+    #endregion
 
 }

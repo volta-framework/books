@@ -30,7 +30,7 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 /**
- * By including the autoload we have all the classes at our fingertips
+ * By including the autoload, we have all the classes at our fingertips
  */
 require_once __DIR__ . '/../vendor/autoload.php';
 
@@ -46,7 +46,7 @@ try {
     if (false !== ($pos = strpos($uri, '?'))) $uri = substr($uri, 0, $pos);
 
     /**
-     * when using the cli-server serve static pages by returning false
+     * when using the cli-server, serve static pages by returning false
      */
     if (is_file(__DIR__ . $uri) && php_sapi_name() === 'cli-server') return false;
 
@@ -57,13 +57,15 @@ try {
         //'cache' => new  Cache(realpath(__DIR__ . '/../__cache'))
     ]);
     //$bs->addBook('', '/home/rob/Development/PHP-REPOSITORIES/volta-framework/documentation/VoltaCookbook');
-    $publisher->addBook('', 'C:\rob\DocumentenLokaal\volta-framework\documentation\VoltaCookbook');
+    $publisher->addBook('cookbook', 'C:\rob\DocumentenLokaal\volta-framework\documentation\VoltaCookbook');
+    $publisher->addBook('component-books', realpath(__DIR__ . '/../__book'));
+
 
     /**
      * Ask the bookCase to send the content of the requested page of the requested book
      */
     // TODO make this a PSR http compliant HTTP message
-    $publisher->exportPage('', $uri);
+    $publisher->exportPage('component-books', $uri);
 
 } catch(\Throwable $e) {
 

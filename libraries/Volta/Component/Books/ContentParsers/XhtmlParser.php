@@ -17,6 +17,7 @@ use Volta\Component\Books\ContentParsers\XhtmlParser\Element;
 use Volta\Component\Books\ContentParsers\XhtmlParser\Exception;
 use Volta\Component\Books\ContentParserTrait;
 use Volta\Component\Books\NodeInterface;
+use Volta\Component\Books\Settings;
 use XMLParser;
 
 /**
@@ -24,8 +25,8 @@ use XMLParser;
  * 
  * Parses DocumentNode XHTML content and generates html for it.
  * 
- * For each element found the parser checks if a matching Element Class is defined.
- * If not a default Element object is used if found a descendent of the default Element
+ * For each element found, the parser checks if a matching Element Class is defined.
+ * If not a default Element object is used if found, a descendent of the default Element
  * class is used.
  * 
  * An Element translates the starting tag, all data found and the end tag to 
@@ -133,6 +134,11 @@ class XhtmlParser implements ContentParserInterface
         xml_parser_set_option($xmlParser, XML_OPTION_CASE_FOLDING, 0);
         xml_parser_set_option($xmlParser, XML_OPTION_SKIP_WHITE, 1);
 
+
+        xml_set_start_namespace_decl_handler($xmlParser, [$this, 'startNamespaceDeclHandler']);
+        xml_set_end_namespace_decl_handler($xmlParser, [$this, 'endNamespaceDeclHandler']);
+
+
         xml_set_character_data_handler($xmlParser, [$this, 'characterDataHandler']);
         xml_set_default_handler($xmlParser, [$this, 'defaultHandler']);
         xml_set_element_handler($xmlParser, [$this,'elementStartHandler'], [$this,'elementEndHandler']);
@@ -149,16 +155,16 @@ class XhtmlParser implements ContentParserInterface
                 // add root element(xhtml) to the data if not done
                 if ($start ) {
                     $data = ltrim($data);
-                    if (!str_starts_with(strtolower($data), '<xhtml>')) {
-                        $data = '<xhtml>' . $data;
+                    if (!str_starts_with(strtolower($data), '<volta:xhtml')) {
+                        $data = '<volta:xhtml xmlns:volta="https://volta-framework.com/component-books/xhtml">' . $data;
                     }
                     $start = false;
                 }
                 $end = feof($stream);
                 if ($end) {
                     $data = rtrim($data);
-                    if (!str_ends_with(strtolower($data), '</xhtml>')) {
-                        $data .= '</xhtml>' ;
+                    if (!str_ends_with(strtolower($data), '</volta:xhtml>')) {
+                        $data .= '</volta:xhtml>' ;
                     }
                 }
 
@@ -318,6 +324,36 @@ class XhtmlParser implements ContentParserInterface
 
     }
 
+
+    /**
+     * NOTE: this does not seem to work!!!
+     *
+     * @param XMLParser $xmlParser
+     * @param string $prefix
+     * @param string $uri
+     * @return bool|int
+     */
+    public function startNamespaceDeclHandler(XmlParser $xmlParser, string $prefix, string $uri): bool|int
+    {
+        if ($this->_verbose) $this->_content .= "\n<!--startNamespaceDeclHandler: {$prefix} : {$uri}-->\n";
+        $namespace = Settings::getXhtmlNamespace($prefix);
+        if (false === $namespace) {
+            //throw new Exception("$prefix is not recognized as a Volta Books Namespace");
+            return false;
+        }
+
+        if ($namespace[1]  !== $uri) {
+            //throw new Exception("$prefix is not recognized as a Volta Books Namespace");
+            return false;
+        }
+        return 1;
+    }
+
+
+    public function endNamespaceDeclHandler(XmlParser $xmlParser, string $prefix): int
+    {
+        return 1;
+    }
 
     public function getContentType(): string
     {

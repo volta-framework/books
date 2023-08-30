@@ -106,7 +106,7 @@ abstract class Node implements NodeInterface
         // create the relative uri for this node thus without a leading SLUG_SEPARATOR
         $relativeUri = trim(str_replace(DIRECTORY_SEPARATOR, Node::SLUG_SEPARATOR,  $this->getRelativePath()), Node::SLUG_SEPARATOR);
 
-        //if it is a DocumentNode add the trailing slash except for the RootNode
+        //if it is a DocumentNode, add the trailing slash except for the RootNode
         if($this->isDocument() && !$this->isBook()) {
             $relativeUri .= "/";
         }

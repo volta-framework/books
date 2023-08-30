@@ -16,7 +16,7 @@ use Volta\Component\Books\Settings;
 
 /**
  * An internal link. The link may vary based on the export format. In case of DocumentNode in an
- * epub the link wil pointing to a content.xhtml file, If it is published on the web it wil point to
+ *  epub, the link will point to a content.xhtml file, If it is published on the web it will point to
  * the directory.
  */
 class Node extends BaseElement
@@ -37,16 +37,16 @@ class Node extends BaseElement
 
     public function onTranslateEnd(): string
     {
-        $href = $this->getAttribute('path', '/');
+        $href = $this->getAttribute('path',  $this->_getNode()->getUri());
         $title = $this->getAttribute('title', $this->_getNode()->getName());
         $supportedResources = trim(implode('|', array_keys(Settings::getSupportedResources())), '|');
 
-        // if it is a resource do nothing...
+        // if it is a resource, do nothing...
         $matches = [];
         $pattern = "/^.*\.($supportedResources)$/i";
         if (!preg_match($pattern, $href, $matches)) {
 
-            // if it is a document node we need to add a slash if not present
+            // if it is a document node, we need to add a slash if not present
             // find a hashtag first and split the string
             $posHashtag = strpos($href, '#');
             if (false === $posHashtag) {
@@ -67,6 +67,24 @@ class Node extends BaseElement
             // (re)build the hyperlink reference
             $href = $href . $hashtag;
         }
+
+
+        $this->_caption = str_replace(
+            [
+                '{{NAME}}',
+                '{{DISPLAY_NAME}}',
+                '{{INDEX}}',
+                '{{URI}}'
+            ],
+            [
+                $this->_getNode()->getName(),
+                $this->_getNode()->getDisplayName(),
+                $this->_getNode()->getIndex(),
+                $this->_getNode()->getUri()
+            ],
+            $this->_caption
+        );
+
         return  sprintf('<a href="%s" title="%s">%s</a>', $href, $title, $this->_caption);
     }
 }

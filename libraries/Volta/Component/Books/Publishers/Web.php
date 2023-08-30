@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Volta\Component\Books\Publishers;
 
+use Volta\Component\Books\Exceptions\Exception;
 use Volta\Component\Books\Node;
 use Volta\Component\Books\Publisher;
 use Volta\Component\Books\ResourceNode;
@@ -21,6 +22,7 @@ class Web extends Publisher
 
     /**
      * @param array $options
+     * @throws Exception
      */
     protected function __construct(array $options)
     {
@@ -33,14 +35,22 @@ class Web extends Publisher
 
     }
 
-
-
-
+    /**
+     * @param string $bookIndex
+     * @return bool
+     */
     public function exportBook(string $bookIndex): bool
     {
         return false;
     }
 
+    /**
+     * @param string $bookIndex
+     * @param string $path
+     * @return bool
+     * @throws Exception
+     * @throws \Psr\Cache\InvalidArgumentException
+     */
     public function exportPage(string $bookIndex, string $path): bool
     {
         if (!isset($this->_bookCollection[$bookIndex])) {
@@ -54,14 +64,14 @@ class Web extends Publisher
         $page =  str_replace(Node::$uriOffset, '', $path);
         $node = $book->getChild($page);
 
-        //if the node is not found return a 404
+        //if the node is not found, return a 404
         if (null === $node){
             header('HTTP/1.0 404 Not found');
             echo "Page '$bookIndex/$page' Not found";
             return false;
         }
 
-        // if the requested node is a resource pass through
+        // if the requested node is a resource, pass through
         if ($node->isResource()) {
             if ($node->getContentType() ===  ResourceNode::MEDIA_TYPE_NOT_SUPPORTED) {
                 header('HTTP/1.0 415 Media-type not supported');

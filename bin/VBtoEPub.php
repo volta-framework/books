@@ -42,7 +42,7 @@ $logger = new  tempLogger();
 
 try {
     /**
-     * expects the first argument to be the source and the second the destination
+     * expects the first argument to be the source and second the destination
      */
     $source = $argv[1] ?? false;
     $destination = $argv[2] ?? false;
@@ -73,8 +73,8 @@ try {
 
     /*
      * Add the book, template, style and the logger instance to the epub instance. Then export the generated epub to the
-     * $destination location passed as an argument to this script. In this folder there will be a sub folder called
-     * "src" ( retrieved through the function  $epub->getSourceDir() )  which will contains the uncompressed epub files.
+     * $destination location passed as an argument to this script. In this folder, there will be a sub folder called
+     * "src" (retrieved through the function $epub->getSourceDir() )  which will contains the uncompressed epub files.
      */
     $publisher = Publisher::factory(Epub::class, [
         'destination' => $destination,
@@ -84,7 +84,6 @@ try {
     $publisher->setPageStyle(__DIR__ . '/../public/assets/css/epub-book.css');
     $publisher->setLogger($logger);;
     $publisher->exportBook('');
-
 
     fwrite(STDOUT, "\n\n");
 
