@@ -21,7 +21,7 @@ class PhpParser implements ContentParserInterface
 
     public function getContent(string $file, NodeInterface $node, bool $verbose = false): string
     {
-        $this->_node = $node;
+        $this->setNode($node);
         include $file;
         return '';
     }

@@ -14,10 +14,26 @@ namespace Volta\Component\Books;
 trait ContentParserTrait
 {
 
+    /**
+     * @var NodeInterface $_node
+     */
     protected NodeInterface $_node;
 
+    /**
+     * @return NodeInterface
+     */
     public function getNode():NodeInterface
     {
         return $this->_node;
+    }
+
+    /**
+     * @param NodeInterface $node
+     * @return ContentParsers\HtmlParser|ContentParsers\PhpParser|ContentParsers\TxtParser|ContentParsers\XhtmlParser|ContentParserTrait
+     */
+    public function setNode(NodeInterface $node): self
+    {
+        $this->_node = $node;
+        return $this;
     }
 }

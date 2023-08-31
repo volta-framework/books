@@ -15,7 +15,7 @@ use Volta\Component\Books\ContentParserInterface;
 use Volta\Component\Books\ContentParserTrait;
 use Volta\Component\Books\NodeInterface;
 
-class HtmlParser implements ContentParserInterface
+class TxtParser implements ContentParserInterface
 {
     use ContentParserTrait;
 
@@ -27,6 +27,6 @@ class HtmlParser implements ContentParserInterface
 
     public function getContentType(): string
     {
-        return 'text/html';
+        return 'text/plain';
     }
 }

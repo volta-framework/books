@@ -125,7 +125,7 @@ class XhtmlParser implements ContentParserInterface
     public function getContent(string $file, NodeInterface $node, bool $verbose = false): string
     {
         $this->_file = $file;
-        $this->_node = $node;
+        $this->setNode($node);
         $this->_verbose = $verbose;
 
         $xmlParser = xml_parser_create();
