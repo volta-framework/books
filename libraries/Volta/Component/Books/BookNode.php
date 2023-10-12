@@ -19,63 +19,101 @@ use Volta\Component\Books\Exceptions\Exception;
 class BookNode extends DocumentNode
 {
 
-    /**
-     * @var string
-     */
-    protected string $_uriOffset = '';
+
+    #region - Publisher
 
     /**
-     * @return string
+     * @ignore(do not show up in the generated documentation)
+     * @var PublisherInterface $_publisher Internal storage of the active publisher
      */
-    public function getUriOffset(): string
+    protected PublisherInterface $_publisher;
+
+    /**
+     * If not manually set defaults to Publishers\Web
+     *
+     * @return PublisherInterface
+     * @throws Exception
+     */
+    public function getPublisher(): PublisherInterface
     {
-        return $this->_uriOffset;
+        if (!isset($this->_publisher)) {
+            $this->_publisher = Publisher::factory(Publishers\Web::class, []);
+        }
+        return $this->_publisher;
     }
 
     /**
+     * Sets the active publisher either by classname or through a reference to a Publishers object
      *
-     * if we want the absolute uri, we need to add the slash and the
-     * uriOffset(stored in the Root BookNode::$uriOffset)
+     * @param PublisherInterface|string $publisher
+     * @param array $options
+     * @return BookNode
+     * @throws Exception
+     */
+    public function setPublisher(PublisherInterface|string $publisher, array $options = []): BookNode
+    {
+        if (is_string($publisher)) {
+            $this->_publisher = Publisher::factory(Publishers\Web::class, $options);;
+        } else {
+            $this->_publisher = $publisher;
+        }
+
+        return $this;
+    }
+
+
+    #endregion -------------------------------------------------------------------------------------------------------
+    #region - GUID
+
+    /**
+     * @ignore(do not show up in the generated documentation)
+     */
+    private const META_OPTION_GUID = 'GUID';
+
+    /**
+     * @ignore(do not show up in the generated documentation)
+     * @var string $_guid Internal storage of the GUID
+     */
+    protected string $_guid;
+
+    /**
+     * If not set in the Metadata a GUID is generated
      *
-     * NOTE:
-     *     if the uriOffset is not in the correct format hence
-     *     - ending with a SLUG_SEPARATOR or
-     *     - not starting with a SLUG_SEPARATOR, throw an Exception
+     * @return string The GUID
+     * @throws Exception
+     */
+    public function getGuid(): string
+    {
+        if (!$this->getMeta()->has(BookNode::META_OPTION_GUID)) {
+            $this->getMeta()->set(BookNode::META_OPTION_GUID, $this->_createGUID());
+        }
+        return $this->getMeta()->get(BookNode::META_OPTION_GUID);
+    }
+
+    /**
+     * Sets the guid for this book (will be saved in the metadata)
      *
-     * @param string $uriOffset
+     * @param string $guid
      * @return $this
      * @throws Exception
      */
-    public function setUrlOffset(string $uriOffset): BookNode
+    public function setGuid(string $guid): BookNode
     {
-        if ($uriOffset!== '' && !str_starts_with($uriOffset, Node::SLUG_SEPARATOR))
-            throw new Exception('BookNode::uriOffset; must start with a forward slash');
-        if ($uriOffset!== '' &&  str_ends_with($uriOffset, Node::SLUG_SEPARATOR))
-            throw new Exception('BookNode::$uriOffset; can not end with a forward slash');
-        $this->_uriOffset = $uriOffset;
+        $this->getMeta()->set(BookNode::META_OPTION_GUID, $guid);
         return $this;
     }
-
-    protected string $_uuid;
 
     /**
      * @return string
-     * @throws Exception
      */
-    public function getUuid(): string
+    private function _createGUID(): string
     {
-        if(!isset($this->_uuid)) {
-            $this->_uuid = $this->getMeta()->get('uuid', sha1(uniqid('VOLTA', true)));
+        if (function_exists('com_create_guid') === true){
+            return trim(com_create_guid(), '{}');
         }
-        return $this->_uuid;
+        return sprintf('%04X%04X-%04X-%04X-%04X-%04X%04X%04X', mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(16384, 20479), mt_rand(32768, 49151), mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(0, 65535));
     }
 
-    public function setUuid(string $uuid): BookNode
-    {
-        $this->_uuid = $uuid;
-        return $this;
-    }
-
-
+    #endregion -------------------------------------------------------------------------------------------------------
 
 }

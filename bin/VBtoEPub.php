@@ -74,7 +74,7 @@ try {
     /*
      * Add the book, template, style and the logger instance to the epub instance. Then export the generated epub to the
      * $destination location passed as an argument to this script. In this folder, there will be a sub folder called
-     * "src" (retrieved through the function $epub->getSourceDir() )  which will contains the uncompressed epub files.
+     * "libraries" (retrieved through the function $epub->getSourceDir() )  which will contains the uncompressed epub files.
      */
     $publisher = Publisher::factory(Epub::class, [
         'destination' => $destination,

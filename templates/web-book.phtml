@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-if (!isset($node))  return 'placeholder $node not set.';
+if (!isset($node))  return __FILE__ . '  placeholder $node not set.';
 ?>
 <!DOCTYPE html>
 <html lang="<?=$node->getRoot()->getMeta()->get('language', 'en')?>">
@@ -10,7 +10,7 @@ if (!isset($node))  return 'placeholder $node not set.';
 
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <link rel="stylesheet" title="Default" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css">
-    <!--    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/dark.min.css" >-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/dark.min.css" >
     <link rel="stylesheet" href="/assets/css/web-book.css">
 
 </head>
@@ -19,12 +19,12 @@ if (!isset($node))  return 'placeholder $node not set.';
 
     <nav>
         <?php if(null !== $node->getPrevious()): ?>
-            <a href="<?= $node->getPrevious()->getUri();?>"><?= $node->getPrevious()->getDisplayName();?></a>
+            <a href="<?= $node->getPrevious()->getUri(true);?>"><?= $node->getPrevious()->getDisplayName();?></a>
         <?php else: ?>
             <div><!-- placeholder --></div>
         <?php endif; ?>
         <?php if(null !== $node->getNext()): ?>
-            <a href="<?= $node->getNext()->getUri();?>"><?= $node->getNext()->getDisplayName();?></a>
+            <a href="<?= $node->getNext()->getUri(true);?>"><?= $node->getNext()->getDisplayName();?></a>
         <?php else: ?>
             <div><!-- placeholder --></div>
         <?php endif; ?>
@@ -33,7 +33,9 @@ if (!isset($node))  return 'placeholder $node not set.';
     <main>
         <ul id="favorites">
             <li><a href="<?= $node->getRoot()->getUri();?>">Home</a></li>
-            <li><a href="<?= $node->getRoot()->getUri();?>index/">Index</a></li>
+            <?php if ($node->getRoot()->getMeta()->has('index')) { ?>
+                <li><a href="<?= $node->getRoot()->getPublisher()->getUriOffset() . $node->getRoot()->getMeta()->get('index'); ?>">Index</a></li>
+            <?php }; ?>
         </ul>
 
         <?php try { ?>

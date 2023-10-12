@@ -1,6 +1,6 @@
 :root{
     --body-color: darkslategrey;
-    --body-max-width: 840px;
+    --body-max-width: 900px;
     --header-color: lightgrey;
     --main-border-color: lightgrey;
     --footer-color: lightgrey;
@@ -86,9 +86,32 @@ var {font-family: "Courier New", serif;}
 .code-snippets{font-size: 8pt;}
 
 .anchor:before{content: '# '}
-.anchor::footnote-call
+
+
+
+.book-overview {
+    justify-content: center;
+    align-items: center;
+    width:100%;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.book-overview > figure {
+    display: inline-block;
+}
+
+.book-overview > figure > a > img {
+    display: inline-block;
+    width: 200px;
+    /* ratio based on  https://snappa.com/blog/ebook-cover-size/ */
+    height: calc(200px * 1.5);
+}
+
 
 @media only screen and (max-width: 600px) {
     p {text-align: left; }
     blockquote{margin:0;  word-break: break-all;}
+
 }

@@ -22,7 +22,7 @@ class TxtParser implements ContentParserInterface
     public function getContent(string $file, NodeInterface $node, bool $verbose = false): string
     {
         $this->setNode($node);
-        return file_get_contents($file);
+        return '<div style="white-space: pre-wrap;">' . file_get_contents($file) . '</div>';
     }
 
     public function getContentType(): string

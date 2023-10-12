@@ -1,0 +1,50 @@
+<?php
+declare(strict_types=1);
+
+use Volta\Component\Books\PublisherInterface;
+
+/**
+ * @var PublisherInterface $publisher
+ */
+if (!isset($publisher, $uriOffset))  {
+    echo __FILE__ . '  missing placeholders not set.';
+    return;
+}
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Available books</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="stylesheet" href="/assets/css/web-book.css">
+
+</head>
+<body>
+    <header>
+        <h1>Books in this library</h1>
+    </header>
+    <main>
+        <div class="book-overview">
+        <?php try { ?>
+            <?php foreach($publisher->getBooks() as $bookIndex => $book) { ?>
+                <figure>
+                    <a href="<?=$uriOffset . '/' . $bookIndex?>/">
+                    <?php if ($book->getMeta()->has('cover')) { ?>
+                        <img src="<?=$uriOffset . '/' . $bookIndex . '/' . $book->getMeta()->get('cover')?>"/>
+                    <?php } else { ?>
+                        <img src="/assets/media/cover.png"/>
+                     <?php } ?>
+                    </a>
+                    <figcaption><?= $book->getName()?></figcaption>
+                </figure>
+            <?php }?>
+        <?php } catch(Throwable $e) { ?>
+            <blockquote class="error"><?= $e->getMessage(); ?></blockquote>
+        <?php }; ?>
+        </div>
+    </main>
+    <footer></footer>
+</body>
+</html>
+

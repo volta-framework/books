@@ -9,24 +9,32 @@ use Volta\Component\Books\Exceptions\CacheException;
 class Cache implements CacheItemPoolInterface
 {
 
+    protected array $_cacheOptions = [];
+
     /**
      * @var string Directory to cache generated DocumentNodes
      */
     protected readonly string $_cacheDir;
 
+
+
     /**
-     * @param string $cacheDir
+     * @param array $cacheOptions
      * @throws CacheException
      */
-    public function __construct(string $cacheDir)
+    public function __construct(array $cacheOptions = [])
     {
-        if (!is_dir($cacheDir) || !is_writable($cacheDir)) {
+        $this->_cacheOptions = $cacheOptions;
+
+        $cacheDir = realpath($this->_cacheOptions['directory'] ?? false);
+
+        if (false === $cacheDir || !is_dir($cacheDir) || !is_writable($cacheDir)) {
             throw new Exceptions\CacheException('Cache directory invalid');
         }
-        if (!str_ends_with(!str_ends_with($cacheDir, '/'), '/') && !str_ends_with($cacheDir, '\\')) {
-            $cacheDir .= DIRECTORY_SEPARATOR;
-        }
-        $this->_cacheDir = $cacheDir;
+        //if (!str_ends_with(!str_ends_with($cacheDir, '/'), '/') && !str_ends_with($cacheDir, '\\')) {
+        //    $cacheDir .= DIRECTORY_SEPARATOR;
+        //}
+        $this->_cacheDir = $cacheDir . DIRECTORY_SEPARATOR;
     }
 
     protected function _uniqueKey(string $publicKey): string

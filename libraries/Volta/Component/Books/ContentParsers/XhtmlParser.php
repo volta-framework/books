@@ -156,7 +156,7 @@ class XhtmlParser implements ContentParserInterface
                 if ($start ) {
                     $data = ltrim($data);
                     if (!str_starts_with(strtolower($data), '<volta:xhtml')) {
-                        $data = '<volta:xhtml xmlns:volta="https://volta-framework.com/component-books/xhtml">' . $data;
+                        $data = '<volta:xhtml xmlns:volta="https://volta-framework.com/volta-component-books/xhtml">' . $data;
                     }
                     $start = false;
                 }

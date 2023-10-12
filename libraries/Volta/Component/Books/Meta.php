@@ -18,104 +18,170 @@ use Volta\Component\Books\Exceptions\Exception;
  */
 class Meta
 {
+
     /**
+     * @ignore (do show up in generated documentaion)
+     * @var string
+     */
+    protected readonly string $_file;
+
+    /**
+     * @ignore (do show up in generated documentaion)
      * @var string[]
      */
     protected array $_metadata = [];
 
     /**
-     * @param string|null $file
+     * @ignore (do show up in generated documentaion)
+     * @var DocumentNode
+     */
+    protected readonly DocumentNode $_owner;
+
+    /**
+     * @param string $file
+     * @param DocumentNode $owner
      * @throws Exception
      */
-    public function __construct(string|null $file = null)
+    public function __construct(string $file, DocumentNode $owner)
     {
-        if($file !== null) {
-            if (!is_file($file) || !is_readable($file)) {
-                throw new Exception(sprintf('Could not open file "%s"', $file));
-            }
-            $json = file_get_contents($file);
-            if (false === $json) throw new Exception('Could not open Meta.json');
-            $this->_metadata = json_decode($json, true);;
-
-            // todo check for JSON parse errors
+        // get the content of the file
+        if (!is_file($file) || !is_readable($file)) {
+            throw new Exception(sprintf('DocumentNode Meta data file (%s) could not be openend', $file));
         }
+
+        // NOTE:
+        //   file_get_contents() returning false should not happen, see previous tests. And the case of the content being
+        //   something else then plain text is most unlikely because the instantiation wil only be done when a valid
+        //   json is found when creating the DocumentNode see Node::factory().
+        //
+        //   But PHP-stan knows file_get_contents() could return a boolean false in case of a failure and wants us
+        //   to test against it. If not it will give you these annoying messages... As a solution we test
+        //   against boolean false, or we cast the return value to a string to avoid getting these messages.
+        //
+        //   if (false === $json) {
+        //        throw new Exception(sprintf('DocumentNode Meta data file (%s) could not be openend(#)', $file));
+        //   }
+        $json = (string) file_get_contents($file);
+
+        // remove leading and trailing white space
+        $json = trim($json);
+
+        // get the json and cast to an array
+        if (!empty($json)) {
+            $this->_metadata = json_decode($json, true);
+            if (json_last_error()) {
+                throw new Exception(sprintf('DocumentNode Meta data (%s) json parse error: %s', $file, json_last_error_msg()));
+            }
+        }
+
+        // set other properties
+        $this->_file = $file;
+        $this->_owner = $owner;
     }
 
     /**
-     * @param string $key
+     * Returns the value for the option __$option__
+     * @param string $option
      * @param mixed|null $default
      * @return mixed
      * @throws Exception
      */
-    public function get(string $key, mixed $default=null): mixed
+    public function get(string $option, mixed $default=null): mixed
     {
-        $keys = explode('.', $key);
+        $options = explode('.', $option);
         $current = &$this->_metadata;
-        for($keyIndex = 0; $keyIndex < count($keys); $keyIndex++){
-            if (!is_array($current) || !isset($current[$keys[$keyIndex]])) {
+        for($optionIndex = 0; $optionIndex < count($options); $optionIndex++){
+            if (!is_array($current) || !isset($current[$options[$optionIndex]])) {
                 if (null===$default) {
-                    throw new Exception(sprintf('Option "%s" not found in and no default value provided.', $key));
+                    throw new Exception(sprintf('DocumentNode Meta(~/%s) option "%s" not found and no default value provided.', $this->getOwner()->getRelativePath(), $option));
                 }
                 return $default;
             }
-            $current = &$current[$keys[$keyIndex]];
+            $current = &$current[$options[$optionIndex]];
         }
         return $current;
     }
 
     /**
-     * @param string $key
+     * Set the option in the metadata file.
+     *
+     * @param string $option
      * @param mixed $value
      * @param bool $overWrite
      * @return $this
      * @throws Exception
      */
-    public function set(string $key, mixed $value, bool $overWrite=false ): Static
+    public function set(string $option, mixed $value, bool $overWrite=false ): self
     {
-        if ($this->has($key) && !$overWrite) {
-            throw new Exception(sprintf('Key "%s" already set', $key));
+        if ($this->has($option) && !$overWrite) {
+            throw new Exception(sprintf('DocumentNode Meta(~/%s) option "%s" already set', $this->getOwner()->getRelativePath(), $option));
         }
-        $keys = explode('.', $key);
+        if (!is_writable($this->_file)) {
+        throw new Exception(sprintf('DocumentNode Meta(~/%s) is not writable', $this->getOwner()->getRelativePath()));
+        }
+        $options = explode('.', $option);
         $current = &$this->_metadata;
-        for($keyIndex = 0; $keyIndex < count($keys); $keyIndex++){
-            if (!isset($current[$keys[$keyIndex]])) {
+        for($optionIndex = 0; $optionIndex < count($options); $optionIndex++){
+            if (!isset($current[$options[$optionIndex]])) {
                 if (!is_array($current)) $current = [];
-                $current[$keys[$keyIndex]] = [];
+                $current[$options[$optionIndex]] = [];
             }
-            $current = &$current[$keys[$keyIndex]];
+            $current = &$current[$options[$optionIndex]];
         }
-        $old = $current;
+        //$old = $current;
         $current = $value;
+
+        // save metadata
+        $fh = fopen($this->_file, 'w');
+        fwrite( $fh, json_encode($this->_metadata, JSON_PRETTY_PRINT));
+        fclose($fh);
+
         return $this;
     }
 
     /**
-     * @param string $key
-     * @return bool
+     * Checks if  the option __$option__ exists.
+     * @param string $option
+     * @return bool TRUE when the option exists, false otherwise
      */
-    public function has(string $key): bool
+    public function has(string $option): bool
     {
-        $keys = explode('.', $key);
+        $options = explode('.', $option);
         $current = &$this->_metadata;
-        for($keyIndex = 0; $keyIndex < count($keys); $keyIndex++){
-            if (!is_array($current) || !isset($current[$keys[$keyIndex]])) {
+        for($optionIndex = 0; $optionIndex < count($options); $optionIndex++){
+            if (!is_array($current) || !isset($current[$options[$optionIndex]])) {
                 return false;
             }
-            $current = &$current[$keys[$keyIndex]];
+            $current = &$current[$options[$optionIndex]];
         }
         return true;
     }
 
     /**
-     * @param string $key
-     * @param mixed $value
-     * @return bool
-     * @throws Exception
+     * The full path of the metadata file
+     * @return string
      */
-    public function equals(string $key, mixed $value): bool
+    public function getFile(): string
     {
-        return ($this->has($key) && $this->get($key) == $value);
+        return $this->_file;
+    }
 
-    } // optionEquals(...)
+    /**
+     * Returns the DocumentNode the metadata belongs to
+     * @return DocumentNode
+     */
+    public function getOwner(): DocumentNode
+    {
+        return $this->_owner;
+    }
+
+    /**
+     * Returns the json as an array
+     * @return string[]
+     */
+    public function getData():array
+    {
+        return $this->_metadata;
+    }
 }
 

@@ -18,6 +18,7 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use Volta\Component\Books\BookNode;
 use Volta\Component\Books\Exceptions\Exception;
+use Volta\Component\Books\Node;
 use Volta\Component\Books\NodeInterface;
 use Volta\Component\Books\Publisher;
 use Volta\Component\Books\Settings;
@@ -30,15 +31,14 @@ use Volta\Component\Books\Settings;
 class Epub extends Publisher
 {
 
-
-
-
-
     private string $_contentDir = 'OEBPS';
     private string $_metadataFileName = 'metadata.opf';
     private string $_tocFileName = 'toc.ncx';
-    private string $_sourceDirName = 'src';
+    private string $_sourceDirName = 'libraries';
 
+    /**
+     * @throws Exception
+     */
     public function  __construct(array $options)
     {
         parent::__construct($options);
@@ -48,7 +48,7 @@ class Epub extends Publisher
         $this->_contentDir = $options['contentDir'] ?? 'OEBPS';
         $this->_metadataFileName  = $options['metadataFileName'] ?? 'metadata.opf';
         $this->_tocFileName = $options['tocFileName'] ?? 'toc.ncx';
-        $this->_sourceDirName = $options['sourceDirName'] ?? 'src';
+        $this->_sourceDirName = $options['sourceDirName'] ?? 'libraries';
 
         $this->_setDestination($options['destination'] ?? '');
 
@@ -59,18 +59,19 @@ class Epub extends Publisher
     /**
      * Exports a Volta Book to an epub file
      *
-     * @see https://en.wikipedia.org/wiki/EPUB
-     * @return bool True on success, false otherwise
+     * @param string|int $bookIndex
+     * @param array $options = []
+     * @return bool
      * @throws Exception When an invalid destination is given
+     * @see https://en.wikipedia.org/wiki/EPUB
      */
-    public function exportBook(string $bookIndex): bool
+    public function exportBook(string|int $bookIndex, array $options = []): bool
     {
 
         $this->_currentBook = $this->getBook($bookIndex);
         
         $this->getLogger()->notice('#1 SETUP');
         $this->_setup();
-
 
         $this->getLogger()->notice('#3 OPEN CONTAINER');
         $this->_createOpenContainer();
@@ -90,18 +91,6 @@ class Epub extends Publisher
         return true;
     }
 
-
-    /**
-     * @param string $bookIndex
-     * @param string $path
-     * @return bool
-     * @throws Exception
-     */
-    public function exportPage(string $bookIndex, string $path): bool
-    {
-        throw new Exception(__METHOD__ . ' not implemented in '  . __CLASS__);
-        //return false;
-    }
 
     #region - #1 Setup and Teardown
 
@@ -193,7 +182,7 @@ class Epub extends Publisher
         $this->getLogger()->debug('Destination made empty');
         $this->_destination = $destination;
 
-        // add the src dir
+        // add the libraries dir
         mkdir($this->_destination . $this->_sourceDirName);
         $this->getLogger()->info('Destination set to ' . $this->_destination);
 
@@ -352,7 +341,7 @@ class Epub extends Publisher
             $navMap[] = $offset . '      <navLabel>';
             $navMap[] = $offset . '        <text>'.$node->getMeta()->get('displayName',$node->getName()).'</text>';
             $navMap[] = $offset . '      </navLabel>';
-            $navMap[] = $offset . '      <content src="'. $file.'"/>';
+            $navMap[] = $offset . '      <content libraries="'. $file.'"/>';
             foreach($node->getChildren() as $child) {
                 $addToNavMap($child, $level+1);
             }
@@ -485,5 +474,16 @@ class Epub extends Publisher
         return $this->_contentDir . DIRECTORY_SEPARATOR;
     }
 
+    public function sanitizeUri(NodeInterface $node): string
+    {
+        // create the relative uri for this node thus including a leading SLUG_SEPARATOR
+        $relativeUri = str_replace(DIRECTORY_SEPARATOR, Node::SLUG_SEPARATOR, $node->getRelativePath());
+
+        // if it is a DocumentNode, add the trailing slash to make all relative uris valid
+        if ($node->isDocument()) {
+            $relativeUri .= "/content.html";
+        }
+        return $relativeUri;
+    }
     #endregion
 }

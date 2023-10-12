@@ -22,6 +22,7 @@ abstract class Node implements NodeInterface
 
     /**
      * Global value for the UriOffset used when an absolute uri is requested
+     *
      * @see Node::getUri();
      * @var string $uriOffset
      */
@@ -52,28 +53,31 @@ abstract class Node implements NodeInterface
     /**
      *
      * @param string $absolutePath
+     * @param bool $rebuild
      * @return NodeInterface
+     * @throws DocumentNodeException
      * @throws Exception
+     * @throws MimeTypeNotSupportedException
      */
-    public static function factory(string $absolutePath): NodeInterface
+    public static function factory(string $absolutePath, bool $rebuild = false): NodeInterface
     {
         $realPath = realpath($absolutePath);
-        if (isset(Node::$_nodesCache[$absolutePath])) return Node::$_nodesCache[$absolutePath];
+        if (isset(Node::$_nodesCache[$absolutePath]) && !$rebuild) return Node::$_nodesCache[$absolutePath];
 
         // must be a valid path, readable and slug-able
-        if (false === $realPath) throw new Exception('Path("'.$absolutePath.'") can not be identified as a node: Invalid path');
-        if (!is_readable($realPath)) throw new Exception('Path("'.$absolutePath.'") can not be identified as a node: Not readable');
+        if (false === $realPath) throw new Exception(__METHOD__ . ': Path("'.$absolutePath.'") can not be identified as a node: Invalid path');
+        if (!is_readable($realPath)) throw new Exception(__METHOD__ . ': Path("'.$absolutePath.'") can not be identified as a node: Not readable');
         if (false === preg_match('/[^a-zA-Z0-9_-]/', basename($realPath)))
-            throw new Exception('Path("'.$absolutePath.'") can not be identified as a node: Name contains character other then a-z, A-Z, 0-9 hyphen or underscore');
+            throw new Exception(__METHOD__ . ': Path("'.$absolutePath.'") can not be identified as a node: Name contains character other then a-z, A-Z, 0-9 hyphen or underscore');
 
         // file(resource) or directory(DocumentNode)
         if (is_dir($realPath)) {
             $result = glob($absolutePath . DIRECTORY_SEPARATOR . 'content.*');
             if ($result === false || count($result) === 0)
-                throw new DocumentNodeException('Path("'.$absolutePath.'") can not be identified as a node: Missing content.*');
+                throw new DocumentNodeException(__METHOD__ . ': Path("'.$absolutePath.'") can not be identified as a node: Missing content.*');
 
             if (!file_exists($realPath . DIRECTORY_SEPARATOR . 'meta.json'))
-                throw new DocumentNodeException('Path("'.$absolutePath.'") can not be identified as a document node: Missing meta.json');
+                throw new DocumentNodeException(__METHOD__ . ': Path("'.$absolutePath.'") can not be identified as a document node: Missing meta.json');
 
             $node = new DocumentNode($realPath);
             if ($node->getParent() === null) {
@@ -86,7 +90,7 @@ abstract class Node implements NodeInterface
         else {
             $extension = pathinfo($realPath, PATHINFO_EXTENSION);
             if (!Settings::isResourceSupported($extension)) {
-                throw new MimeTypeNotSupportedException('Resources "*.'.$extension.'" not supported ');
+                throw new MimeTypeNotSupportedException(__METHOD__ . ': Resources "*.'.$extension.'" not supported ');
             }
             Node::$_nodesCache[$absolutePath] = new ResourceNode($realPath);
         }
@@ -97,24 +101,25 @@ abstract class Node implements NodeInterface
 
     const SLUG_SEPARATOR = '/';
 
+    private string $_fullUri;
+
     /**
      * {@inheritdoc}
      * @throws Exception
      */
-    public function getUri(bool $absolute = true): string
+    public function getUri(): string
     {
-        // create the relative uri for this node thus without a leading SLUG_SEPARATOR
-        $relativeUri = trim(str_replace(DIRECTORY_SEPARATOR, Node::SLUG_SEPARATOR,  $this->getRelativePath()), Node::SLUG_SEPARATOR);
 
-        //if it is a DocumentNode, add the trailing slash except for the RootNode
-        if($this->isDocument() && !$this->isBook()) {
-            $relativeUri .= "/";
+        if ($this->getRoot()->getPublisher()) {
+            $relativeUri =  $this->getRoot()->getPublisher()->sanitizeUri($this);
+        } else {
+            // create the relative uri for this node thus including a leading SLUG_SEPARATOR
+            $relativeUri = str_replace(DIRECTORY_SEPARATOR, Node::SLUG_SEPARATOR,  $this->getRelativePath());
+
         }
 
-        // if we do not want the absolute uri return
-        if (false === $absolute)  return $relativeUri;
-        return $this->getRoot()->getUriOffset() . Node::SLUG_SEPARATOR . $relativeUri;
 
+        return $relativeUri;
     }
 
     /**
@@ -183,8 +188,17 @@ abstract class Node implements NodeInterface
         return $this->_absolutePath;
     }
 
+    /**
+     * @ignore (do show up in generated documentaion)
+     * @var DocumentNode|null
+     */
     protected null|DocumentNode $_parent;
 
+    /**
+     * Returns the patent Nope, null if there is none
+     *
+     * @return DocumentNode|null
+     */
     public function getParent(): null|DocumentNode
     {
         // do this only ones in the live time of this Node
@@ -234,6 +248,9 @@ abstract class Node implements NodeInterface
         }
     }
 
+    /**
+     * @var BookNode|null
+     */
     protected null|BookNode $_root;
 
     /**

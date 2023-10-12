@@ -18,65 +18,53 @@ interface PublisherInterface extends LoggerAwareInterface
 {
 
     /**
-     * Sets the file location of the general template to show the content of the books in the collection
-     *
-     * The template is expected to be a PHP/HTML file. An Exception is thrown if not pointing to
-     * a (*.php|*.phtml) file.
-     *
-     * @param string $pageTemplate
-     * @return PublisherInterface
-     * @throws Exception
-     */
-    public function setPageTemplate(string $pageTemplate): PublisherInterface;
-
-    /**
-     * Returns the file location of the general template to show the content of the books in the collection
-     * if not set defaults to ~/templates/web-book.phtml of this component.
-     *
-     * @return string
-     * @throws Exception
-     */
-    public function getPageTemplate():string;
-
-    /**
-     * Sets the file location of the general css stylesheet to style the content of the books in the collection
-     *
-     * The file is expected to be a CSS file. An Exception is thrown if not pointing to
-     * a (*.css) file.
-     *
-     * @param string $pageStyle
-     * @return PublisherInterface
-     * @throws Exception
-     */
-    public function setPageStyle(string $pageStyle): PublisherInterface;
-
-    /**
-     * Returns the file location of the general css stylesheet to style the content of the books in the collection
-     * if not defaults to ~/public/assets/css/web-book.css of this component.
-     *
-     * @return string
-     * @throws Exception
-     */
-    public function getPageStyle():string;
-
-    /**
      * Adds a book to the collection by path and returns the BookNode.
-     * Throws an Exception if the path does not point to a Volta BookNode
+     * Throws an Exception if the path does not point to a Volta BookNode.
+     * If __$bookIndex__ is missing a unique index should be created, preferable
+     * the next numeral index.
      *
-     * @param string $bookIndex
      * @param BookNode|string $book
+     * @param string|int|null $bookIndex
      * @return BookNode
      * @throws Exception When there is no book found in the given path
      */
-    public function addBook(string $bookIndex, BookNode|string $book): BookNode;
+    public function addBook(BookNode|string $book, string|int|null $bookIndex = null): BookNode;
 
     /**
-     * Returns a book by its ID or NULL when not exists
+     * Returns a book by its __$bookIndex__ or NULL when not exists
      *
-     * @param string $bookIndex
+     * @param string|int $bookIndex
      * @return null|BookNode
      */
-    public function getBook(string $bookIndex): null|BookNode;
+    public function getBook(string|int $bookIndex): null|BookNode;
+
+    /**
+     * Returns the first book
+     *
+     * @return bool|BookNode
+     */
+    public function getFirst(): bool|BookNode;
+
+    /**
+     * Returns the next book
+     *
+     * @return bool|BookNode
+     */
+    public function getNext(): bool|BookNode;
+
+    /**
+     * Returns the previous book
+     *
+     * @return bool|BookNode
+     */
+    public function getPrevious(): bool|BookNode;
+
+    /**
+     * Returns the last book
+     *
+     * @return bool|BookNode
+     */
+    public function getLast(): bool|BookNode;
 
     /**
      * Returns the full collection of books
@@ -86,27 +74,33 @@ interface PublisherInterface extends LoggerAwareInterface
     public function getBooks(): array;
 
     /**
-     * Whether a book exists in the current collection with the given ID
+     * Whether a book exists in the current collection with the given __$bookIndex__
      *
-     * @param string $bookIndex
+     * @param string|int $bookIndex
      * @return bool
      */
-    public function hasBook(string $bookIndex): bool;
+    public function hasBook(string|int $bookIndex): bool;
 
     /**
-     * Exports the parsed contents of the entire book with the specified ID
+     * Alters the Uri for the current publishers platform
      *
-     * @param string $bookIndex
+     * @param NodeInterface $node
+     * @return string
+     */
+    public function sanitizeUri(NodeInterface $node): string;
+
+
+    public function setUriOffset(string $uriOffset): PublisherInterface;
+    public function getUriOffset(): string;
+
+    /**
+     * Exports the parsed contents of the entire book with the specified __$bookIndex__
+     * based on the options given
+     *
+     * @param string|int $bookIndex
+     * @param array $options = []
      * @return bool True on success, False otherwise
      */
-    public function exportBook(string $bookIndex): bool;
-
-    /**
-     * Exports the parsed contents of the page referenced with the path of the book with the specified ID
-     * @param string $bookIndex
-     * @param string $path
-     * @return bool
-     */
-    public function exportPage(string $bookIndex, string $path): bool;
+    public function exportBook(string|int $bookIndex, array $options = []): bool;
 
 }

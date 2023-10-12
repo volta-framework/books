@@ -26,15 +26,16 @@ interface NodeInterface
      */
     public function getList(): array;
 
-
+    /**
+     * @return int
+     */
     public function getIndex(): int;
 
     /**
      * The relative path as a valid URI
-     * @param bool $absolute
      * @return string
      */
-    public function getUri(bool $absolute = true): string;
+    public function getUri(): string;
 
     /**
      * Nodes directories basename made more readable friendly
@@ -97,9 +98,9 @@ interface NodeInterface
 
     /**
      * When null is returned it is the root node
-     * @return DocumentNode
+     * @return BookNode
      */
-    public function getRoot(): DocumentNode;
+    public function getRoot(): BookNode;
 
     /**
      * Previous sibling, null when it is the first
@@ -139,7 +140,9 @@ interface NodeInterface
      */
     public function getMeta(): Meta;
 
-
+    /**
+     * @return int|false
+     */
     public function getModificationTime(): int|false;
 
 }

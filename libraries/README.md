@@ -81,10 +81,10 @@ Every content type requires a dedicated content parser. The provided list outlin
 
 ## XhtmlParser
 
-The XhtmlParser needs some extra attention. When creating XHTML content, it is possible to add custom elements. These elements need to be in their own namespace, and each element needs to have a corresponding PHP class definition where the class extends the `Volta\Component\Books\ContentParsers\XhtmlParser\Element` class. When the parser encounters a custom element, a new instance is created and handlers will be called on this instance while translating the contents of this element.
+The XhtmlParser needs some extra attention. When creating XHTML content, it is possible to add custom elements. These elements need to be in their own namespace, and each element needs to have a corresponding PHP class definition where the class extends the `Volta\Component\Books\ContentParsers\XhtmlParser\Element` class. When the parser encounters a custom element, a new instance is created and the following handlers will be called on this instance while translating the contents of this element:
 
+- onTranslateStart(): string
+- onTranslateData(string $data) : string
+- onTranslateEnd(): string
 
-- on start 
-- on all the data inside the element
-- on close
-
+All of them expecting a string to be returned which will be added to the result of the parsing process.

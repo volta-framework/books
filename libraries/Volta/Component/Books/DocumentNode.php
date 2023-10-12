@@ -23,7 +23,7 @@ class DocumentNode extends Node
 {
 
     /**
-     * Returns the index in the list
+     * Returns the index in the BookNode list
      *
      * @return int
      * @throws Exception
@@ -39,29 +39,33 @@ class DocumentNode extends Node
     }
 
     /**
+     * @ignore (Do not show up in generated documenation)
      * @var Meta
      */
     protected Meta $_meta;
 
     /**
-     * @return Meta
-     * @throws Exception
+     * @return Meta The Meta information
+     * @throws Exception When the meta file can not be read or a Json  parsing error has occurred
      */
     public function getMeta(): Meta
     {
         if (!isset($this->_meta)) {
-            $this->_meta = new Meta($this->getAbsolutePath() . DIRECTORY_SEPARATOR . 'meta.json');
+            $this->_meta = new Meta($this->getAbsolutePath() . DIRECTORY_SEPARATOR . 'meta.json', $this);
         }
         return $this->_meta;
 
     }
 
     /**
+     * @ignore (Do not show up in generated documenation)
      * @var array<string, NodeInterface>
      */
     protected array $_children;
 
     /**
+     * Returns all children DocumentNodes
+     *
      * @return array<string, DocumentNode>
      */
     public function getChildren(): array
@@ -85,11 +89,14 @@ class DocumentNode extends Node
     }
 
     /**
+     * @ignore (Do not show up in generated documenation)
      * @var array<string, ResourceNode>
      */
     private array $_resources;
 
     /**
+     * Returns all resources for this DocumentNode
+     *
      * @return array<string, ResourceNode>
      * @throws Exception
      */
@@ -141,11 +148,14 @@ class DocumentNode extends Node
     }
 
     /**
+     * @ignore (Do not show up in generated documenation)
      * @var DocumentNode|null Lazy load memory cache
      */
     protected null|DocumentNode $_next;
 
     /**
+     * Returns the next DocumentNode in the hierarchy. Null if there is none
+     *
      * @return DocumentNode|null
      * @throws Exception
      */
@@ -167,11 +177,14 @@ class DocumentNode extends Node
     }
 
     /**
+     * @ignore (Do not show up in generated documenation)
      * @var DocumentNode|null
      */
     protected null|DocumentNode $_previous;
 
     /**
+     * Returns the previous DocumentNode in the hierarchy. Null if there is none
+     *
      * @return DocumentNode|null
      * @throws Exception
      */
@@ -189,6 +202,8 @@ class DocumentNode extends Node
     }
 
     /**
+     * Returns the parsed content
+     *
      * @return string
      * @throws Exception
      */
@@ -227,6 +242,8 @@ class DocumentNode extends Node
     }
 
     /**
+     * Returns the content type in the HTTP header format
+     *
      * @return string
      * @throws Exception
      */
@@ -234,7 +251,6 @@ class DocumentNode extends Node
     {
         return $this->_getContentParser()->getContentType();
     }
-
 
     /**
      * @return ContentParserInterface
@@ -251,6 +267,9 @@ class DocumentNode extends Node
         return $contentParser;
     }
 
+    /**
+     * @return int|false Returns the modification time if available, false if not
+     */
     public function getModificationTime(): int|false
     {
         return filemtime($this->getContentFile());

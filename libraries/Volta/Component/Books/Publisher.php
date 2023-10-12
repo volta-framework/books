@@ -37,8 +37,20 @@ abstract class Publisher implements PublisherInterface
         return $this->logger;
     }
 
-    #endregion
-    #-----------------------------------------------------------------------------------------------------------------
+    #endregion --------------------------------------------------------------------------------------------------------
+
+    protected string $_uriOffset = '';
+
+    public function setUriOffset(string $uriOffset): PublisherInterface
+    {
+        $this->_uriOffset = $uriOffset;
+        return $this;
+    }
+    public function getUriOffset(): string
+    {
+        return $this->_uriOffset;
+    }
+
     #region - Book Collection
 
     /** @var $_bookCollection array<string, BookNode> */
@@ -47,15 +59,18 @@ abstract class Publisher implements PublisherInterface
     /**
      * @inheritDoc
      */
-    public function addBook(string $bookIndex, BookNode|string $book): BookNode
+    public function addBook(BookNode|string $book, string|int|null $bookIndex = null): BookNode
     {
+        if (!isset($bookIndex)) $bookIndex = count($this->_bookCollection);
         if(is_string($book)) {
             $node = Node::factory($book);
             if (!is_a($node, BookNode::class)) {
-                throw new Exception('Path("' . $book . '") can not be identified as a BookNode:(Path does not point to a book)');
+                throw new Exception(__METHOD__ . ': Path("' . $book . '") can not be identified as a BookNode:(Path does not point to a book)');
             }
+            $node->setPublisher($this);
             $this->_bookCollection[$bookIndex] = $node;
         } else {
+            $book->setPublisher($this);
             $this->_bookCollection[$bookIndex] = $book;
         }
 
@@ -65,7 +80,7 @@ abstract class Publisher implements PublisherInterface
     /**
      * @inheritDoc
      */
-    public function getBook(string $bookIndex): null|BookNode
+    public function getBook(string|int $bookIndex): null|BookNode
     {
         if (!isset($this->_bookCollection[$bookIndex])) return null;
         return $this->_bookCollection[$bookIndex];
@@ -82,91 +97,45 @@ abstract class Publisher implements PublisherInterface
     /**
      * @inheritDoc
      */
-    public function hasBook(string $bookIndex): bool
+    public function getFirst(): false|BookNode
+    {
+        return reset($this->_bookCollection);
+    }
+    public function getNext(): false|BookNode
+    {
+        return next($this->_bookCollection);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getPrevious(): false|BookNode
+    {
+        return prev($this->_bookCollection);
+    }
+
+    public function getLast(): false|BookNode
+    {
+        return end($this->_bookCollection);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function hasBook(string|int $bookIndex): bool
     {
         return isset($this->_bookCollection[$bookIndex]);
     }
 
-    #endregion
-    #-----------------------------------------------------------------------------------------------------------------
-    #region - HTML Page Template file
-
-    /** @var $_pageTemplate string */
-    private string $_pageTemplate;
-
-    /**
-     * @inheritDoc
-     */
-    public function setPageTemplate(string $pageTemplate): PublisherInterface
-    {
-        $pageTemplate = realpath($pageTemplate);
-        $pattern = "/^.*\.(php|phtml)$/i";
-        if (false === $pageTemplate || !is_file($pageTemplate) || !preg_match($pattern, $pageTemplate)) {
-            throw new Exception('Invalid Volta Bookcase template! Expects a valid file with extensions *.php|*phtml');
-        }
-        $this->_pageTemplate = $pageTemplate;
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getPageTemplate(): string
-    {
-        if (!isset($this->_pageTemplate)) {
-            $this->setPageTemplate(__DIR__ . '/../../../../templates/web-book.phtml');
-        }
-        return $this->_pageTemplate;
-    }
-
-    #endregion
-    #-----------------------------------------------------------------------------------------------------------------
-    #region - CSS Page style
-
-    /** @var $_pageStyle string */
-    protected string $_pageStyle;
-
-    /**
-     * @inheritDoc
-     */
-    public function setPageStyle(string $pageStyle): PublisherInterface
-    {
-        $pageTemplate = realpath($pageStyle);
-        $pattern = "/^.*\.(css)$/i";
-        if (false === $pageStyle || !is_file($pageStyle) || !preg_match($pattern, $pageStyle)) {
-            throw new Exception('Invalid Volta Bookcase css stylesheet! Expects a valid file with extensions *.css');
-        }
-        $this->_pageStyle = $pageStyle;
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getPageStyle(): string
-    {
-        if (!isset($this->_pageStyle)) {
-            $this->setPageTemplate(__DIR__ . '/../../../../public/assets/css/web-book.css');
-        }
-        return $this->_pageStyle;
-    }
-
-    #endregion
-    #-----------------------------------------------------------------------------------------------------------------
+    #endregion --------------------------------------------------------------------------------------------------------
     #region - Construction
 
-    /**
-     * Expects Publishers specified options
-     * The implementation should validate the options.
-     *
+
+    /** Force the use of the factory method
      * @param array $options
-     * @throws Exception
      */
-    protected function __construct(array $options)
-    {
-        if (isset($options['pageTemplate'])) $this->setPageTemplate($options['pageTemplate']);
-        if (isset($options['pageStyle'])) $this->setPageStyle($options['pageStyle']);
-    }
+    protected function __construct(array $options = [])
+    {}
 
     /**
      * @param string $class
@@ -178,7 +147,7 @@ abstract class Publisher implements PublisherInterface
     {
         $interfaces = class_implements($class);
         if (false === $interfaces || !isset($interfaces[PublisherInterface::class])) {
-            throw new Exception(sprintf('Can not load Publisher. Either "%s" does not exists or does not implement "%s"', $class, PublisherInterface::class));
+            throw new Exception(sprintf(__METHOD__ . ': Can not load Publisher. Either "%s" does not exists or does not implement "%s"', $class, PublisherInterface::class));
         }
         return new $class($options);
     }

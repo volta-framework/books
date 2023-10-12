@@ -126,11 +126,11 @@ class ResourceNode extends Node
         return $this->_previous;
     }
 
+
     const MEDIA_TYPE_NOT_SUPPORTED = 'Media-type not supported';
 
     /**
-     * @return string
-     * @throws MimeTypeNotSupportedException
+     * @inheritdoc
      */
     public function getContentType(): string
     {
@@ -141,16 +141,31 @@ class ResourceNode extends Node
         return Settings::getResourceMimeType($extension);
     }
 
+    /**
+     * As a Resource node can not have a meta file attached to it this function will return the parents node Metadata
+     * object.
+     *
+     * @inheritdoc
+     */
     public function getMeta(): Meta
     {
-       return new Meta();
+       return $this->getParent()->getMeta();
     }
 
+    /**
+     * A Resource Node can not have children. This function will return NULL
+     *
+     * @param string $relativePath
+     * @return NodeInterface|null
+     */
     public function getNode(string $relativePath): null|NodeInterface
     {
         return null;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getModificationTime(): int|false
     {
         return filemtime($this->getAbsolutePath());
