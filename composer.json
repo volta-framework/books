@@ -14,18 +14,6 @@
 
   "minimum-stability": "dev",
 
-  "repositories": [
-
-    {
-      "type": "vcs",
-      "url": "/home/rob/Development/PHP-REPOSITORIES/volta-framework/component-configuration"
-    },
-    {
-      "type": "vcs",
-      "url": "/home/rob/Development/PHP-REPOSITORIES/volta-framework/component-logging"
-    }
-  ],
-
   "require": {
     "php": ">=8.1",
     "ext-xml": "*",

@@ -43,22 +43,22 @@ class Php extends BaseElement
      */
     public function onTranslateEnd(): string
     {
-        // remove leading indentation of each line
-//        $indents = (int) $this->getAttribute('trim', "1");
-//        $lines = explode(PHP_EOL, $this->_data);
-//        foreach($lines as $line){
-//            $this->_data .= ""
-//        }
-
-
-        $this->_data = highlight_string("<?php\n" . trim($this->_data, "\n\r\0\x0B"), true);
-        if (Settings::getPublishingMode() === Settings::PUBLISHING_EPUB) {
-            $this->_data = str_replace(['&nbsp;'], [' '], $this->_data);
+        // The highlight function only highlights after a '<?php' start processing instruction as PHP and HTML can
+        // be mixed. We will however assume all PHP when no processing instruction is found and manual add this in
+        // order to highlight the code. But if it was not there it probably was intentional to leave it out so,
+        // we remove this afterward. But the highlighting code hase replaced the '<' with an HTML entity.
+        // NOTE:
+        //     To add a <?php processing instruction optionally mixed with HTML all data must be in enclosed
+        //     in <![CDATA[ ]]> section otherwise the XHTML content will not be able to be parsed without an error.
+        $data  = trim($this->_data, "\n\r\0\x0B");
+        if (!str_contains($data, '<?php') && !str_contains($data, '<?=')) {
+            $data = "<?php\n" . $data;
+            $data = highlight_string($data, true);
+            $data = str_replace('&lt;?php', '', $data);
+        } else {
+            $data = highlight_string($data, true);
         }
-
-
-
-        return trim($this->_data, "\n\r\0\x0B");
+        return $data;
     }
 
 } // class

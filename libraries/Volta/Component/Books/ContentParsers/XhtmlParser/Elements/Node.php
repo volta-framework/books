@@ -39,36 +39,6 @@ class Node extends BaseElement
     {
         $href = $this->getAttribute('path',  $this->_getNode()->getUri());
         $title = $this->getAttribute('title', $this->_getNode()->getName());
-        $supportedResources = trim(implode('|', array_keys(Settings::getSupportedResources())), '|');
-
-        // if it is a resource, do nothing...
-        $matches = [];
-        $pattern = "/^.*\.($supportedResources)$/i";
-        if (!preg_match($pattern, $href, $matches)) {
-
-            // if it is a document node, we need to add a slash if not present
-            // find a hashtag first and split the string
-            $posHashtag = strpos($href, '#');
-            if (false === $posHashtag) {
-                $hashtag = '';
-            } else {
-                $hashtag = substr($href, $posHashtag);
-                $href = substr($href, 0, $posHashtag);
-            }
-            if (!str_ends_with($href, '/')) {
-                $href .= '/';
-            }
-
-            // if it is an epub add "content.xhtml" to it
-            if (Settings::getPublishingMode() === Settings::PUBLISHING_EPUB) {
-                $href .= 'content.xhtml';
-            }
-
-            // (re)build the hyperlink reference
-            $href = $href . $hashtag;
-        }
-
-
         $this->_caption = str_replace(
             [
                 '{{NAME}}',
@@ -84,7 +54,6 @@ class Node extends BaseElement
             ],
             $this->_caption
         );
-
-        return  sprintf('<a href="%s" title="%s">%s</a>', $href, $title, $this->_caption);
+        return  sprintf('<a href="%s" title="%s">%s</a>', $this->_getNode()->getUri(), $title, $this->_caption);
     }
 }

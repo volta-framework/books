@@ -20,18 +20,13 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 use Psr\Log\LoggerInterface;
-use Slim\Exception\HttpBadRequestException;
 use Slim\Exception\HttpNotFoundException;
 use Slim\Psr7\Factory\StreamFactory;
-use Slim\Routing\RouteContext;
 
-use Volta\Component\Books\BookNode;
 use Volta\Component\Books\Cache;
 use Volta\Component\Books\DocumentNode;
-use Volta\Component\Books\Exceptions\CacheException;
 use Volta\Component\Books\Exceptions\Exception;
 use Volta\Component\Books\Exceptions\MimeTypeNotSupportedException;
-use Volta\Component\Books\NodeInterface;
 use Volta\Component\Books\Publisher;
 use Volta\Component\Books\PublisherInterface;
 use Volta\Component\Books\Publishers\Web;
@@ -61,13 +56,13 @@ class BooksController
      * @throws Exception
      * @throws ConfigException
      */
-    #[Key('volta.component.books.supportedResources', [], 'Limit or extend supported resources. Expected array in the format array<extension, mime-type>.See Settings::registerContentParser() for more details')]
-    #[Key('volta.component.books.contentParsers', [], 'Limit or extend supported resources. Expected array in the format array<extension, mime-type>. See Settings::getSupportedResources() for more details')]
-    #[Key('volta.component.books.library', ['een' => '~resources/ExampleBook', 'twee' => '~resources/ExampleBook'], 'List of Volta Books. Expected to be in the format array<identifier, path>')]
-    #[Key('volta.component.books.cache.class', Cache::class, 'Classname for a Cache:CacheItemPoolInterface object')]
-    #[Key('volta.component.books.cache.options', ['directory'=> '~__cache/'], 'Options for the cache instance. May be different based on the cache selected')]
-    #[Key('volta.component.books.book-template', '~templates/web-book.phtml', 'HTML template for displaying one book.')]
-    #[Key('volta.component.books.book-overview-template', '~templates/web-book-overview.phtml', 'HTML template for displaying all the books in the publishers library.')]
+    #[Key('volta.component.books.supportedResources', [], 'Limit or extend supported resources. Expected array in the format array<extension, mime-type>.See Settings::getSupportedResources() for more details')]
+    #[Key('volta.component.books.contentParsers', [], 'Limit or extend supported resources. Expected array in the format array<extension, mime-type>. See Settings::registerContentParser() for more details')]
+    #[Key('volta.component.books.library', ['een' => '~resources/ExampleBook', 'twee' => '~resources/ExampleBook'], '[REQUIRED] List of Volta Books. Expected to be in the format array<identifier, path>')]
+    #[Key('volta.component.books.cache.class', '', 'Classname for a Cache:CacheItemPoolInterface object. Use the books internal class ('. Cache::class.') for file based cache.')]
+    #[Key('volta.component.books.cache.options', [], 'Options for the cache instance. May be different based on the cache selected. When using the internal class ('. Cache::class.') a valid directory is expected, use ["directory"=> "???"] for the options')]
+    #[Key('volta.component.books.book-template', '~templates/web-book.phtml', 'HTML template for displaying one book. Defaults to the Components "~templates/web-book.phtml" template.')]
+    #[Key('volta.component.books.book-overview-template', '~templates/web-book-overview.phtml', 'HTML template for displaying all the books in the publishers library. Defaults to the Components "~templates/web-book-overview.phtml" template.')]
     public function __construct(ContainerInterface|null $container=null)
     {
         // create instance of the configuration object and set required and allowed options
