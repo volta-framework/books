@@ -268,10 +268,37 @@ class Element
     // ----------------------------------------------------------------------
 
     /**
+     * Empty elements, also called void elements, are elements without content. Like <br> or <hr>.
+     * We check for these empty element in this Baseclass and return the empty XHTML compliant self-closing
+     * tag (i.e. <br/>)
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Glossary/Void_element
+     * @var array|string[]
+     */
+    private array $_emptyElements = [
+        'area',
+        'base',
+        'br',
+        'col',
+        'embed',
+        'hr',
+        'img',
+        'input',
+        'keygen', //(HTML 5.2 Draft removed)
+        'link',
+        'meta',
+        'param',
+        'source',
+        'track',
+        'wbr',
+    ];
+
+    /**
      * @return string
      */
     public function onTranslateStart(): string
     {
+        if (in_array($this->getName(), $this->_emptyElements)) return '';
         return '<' . $this->getName() . $this->_attributesAsString() . '>';
     }
 
@@ -281,6 +308,7 @@ class Element
      */
     public function onTranslateData(string $data) : string
     {
+        if (in_array($this->getName(), $this->_emptyElements)) return '';
         return $data;
     }
 
@@ -289,6 +317,9 @@ class Element
      */
     public function onTranslateEnd(): string
     {
+        if (in_array($this->getName(), $this->_emptyElements)) {
+            return '</' . $this->getName() . '/>';
+        }
         return '</' . $this->getName() . '>';
     }
 

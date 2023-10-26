@@ -13,6 +13,12 @@ namespace Volta\Component\Books\ContentParsers\XhtmlParser\Elements;
 
 use Volta\Component\Books\ContentParsers\XhtmlParser\Element as BaseElement;
 
+/**
+ * Represents an Answer for a Question in a Quiz
+ *
+ * @container: Question
+ * @attribuut: value
+ */
 class Answer extends BaseElement
 {
     public static int $_counter = 0;

@@ -51,8 +51,9 @@ blockquote{border: 1px solid var(--info-color); border-left-width: 4px; border-r
 blockquote.note{border-color: var(--note-color) }
 blockquote.error{border-color: var(--error-color); color:var(--error-color);}
 pre{border: 1px solid var(--main-border-color);   border-radius: 5px !important;  }
-code:not(pre > code) { display:block;border: 1px solid var(--main-border-color); padding: 4px; border-radius: 5px; background-color: var(--box-bg-color)}
+code:not(pre > code) {overflow:auto; display:block;border: 1px solid var(--main-border-color); padding: 4px; border-radius: 5px; background-color: var(--box-bg-color)}
 code:is(p > code) { font-size: 11pt; border:0; background-color: transparent; display: inline-block; padding: 4px;color: var(--code-bg-color);   }
+abbr { color:var(--h1-color); text-transform: capitalize; font-weight: bold}
 
 var {font-family: "Courier New", serif;}
 
@@ -82,13 +83,8 @@ var {font-family: "Courier New", serif;}
 .chuck{ font-size:8pt; font-family: "Courier New", serif; text-align: center}
 .chuck:before{content: '"'}
 .chuck:after{content: '"'}
-
 .code-snippets{font-size: 8pt;}
-
 .anchor:before{content: '# '}
-
-
-
 .book-overview {
     justify-content: center;
     align-items: center;
@@ -97,11 +93,9 @@ var {font-family: "Courier New", serif;}
     flex-direction: row;
     flex-wrap: wrap;
 }
-
 .book-overview > figure {
     display: inline-block;
 }
-
 .book-overview > figure > a > img {
     display: inline-block;
     width: 200px;
@@ -109,6 +103,7 @@ var {font-family: "Courier New", serif;}
     height: calc(200px * 1.5);
 }
 
+.center {text-align: center}
 
 @media only screen and (max-width: 600px) {
     p {text-align: left; }
