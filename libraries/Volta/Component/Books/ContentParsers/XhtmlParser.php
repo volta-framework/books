@@ -45,6 +45,13 @@ class XhtmlParser implements ContentParserInterface
      */
     private bool $_verbose;
 
+    /**
+     * When TRUE the PHP buffer is used
+     *
+     * @var bool $_useBuffer
+     */
+    private bool $_useBuffer = true;
+
 
     // -----------------------------------------------------------------------------
 
@@ -104,10 +111,12 @@ class XhtmlParser implements ContentParserInterface
         if (!isset($this->_eventListeners[$event])) return;
         foreach($this->_eventListeners[$event] as $callback) {
             $callbackReturn = call_user_func($callback, $this);
-            if ( !is_string($callbackReturn)) {
-                throw new Exception(__CLASS__ . '::' . __METHOD__  .'() - EventListener must return a string');
+            if (!is_string($callbackReturn)) {
+                throw new Exception(__CLASS__ . '::' . __METHOD__ . '() - EventListener must return a string');
             }
-            $this->_content .= $callbackReturn;
+            if ($this->_useBuffer) echo $callbackReturn;
+            else  $this->_content .= $callbackReturn;
+
         }
     }
 
@@ -116,15 +125,14 @@ class XhtmlParser implements ContentParserInterface
     /**
      * Starts the parsing of the XML file set in the constructor
      *
-     * @param string $file
+     * @param string $source
      * @param NodeInterface $node
      * @param bool $verbose
      * @return string  The parse data
      * @throws Exception On XML syntax errors
      */
-    public function getContent(string $file, NodeInterface $node, bool $verbose = false): string
+    public function getContent(string $source, NodeInterface $node, bool $verbose = false): string
     {
-        $this->_file = $file;
         $this->setNode($node);
         $this->_verbose = $verbose;
 
@@ -134,10 +142,8 @@ class XhtmlParser implements ContentParserInterface
         xml_parser_set_option($xmlParser, XML_OPTION_CASE_FOLDING, 0);
         xml_parser_set_option($xmlParser, XML_OPTION_SKIP_WHITE, 1);
 
-
         xml_set_start_namespace_decl_handler($xmlParser, [$this, 'startNamespaceDeclHandler']);
         xml_set_end_namespace_decl_handler($xmlParser, [$this, 'endNamespaceDeclHandler']);
-
 
         xml_set_character_data_handler($xmlParser, [$this, 'characterDataHandler']);
         xml_set_default_handler($xmlParser, [$this, 'defaultHandler']);
@@ -146,7 +152,42 @@ class XhtmlParser implements ContentParserInterface
         //xml_set_unparsed_entity_decl_handler($xmlParser, 'unparsedEntityDeclHandler');
         //xml_set_external_entity_ref_handler($xmlParser,'externalEntityRefHandler');
 
-        $stream = fopen($this->getFile(), 'r');
+        if ($this->_useBuffer)  ob_start();
+
+        if (is_file($source)) {
+            $this->_file = $source;
+            $this->_getContentFromFile($xmlParser, $this->_file);
+        } else {
+            $this->_getContentFromString($xmlParser, $source);
+        }
+
+        $this->_notify(self::EVENT_ON_FINISH);
+        xml_parser_free($xmlParser);
+
+        if ($this->_useBuffer) {
+            $this->_content = ob_get_contents();
+            ob_end_clean();
+        }
+
+
+        // https://www.w3schools.com/charsets/ref_emoji_smileys.asp
+        return str_replace(
+            [':-)', '8-)', ';-)', ':-('],
+            ['&#127773;', '&#128526;', '&#128521;', '&#128543;'],
+            $this->_content
+        );
+
+    } // startParse(...)
+
+    /**
+     * @param XMLParser $xmlParser
+     * @param string $source
+     * @return void
+     * @throws Exception
+     */
+    protected function _getContentFromFile(\XMLParser $xmlParser, string $source): void
+    {
+        $stream = fopen($source, 'r');
         if (false !== $stream) {
 
             $start = true;
@@ -169,68 +210,95 @@ class XhtmlParser implements ContentParserInterface
                 }
 
                 if (!xml_parse($xmlParser, $data, $end)) {
-                    $errorCode = xml_get_error_code($xmlParser);
-                    $errorMessage = match ($errorCode) {
-                        XML_ERROR_NO_MEMORY => 'XML_ERROR_NO_MEMORY',
-                        XML_ERROR_SYNTAX => 'XML_ERROR_SYNTAX',
-                        XML_ERROR_NO_ELEMENTS => 'XML_ERROR_NO_ELEMENTS',
-                        XML_ERROR_INVALID_TOKEN => 'XML_ERROR_INVALID_TOKEN',
-                        XML_ERROR_UNCLOSED_TOKEN => 'XML_ERROR_UNCLOSED_TOKEN',
-                        XML_ERROR_PARTIAL_CHAR => 'XML_ERROR_PARTIAL_CHAR',
-                        XML_ERROR_TAG_MISMATCH => 'XML_ERROR_TAG_MISMATCH',
-                        XML_ERROR_DUPLICATE_ATTRIBUTE => 'XML_ERROR_DUPLICATE_ATTRIBUTE',
-                        XML_ERROR_JUNK_AFTER_DOC_ELEMENT => 'XML_ERROR_JUNK_AFTER_DOC_ELEMENT',
-                        XML_ERROR_PARAM_ENTITY_REF => 'XML_ERROR_PARAM_ENTITY_REF',
-                        XML_ERROR_UNDEFINED_ENTITY => 'XML_ERROR_UNDEFINED_ENTITY',
-                        XML_ERROR_RECURSIVE_ENTITY_REF => 'XML_ERROR_RECURSIVE_ENTITY_REF',
-                        XML_ERROR_ASYNC_ENTITY => 'XML_ERROR_ASYNC_ENTITY',
-                        XML_ERROR_BAD_CHAR_REF => 'XML_ERROR_BAD_CHAR_REF',
-                        XML_ERROR_BINARY_ENTITY_REF => 'XML_ERROR_BINARY_ENTITY_REF',
-                        XML_ERROR_ATTRIBUTE_EXTERNAL_ENTITY_REF => 'XML_ERROR_ATTRIBUTE_EXTERNAL_ENTITY_REF',
-                        XML_ERROR_MISPLACED_XML_PI => 'XML_ERROR_MISPLACED_XML_PI',
-                        XML_ERROR_UNKNOWN_ENCODING => 'XML_ERROR_UNKNOWN_ENCODING',
-                        XML_ERROR_INCORRECT_ENCODING => 'XML_ERROR_INCORRECT_ENCODING',
-                        XML_ERROR_UNCLOSED_CDATA_SECTION => 'XML_ERROR_UNCLOSED_CDATA_SECTION',
-                        XML_ERROR_EXTERNAL_ENTITY_HANDLING => 'XML_ERROR_EXTERNAL_ENTITY_HANDLING',
-
-                        // see for  others:  https://gnome.pages.gitlab.gnome.org/libxml2/devhelp/libxml2-xmlerror.html
-
-                        26 => 'XML_ERR_UNDECLARED_ENTITY',
-
-
-                        default => "UNKNOWN ERROR"
-                    };
-
+                    $errorInfo = $this->_getErrorInfo($xmlParser);
                     $exceptionMessage = sprintf(
                         'XML error(%d) at line %d column %d: %s (%s)',
-                        $errorCode,
+                        $errorInfo[0],
                         xml_get_current_line_number($xmlParser),
                         xml_get_current_column_number($xmlParser),
-                        $errorMessage,$file
+                        $errorInfo[1], $source
                     );
                     xml_parser_free($xmlParser);
                     fclose($stream);
-                    throw new Exception($exceptionMessage, $errorCode);
+                    throw new Exception($exceptionMessage, $errorInfo[0]);
+
                 } // if ...
             } // while ...
 
-            $this->_notify(self::EVENT_ON_FINISH);
-
-            xml_parse($xmlParser, '', true); // finalize parsing
-            xml_parser_free($xmlParser);
+            xml_parse($xmlParser, '', true);
             fclose($stream);
         }
+    }
 
-        // https://www.w3schools.com/charsets/ref_emoji_smileys.asp
-        return str_replace(
-            [':-)', '8-)', ';-)', ':-('],
-            ['&#127773;', '&#128526;', '&#128521;', '&#128543;'],
-            $this->_content
-        );
+    /**
+     * @param XMLParser $xmlParser
+     * @param string $source
+     * @return void
+     * @throws Exception
+     */
+    protected function _getContentFromString(\XMLParser $xmlParser, string $source): void
+    {
+        // add root element(xhtml) to the data if not done
+        $data = trim($source);
+        if (!str_starts_with(strtolower($data), '<volta:xhtml')) {
+            $data = '<volta:xhtml xmlns:volta="https://volta-framework.com/volta-component-books/xhtml">' . $data;
+        }
+        if (!str_ends_with(strtolower($data), '</volta:xhtml>')) {
+            $data .= '</volta:xhtml>' ;
+        }
 
-    } // startParse(...)
+        if (!xml_parse($xmlParser, $data, true)) {
+            $errorInfo = $this->_getErrorInfo($xmlParser);
+            $exceptionMessage = sprintf(
+                'XML error(%d) at line %d column %d: %s',
+                $errorInfo[0],
+                xml_get_current_line_number($xmlParser),
+                xml_get_current_column_number($xmlParser),
+                $errorInfo[1]
+            );
+            xml_parser_free($xmlParser);
+            throw new Exception($exceptionMessage, $errorInfo[0]);
+        }
+    }
 
+    /**
+     * @param XMLParser $xmlParser
+     * @return array
+     */
+    protected function _getErrorInfo(\XMLParser $xmlParser): array
+    {
+        $errorCode = xml_get_error_code($xmlParser);
+        $errorMessage = match ($errorCode) {
+            XML_ERROR_NO_MEMORY => 'XML_ERROR_NO_MEMORY',
+            XML_ERROR_SYNTAX => 'XML_ERROR_SYNTAX',
+            XML_ERROR_NO_ELEMENTS => 'XML_ERROR_NO_ELEMENTS',
+            XML_ERROR_INVALID_TOKEN => 'XML_ERROR_INVALID_TOKEN',
+            XML_ERROR_UNCLOSED_TOKEN => 'XML_ERROR_UNCLOSED_TOKEN',
+            XML_ERROR_PARTIAL_CHAR => 'XML_ERROR_PARTIAL_CHAR',
+            XML_ERROR_TAG_MISMATCH => 'XML_ERROR_TAG_MISMATCH',
+            XML_ERROR_DUPLICATE_ATTRIBUTE => 'XML_ERROR_DUPLICATE_ATTRIBUTE',
+            XML_ERROR_JUNK_AFTER_DOC_ELEMENT => 'XML_ERROR_JUNK_AFTER_DOC_ELEMENT',
+            XML_ERROR_PARAM_ENTITY_REF => 'XML_ERROR_PARAM_ENTITY_REF',
+            XML_ERROR_UNDEFINED_ENTITY => 'XML_ERROR_UNDEFINED_ENTITY',
+            XML_ERROR_RECURSIVE_ENTITY_REF => 'XML_ERROR_RECURSIVE_ENTITY_REF',
+            XML_ERROR_ASYNC_ENTITY => 'XML_ERROR_ASYNC_ENTITY',
+            XML_ERROR_BAD_CHAR_REF => 'XML_ERROR_BAD_CHAR_REF',
+            XML_ERROR_BINARY_ENTITY_REF => 'XML_ERROR_BINARY_ENTITY_REF',
+            XML_ERROR_ATTRIBUTE_EXTERNAL_ENTITY_REF => 'XML_ERROR_ATTRIBUTE_EXTERNAL_ENTITY_REF',
+            XML_ERROR_MISPLACED_XML_PI => 'XML_ERROR_MISPLACED_XML_PI',
+            XML_ERROR_UNKNOWN_ENCODING => 'XML_ERROR_UNKNOWN_ENCODING',
+            XML_ERROR_INCORRECT_ENCODING => 'XML_ERROR_INCORRECT_ENCODING',
+            XML_ERROR_UNCLOSED_CDATA_SECTION => 'XML_ERROR_UNCLOSED_CDATA_SECTION',
+            XML_ERROR_EXTERNAL_ENTITY_HANDLING => 'XML_ERROR_EXTERNAL_ENTITY_HANDLING',
 
+            // see for  others:  https://gnome.pages.gitlab.gnome.org/libxml2/devhelp/libxml2-xmlerror.html
+
+            26 => 'XML_ERR_UNDECLARED_ENTITY',
+            default => "UNKNOWN ERROR"
+        };
+
+        return [$errorCode, $errorMessage];
+    }
 
 
     // -----------------------------------------------------------------------------
@@ -257,8 +325,13 @@ class XhtmlParser implements ContentParserInterface
     {
         $element = end($this->_stack);
         if ( false !== $element) {
-            if ($this->_verbose) $this->_content .= "\n<!--OnCharacterDataHandler: {$element->getName()}-->\n";
-            $this->_content .= $element->onTranslateData($data);
+            if ($this->_useBuffer) {
+                if ($this->_verbose) echo "\n<!--OnCharacterDataHandler: {$element->getName()}-->\n";
+                echo $element->onTranslateData($data);
+            } else {
+                if ($this->_verbose) $this->_content .= "\n<!--OnCharacterDataHandler: {$element->getName()}-->\n";
+                $this->_content .= $element->onTranslateData($data);
+            }
         }
         return true;
     }
@@ -275,8 +348,13 @@ class XhtmlParser implements ContentParserInterface
     {
         $element = end($this->_stack);
         if (false !== $element) {
-            if ($this->_verbose) $this->_content .= "\nm<!--OnDefaultHandler: {$element->getName()}-->\n";
-            $this->_content .= $element->onTranslateData($data);
+            if ($this->_useBuffer) {
+                if ($this->_verbose) echo "\nm<!--OnDefaultHandler: {$element->getName()}-->\n";
+                echo $element->onTranslateData($data);
+            } else {
+                if ($this->_verbose) $this->_content .= "\nm<!--OnDefaultHandler: {$element->getName()}-->\n";
+                $this->_content .= $element->onTranslateData($data);
+            }
         }
         return true;
     }
@@ -299,10 +377,16 @@ class XhtmlParser implements ContentParserInterface
         $element->setParent($parent);
         $element->setParser($this);
         if(false !== $parent) $parent->addChild($element);
-        if($this->_verbose) $this->_content .= "\n<!--OnElementStartHandler: {$element->getName()}-->\n";
-        $this->_content .= $element->onTranslateStart();
-        return true;
 
+        if ($this->_useBuffer) {
+            if($this->_verbose) echo "\n<!--OnElementStartHandler: {$element->getName()}-->\n";
+            echo $element->onTranslateStart();
+        } else {
+            if($this->_verbose) $this->_content .= "\n<!--OnElementStartHandler: {$element->getName()}-->\n";
+            $this->_content .= $element->onTranslateStart();
+        }
+
+        return true;
     }
 
     /**
@@ -317,8 +401,13 @@ class XhtmlParser implements ContentParserInterface
     {
         $element = array_pop($this->_stack);
         if (null !== $element) {
-            if ($this->_verbose) $this->_content .= "\n<!--OnElementEndHandler: {$element->getName()}-->\n";
-            $this->_content .= $element->onTranslateEnd();
+            if ($this->_useBuffer) {
+                if ($this->_verbose) echo "\n<!--OnElementEndHandler: {$element->getName()}-->\n";
+                echo $element->onTranslateEnd();
+            } else {
+                if ($this->_verbose) $this->_content .= "\n<!--OnElementEndHandler: {$element->getName()}-->\n";
+                $this->_content .= $element->onTranslateEnd();
+            }
         }
         return true;
 
@@ -335,7 +424,12 @@ class XhtmlParser implements ContentParserInterface
      */
     public function startNamespaceDeclHandler(XmlParser $xmlParser, string $prefix, string $uri): bool|int
     {
-        if ($this->_verbose) $this->_content .= "\n<!--startNamespaceDeclHandler: {$prefix} : {$uri}-->\n";
+        if ($this->_useBuffer) {
+            if ($this->_verbose) echo "\n<!--startNamespaceDeclHandler: {$prefix} : {$uri}-->\n";
+        } else {
+            if ($this->_verbose) $this->_content .= "\n<!--startNamespaceDeclHandler: {$prefix} : {$uri}-->\n";
+        }
+
         $namespace = Settings::getXhtmlNamespace($prefix);
         if (false === $namespace) {
             //throw new Exception("$prefix is not recognized as a Volta Books Namespace");

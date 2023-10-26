@@ -19,10 +19,10 @@ class TxtParser implements ContentParserInterface
 {
     use ContentParserTrait;
 
-    public function getContent(string $file, NodeInterface $node, bool $verbose = false): string
+    public function getContent(string $source, NodeInterface $node, bool $verbose = false): string
     {
         $this->setNode($node);
-        return '<div style="white-space: pre-wrap;">' . file_get_contents($file) . '</div>';
+        return '<div style="white-space: pre-wrap;">' . file_get_contents($source) . '</div>';
     }
 
     public function getContentType(): string

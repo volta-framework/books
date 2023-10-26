@@ -23,12 +23,12 @@ interface ContentParserInterface
     /**
      * Returns the (parsed) content for the selected node
      *
-     * @param string $file
+     * @param string $source
      * @param NodeInterface $node
      * @param bool $verbose
      * @return string
      */
-    public function getContent(string $file, NodeInterface $node, bool $verbose = false): string;
+    public function getContent(string $source, NodeInterface $node, bool $verbose = false): string;
 
     /**
      * Returns the Mime type of the content parsed

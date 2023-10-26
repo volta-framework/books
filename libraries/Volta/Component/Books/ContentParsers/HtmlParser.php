@@ -19,10 +19,10 @@ class HtmlParser implements ContentParserInterface
 {
     use ContentParserTrait;
 
-    public function getContent(string $file, NodeInterface $node, bool $verbose = false): string
+    public function getContent(string $source, NodeInterface $node, bool $verbose = false): string
     {
         $this->setNode($node);
-        return file_get_contents($file);
+        return file_get_contents($source);
     }
 
     public function getContentType(): string

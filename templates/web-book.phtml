@@ -33,8 +33,8 @@ if (!isset($node))  return __FILE__ . '  placeholder $node not set.';
     <main>
         <ul id="favorites">
             <li><a href="<?= $node->getRoot()->getUri();?>">Home</a></li>
-            <?php if ($node->getRoot()->getMeta()->has('index')) { ?>
-                <li><a href="<?= $node->getRoot()->getPublisher()->getUriOffset() . $node->getRoot()->getMeta()->get('index'); ?>">Index</a></li>
+            <?php if ($node->getRoot()->getMeta()->has('toc')) { ?>
+                <li><a href="<?= $node->getRoot()->getPublisher()->getUriOffset() . $node->getRoot()->getMeta()->get('toc'); ?>">TOC</a></li>
             <?php }; ?>
         </ul>
 
