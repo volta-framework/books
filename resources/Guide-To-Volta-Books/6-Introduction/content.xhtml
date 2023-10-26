@@ -1,0 +1,13 @@
+<volta:xhtml xmlns:volta="https://volta-framework.com/component-books/xhtml">
+
+    <h1><volta:node>{{DISPLAY_NAME}}</volta:node></h1>
+
+
+    <p>In the realm of Volta Books, a Book is distinctive form of book that operates on Directories. These books are comprised of two fundamental elements: <strong>DocumentNodes</strong> and <strong>ResourceNodes</strong>. Within this structure, each <strong>DocumentNode</strong> has the potential to be linked to zero or more other <strong>DocumentNodes</strong>. When a <strong>DocumentNode</strong> exists independently, without a parent, it assumes the role of either a <strong>RootNode</strong> or <strong>BookNode</strong>.</p>
+
+    <p>To earn the classification of a <strong>DocumentNode</strong>, specific criteria must be met. A directory must contain two obligatory files within it. The first file is named <var>content.*</var> and serves as the repository for the document's content. The second file, <var>meta.json</var> is essential, and it must adhere to the standards of a valid JSON file, serving as the storage space for crucial metadata.</p>
+
+    <p>Volta Books are versatile in the types of content they accept, including plain text files, HTML, XHTML files, and even PHP files. Once finished the book can be published to different Media. Currently, we support  Dynamic Website, a Static website and EPUB</p>
+
+
+</volta:xhtml>
