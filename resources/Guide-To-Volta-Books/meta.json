@@ -1,8 +1,8 @@
 {
-  "displayName" : "How To Use Volta Books",
+  "displayName" : "Guide To Volta Books",
   "copyright": "(c) 2023-now Rob Demmenie",
   "author": "Rob Demmenie",
   "language": "en",
-  "index": "/4-Table-of-Contents/",
+  "tocPage": "/2-Table-of-Contents/",
   "cover": "/cover.png"
 }

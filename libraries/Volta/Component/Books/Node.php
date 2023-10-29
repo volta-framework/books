@@ -352,7 +352,8 @@ abstract class Node implements NodeInterface
             $toc[] = new TocItem(
                 ucwords(str_replace(['_', '-'], ' ', $childNode->getDisplayName())),
                 $childNode->getUri(),
-                $this->getTocFromNode($childNode)
+                $this->getTocFromNode($childNode),
+                $childNode->getIndex()
             );
         }
         return $toc;

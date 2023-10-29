@@ -318,7 +318,7 @@ class Element
     public function onTranslateEnd(): string
     {
         if (in_array($this->getName(), $this->_emptyElements)) {
-            return '</' . $this->getName() . '/>';
+            return '<' . $this->getName() . $this->_attributesAsString() . '/>';
         }
         return '</' . $this->getName() . '>';
     }

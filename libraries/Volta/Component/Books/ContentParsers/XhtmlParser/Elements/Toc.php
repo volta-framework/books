@@ -18,16 +18,21 @@ class Toc extends BaseElement
 {
     /**
      * @param TocItem[] $items
+     * @param int $level
      * @return string
      */
-    private function _printToc(array $items): string
+    private function _printToc(array $items, int $level=1): string
     {
         $html = '';
         if(count($items)) $html .= "\n<ul class=\"toc document-nodes\">";
         foreach($items as $item) {
-            $html .= "\n<li class=\"toc document-node\"><a  class=\"toc link\" href=\"$item->uri\">{$item->caption}</a>";
-            $html .= $this->_printToc($item->children);
-            $html .= "\n</li>";
+            $html .= "\n<li class=\"toc document-node\"><a class=\"toc link\" href=\"$item->uri\">{$item->caption}</a>";
+            if ($level === 1){
+                $html .= " <em>{$item->page}</em>";
+            }
+            $html .= $this->_printToc($item->children, $level + 1);
+
+            $html .= "</li>\n";
         }
         if(count($items)) $html .= "\n</ul>";
         return $html;

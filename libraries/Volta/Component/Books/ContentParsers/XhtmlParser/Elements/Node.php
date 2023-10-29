@@ -12,48 +12,62 @@ declare(strict_types=1);
 namespace Volta\Component\Books\ContentParsers\XhtmlParser\Elements;
 
 use Volta\Component\Books\ContentParsers\XhtmlParser\Element as BaseElement;
-use Volta\Component\Books\Settings;
 
 /**
- * An internal link. The link may vary based on the export format. In case of DocumentNode in an
- *  epub, the link will point to a content.xhtml file, If it is published on the web it will point to
- * the directory.
+ * A Volta XHTML element for inserting a link to a DocumentNode.
  */
 class Node extends BaseElement
 {
+    /**
+     * @ignore (do not show up in generated documentation)
+     * @var string $_template The content with placeholders
+     */
+    private string $_template = '';
 
-    private string $_caption = '';
-
+    /**
+     * @inheritdoc
+     */
     public function onTranslateStart(): string
     {
       return '';
     }
 
+    /**
+     * @inheritdoc
+     */
     public function onTranslateData(string $data): string
     {
-        $this->_caption .= $data;
+        $this->_template .= $data;
         return '';
     }
 
+    /**
+     * @inheritdoc
+     */
     public function onTranslateEnd(): string
     {
-        $href = $this->getAttribute('path',  $this->_getNode()->getUri());
-        $title = $this->getAttribute('title', $this->_getNode()->getName());
-        $this->_caption = str_replace(
-            [
-                '{{NAME}}',
-                '{{DISPLAY_NAME}}',
-                '{{INDEX}}',
-                '{{URI}}'
-            ],
-            [
-                $this->_getNode()->getName(),
-                $this->_getNode()->getDisplayName(),
-                $this->_getNode()->getIndex(),
-                $this->_getNode()->getUri()
-            ],
-            $this->_caption
+        if ($this->hasAttribute('path')) {
+            $current = false;
+            $path = $this->getAttribute('path');
+            $node = $this->_getNode()->getRoot()->getChild($path);
+            if (null === $node) {
+                return '<blockquote class="error">volta:node: Node "<strong>' . $path . '</strong>" not found!</blockquote>';
+            }
+        } else {
+            $current = true;
+            $node = $this->_getNode();
+        }
+
+        // now we have the node get the title and parse the template
+        $title = $this->getAttribute('title', $node->getName());
+        $text  = str_replace(
+            ['{{NAME}}', '{{DISPLAY_NAME}}', '{{INDEX}}', '{{URI}}'],
+            [$node->getName(), $node->getDisplayName(), $node->getIndex(), $node->getUri()],
+            $this->_template
         );
-        return  sprintf('<a href="%s" title="%s">%s</a>', $this->_getNode()->getUri(), $title, $this->_caption);
+
+        // do not create a link to itself...
+        if ($current) return  sprintf('<span class="volta-node" title="%s">%s</span>', $title, $text);
+        return  sprintf('<a class="volta-node" href="%s" title="%s">%s</a>', $node->getUri(), $title, $text);
     }
 }

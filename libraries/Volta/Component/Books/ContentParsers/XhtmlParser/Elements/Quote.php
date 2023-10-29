@@ -50,7 +50,7 @@ class Quote extends BaseElement
      */
     public function onTranslateEnd(): string
     {
-        $refHtml = '<br/><em>unknown source</em>';
+        $refHtml = '<em>unknown source</em>';
         if ($this->hasAttribute('href')) {
             $ref = $this->getAttribute('href');
             $refHtml = '<em><small><strong>Source @ </strong><a target="_blank" href="'.$ref.'">'.$ref.'</a></small></em>';
@@ -62,7 +62,7 @@ class Quote extends BaseElement
         if ($this->getAttribute('inline', 'false') === 'false' ) {
             $html .=  '</q><br/>'.$refHtml.'</blockquote>';
         } else {
-            $html .= '</q> (' . $refHtml . ')';
+            $html .= '</q>(' . trim($refHtml) . ')';
         }
 
         return $html;

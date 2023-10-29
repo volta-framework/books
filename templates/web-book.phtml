@@ -10,7 +10,7 @@ if (!isset($node))  return __FILE__ . '  placeholder $node not set.';
 
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <link rel="stylesheet" title="Default" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/dark.min.css" >
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/light.min.css" >
     <link rel="stylesheet" href="/assets/css/web-book.css">
 
 </head>
@@ -33,8 +33,8 @@ if (!isset($node))  return __FILE__ . '  placeholder $node not set.';
     <main>
         <ul id="favorites">
             <li><a href="<?= $node->getRoot()->getUri();?>">Home</a></li>
-            <?php if ($node->getRoot()->getMeta()->has('toc')) { ?>
-                <li><a href="<?= $node->getRoot()->getPublisher()->getUriOffset() . $node->getRoot()->getMeta()->get('toc'); ?>">TOC</a></li>
+            <?php if ($node->getRoot()->getMeta()->has('tocPage')) { ?>
+                <li><a href="<?= $node->getRoot()->getPublisher()->getUriOffset() . $node->getRoot()->getMeta()->get('tocPage'); ?>">TOC</a></li>
             <?php }; ?>
         </ul>
 

@@ -452,7 +452,7 @@ class Epub extends Publisher
                 mkdir($this->getSourceDir() . $this->_getContentDir() . $node->getRelativePath(), 0777, true);
                 //$this->getLogger()->debug('Created ' . $this->_getContentDir() . $node->getRelativePath());
             }
-            $name = str_replace(DIRECTORY_SEPARATOR . DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR, $this->_getContentDir() . trim($node->getRelativePath(), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'content.xhtml');
+            $name = str_replace(DIRECTORY_SEPARATOR . DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR, $this->_getContentDir() . trim($node->getRelativePath(), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'content.phtml');
 
         } else {
             if (!is_dir($this->getSourceDir() . $this->_getContentDir() . dirname($node->getRelativePath()))) {

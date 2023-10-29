@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100&display=swap');
+
 :root{
     --body-color: darkslategrey;
     --body-max-width: 900px;
@@ -15,12 +17,14 @@
     --h1-color: sienna;
     --h2-color: sienna;
     --h3-color: sienna; /*sandybrown*/
-
+    --em-color: #27342d;
     --padding: 10px;
 }
 
+
 /** Sections **/
-body {margin:auto; width:80vw; max-width: var(--body-max-width); padding:var(--padding); font-family: Verdana, serif; color:var(--body-color); line-height: 1.8}
+body {margin:auto; width:80vw; max-width: var(--body-max-width); padding:var(--padding);
+    font-family: 'Roboto', Verdana, sans-serif; color:var(--body-color); line-height: 1.8}
 header {text-align: center;  color:var(--header-color);  padding:var(--padding);}
 nav {padding:var(--padding); display:flex; justify-content: space-between}
 main {border:1px solid var(--main-border-color); min-height:80vh; padding:var(--padding); border-radius: var(--padding)}
@@ -54,8 +58,15 @@ pre{border: 1px solid var(--main-border-color);   border-radius: 5px !important;
 code:not(pre > code) {overflow:auto; display:block;border: 1px solid var(--main-border-color); padding: 4px; border-radius: 5px; background-color: var(--box-bg-color)}
 code:is(p > code) { font-size: 11pt; border:0; background-color: transparent; display: inline-block; padding: 4px;color: var(--code-bg-color);   }
 abbr { color:var(--h1-color); text-transform: capitalize; font-weight: bold}
-
 var {font-family: "Courier New", serif;}
+em {color: var(--em-color);}
+
+/* TOC (in main section) */
+.toc.document-nodes { list-style: none; padding:0 20px 0 0 ;}
+.toc.document-nodes .toc.document-nodes {padding:0;}
+.toc.document-node { margin:0 0 0 20px; padding:0; border-bottom: 1px dotted #dddddd; }
+.toc.document-node .toc.document-node {border-bottom: none; }
+.toc.document-node > em { float: right}
 
 /* Quiz (in main section) */
 .quiz{}
@@ -83,27 +94,20 @@ var {font-family: "Courier New", serif;}
 .chuck{ font-size:8pt; font-family: "Courier New", serif; text-align: center}
 .chuck:before{content: '"'}
 .chuck:after{content: '"'}
+
 .code-snippets{font-size: 8pt;}
 .anchor:before{content: '# '}
-.book-overview {
-    justify-content: center;
-    align-items: center;
-    width:100%;
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-}
-.book-overview > figure {
-    display: inline-block;
-}
-.book-overview > figure > a > img {
-    display: inline-block;
-    width: 200px;
-    /* ratio based on  https://snappa.com/blog/ebook-cover-size/ */
-    height: calc(200px * 1.5);
-}
 
-.center {text-align: center}
+.book-overview {justify-content: center; align-items: center; width:100%; display: flex; flex-direction: row; flex-wrap: wrap;}
+.book-overview > figure {display: inline-block;}
+/* ratio based on  https://snappa.com/blog/ebook-cover-size/ */
+.book-overview > figure > a > img {display: inline-block; width: 200px; height: calc(200px * 1.5); }
+
+.title{font-size: 40px}
+.center {text-align: center;}
+.center-all {margin: 20vh auto 0 auto; text-align: center;}
+.box { }
+
 
 @media only screen and (max-width: 600px) {
     p {text-align: left; }

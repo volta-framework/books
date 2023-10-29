@@ -20,11 +20,13 @@ class TocItem
      * @param string $caption
      * @param string $uri
      * @param TocItem[] $children
+     * @param int $page
      */
     public function __construct(
         public readonly string $caption,
         public readonly string $uri,
-        public readonly array $children
+        public readonly array $children,
+        public readonly int $page,
     ){}
 
 }

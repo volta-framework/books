@@ -41,12 +41,10 @@ return [
                 */
 
                'library' => [
-                   'een' => realpath(__DIR__ . '/../resources/ExampleBook'),
-                   'twee' => realpath(__DIR__ . '/../resources/ExampleBook2'),
-                   'drie' => realpath(__DIR__ . '/../resources/ExampleBook'),
-                   'vier' => realpath(__DIR__ . '/../resources/ExampleBook'),
+                   'ExampleBook' => realpath(__DIR__ . '/../resources/ExampleBook'),
+                   'ExampleBook2' => realpath(__DIR__ . '/../resources/ExampleBook2'),
+                   'GuideToVoltaBook' => realpath(__DIR__ . '/../resources/Guide-To-Volta-Books'),
                ],
-
            ]
        ]
     ],
