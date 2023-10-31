@@ -1,9 +1,10 @@
 <?php
     declare(strict_types=1);
     $XmlParser = new Volta\Component\Books\ContentParsers\XhtmlParser();
+    $XmlParser->setNode($this);
 ?>
 
-<h1>Appendix</h1>
+<h1><?=$this->getDisplayName()?></h1>
 
 <p>Here you wil find a list with <abbr>XHTML</abbr> elements in the volta namespace and its usage.</p>
 
@@ -23,7 +24,7 @@ eol; ?>
     &nbsp;&nbsp;&nbsp;&nbsp;<var>inline: </var>"false"(default) or "true" to display as multiline (&lt;blockquote&gt;) or inline (&lt;q&gt;) element.
 </div>
 <div><strong><u>Code:</u></strong><br><pre><code class="language-html"><?=htmlentities($xhtml); ?></code></pre></div>
-<div><strong><u>Result:</u></strong><br><?= $XmlParser->getContent($xhtml, $this->getNode()) ?></div>
+<div><strong><u>Result:</u></strong><br><?= $XmlParser->getContent($xhtml) ?></div>
 
 <h2 id="volta:chuck">volta:chuck</h2>
 <?php $xhtml = <<< eol
@@ -31,38 +32,43 @@ eol; ?>
 eol; ?>
 <div><strong><u>Usage:</u></strong><br>Shows a random Chuck Norris joke</div>
 <div><strong><u>Code:</u></strong><br><pre><code class="language-html"><?=htmlentities($xhtml); ?></code></pre></div>
-<div><strong><u>Result:</u></strong><br><?= $XmlParser->getContent($xhtml, $this->getNode()) ?></div>
+<div><strong><u>Result:</u></strong><br><?= $XmlParser->getContent($xhtml) ?></div>
 
 
 <h2 id="volta:footnote">volta:footnote</h2>
-<p>Shows  the footnote as a number and list all at the bottom of a page</p>
-        <?php $xhtml = <<< eol
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
-                labore et dolore magna aliqua.<volta:footnote>Some tekst to be added as a foot note</volta:footnote></p>
-                <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco
-                laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit
-                esse cillum dolore eu fugiat nulla pariatur.<volta:footnote href="With a link">Another footnote with a link</volta:footnote> Excepteur sint occaecat cupidatat non proident, sunt in culpa
-                qui officia deserunt mollit anim id est laborum. </p>
-                eol; ?>
-<div class="box">
-<strong><u>Code:</u></strong><br><pre><code class="language-html"><?=htmlentities($xhtml); ?></code></pre>
-<strong><u>Result:</u></strong><br><?= $XmlParser->getContent($xhtml, $this->getNode()) ?>
+<?php $xhtml = <<< eol
+    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
+    labore et dolore magna aliqua.<volta:footnote>Some tekst to be added as a foot note</volta:footnote></p>
+    
+    <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco
+    laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit
+    esse cillum dolore eu fugiat nulla pariatur.<volta:footnote href="https://www.youtube.com/watch?v=dQw4w9WgXcQ">Another footnote as a link</volta:footnote> Excepteur sint occaecat cupidatat non proident, sunt in culpa
+    qui officia deserunt mollit anim id est laborum. </p>
+    
+    <p>We can add a footnote with embedded (volta:x)html tags<volta:footnote>Add <strong>link</strong> to <volta:node path="/">Home</volta:node></volta:footnote></p>
+eol; ?>
+<div><strong><u>Usage:</u></strong><br>Shows  the footnote as a number and list all at the bottom of a pagee</div>
+<div><strong><u>Attributes:</u></strong><br>
+    <var>href: </var>Makes the Footnote clickable to the target specified<br>
 </div>
+<strong><u>Code:</u></strong><br><pre><code class="language-html"><?=htmlentities($xhtml); ?></code></pre>
+<strong><u>Result:</u></strong><br><?= $XmlParser->getContent($xhtml) ?>
+
 
 <h2 id="volta:node">volta:node</h2>
 <p>Inserts a link to another node. The attribute <var>path</var> is relative to the root and must start with a slash(/)</p>
-        <?php $xhtml = <<< 'eol'
-                <ol>
-                <li>Path is relative to the root: <volta:node path="/2-Table-of-Contents">"{{DISPLAY_NAME}}"</volta:node></li>
-                <li>Defaults to the current page: <volta:node>"{{DISPLAY_NAME}} (page {{INDEX}})"</volta:node></li>
-                <li>Get the full URI  <volta:node path="/3-Introduction">"{{URI}}"</volta:node></li>
-                <li>With custom tooltip  <volta:node path="/" title="Back to home">"{{NAME}}"</volta:node></li>
-                <li>Non exiting page results in an error:<volta:node path="/to-bogus-page">"{{NAME}}"</volta:node></li>
-                </ol>
-                eol; ?>
+<?php $xhtml = <<< 'eol'
+    <ol>
+    <li>Path is relative to the root: <volta:node path="/2-Table-of-Contents">"{{DISPLAY_NAME}}"</volta:node></li>
+    <li>Defaults to the current page: <volta:node>"{{DISPLAY_NAME}} (page {{INDEX}})"</volta:node></li>
+    <li>Get the full URI  <volta:node path="/3-Introduction">"{{URI}}"</volta:node></li>
+    <li>With custom tooltip  <volta:node path="/" title="Back to home">"{{NAME}}"</volta:node></li>
+    <li>Non exiting page results in an error:<volta:node path="/to-bogus-page">"{{NAME}}"</volta:node></li>
+    </ol>
+eol; ?>
 <div class="box">
 <strong><u>Code:</u></strong><br><pre><code class="language-html"><?=htmlentities($xhtml); ?></code></pre>
-<strong><u>Result:</u></strong><br><?= $XmlParser->getContent($xhtml, $this->getNode()) ?>
+<strong><u>Result:</u></strong><br><?= $XmlParser->getContent($xhtml) ?>
 </div>
 
 <h2 id="volta:highlight">volta:highlight</h2>
@@ -74,7 +80,7 @@ eol; ?>
                 eol; ?>
 <div class="box">
 <strong><u>Code:</u></strong><br><pre><code class="language-html"><?=htmlentities($xhtml); ?></code></pre>
-<strong><u>Result:</u></strong><br><?= $XmlParser->getContent(htmlentities($xhtml), $this->getNode()) ?>
+<strong><u>Result:</u></strong><br><?= $XmlParser->getContent(htmlentities($xhtml)) ?>
 </div>
 
 
@@ -85,3 +91,21 @@ eol; ?>
 <h2 id="volta:toc">volta:toc</h2>
 
 <h2 id="volta:xhtml">volta:xhtml</h2>
+
+<h2 id="volta:glossary">volta:glossary</h2>
+<p>This element will collect all the glossary entries and displays them in alphabetical order.</p>
+<?php $xhtml = <<< 'eol'
+    <volta:glossary term="B thing">
+        Something start with a B
+    </volta:glossary>    
+    <volta:glossary term="a thing">
+        All first characters of an item name will be capitalized.
+    </volta:glossary>
+    <volta:glossary term="Anything">
+       A space precedes a character, thus this item is second
+    </volta:glossary>
+eol; ?>
+<div class="box">
+<strong><u>Code:</u></strong><br><pre><code class="language-html"><?=htmlentities($xhtml); ?></code></pre>
+<strong><u>Result:</u></strong><br><?= $XmlParser->getContent($xhtml) ?>
+</div>

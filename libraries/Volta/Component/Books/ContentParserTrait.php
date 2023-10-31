@@ -11,6 +11,12 @@ declare(strict_types=1);
 
 namespace Volta\Component\Books;
 
+use Volta\Component\Books\ContentParsers\HtmlParser;
+use Volta\Component\Books\ContentParsers\MarkdownParser;
+use Volta\Component\Books\ContentParsers\PhpParser;
+use Volta\Component\Books\ContentParsers\TxtParser;
+use Volta\Component\Books\ContentParsers\XhtmlParser;
+
 trait ContentParserTrait
 {
 
@@ -20,7 +26,7 @@ trait ContentParserTrait
     protected NodeInterface $_node;
 
     /**
-     * @return NodeInterface
+     * @inheritDoc
      */
     public function getNode():NodeInterface
     {
@@ -28,8 +34,7 @@ trait ContentParserTrait
     }
 
     /**
-     * @param NodeInterface $node
-     * @return ContentParsers\HtmlParser|ContentParsers\PhpParser|ContentParsers\TxtParser|ContentParsers\XhtmlParser|ContentParserTrait
+     * @inheritDoc
      */
     public function setNode(NodeInterface $node): self
     {

@@ -1,0 +1,24 @@
+<volta:xhtml xmlns:volta="https://volta-framework.com/component-books/xhtml">
+
+    <h1><volta:node>{{DISPLAY_NAME}}</volta:node></h1>
+
+    <p>A DocumentNode can contain content in different formats, such as plain text or HTML. Each type of content requires a corresponding content parser, which is a PHP class implementing the <var>Volta\Component\Books\ContentParserInterface.</var></p>
+
+    <p>To specify the content-type of a DocumentNode, just provide the content file with the correct extension. Volta Books will search for a registered ContentParser for this extension in the current configuration. If none is found, an error will occur. You can create your own content parsers for specific extensions, which we'll discuss further. Volta Books includes the following built-in ContentParsers:</p>
+
+    <ul>
+        <li>Volta\Component\Books\ContentParsers\<strong>TxtParser</strong> for <var>content.txt</var> files</li>
+        <li>Volta\Component\Books\ContentParsers\<strong>HtmlParser</strong> for <var>content.html</var> and <var>content.htm</var> files</li>
+        <li>Volta\Component\Books\ContentParsers\<strong>PhpParser</strong> for <var>content.php</var> and <var>content.phtml</var> files</li>
+        <li>Volta\Component\Books\ContentParsers\<strong>XhtmlParser</strong> for <var>content.xhtml</var> files</li>
+        <li>Volta\Component\Books\ContentParsers\<strong>TxtParser</strong> for <var>content.md</var> files</li>
+    </ul>
+
+    <h2>Create your own ContentParser</h2>
+
+    <p>As specified before a ContentParser is a PHP class implementing the ContentParserInterface. The interface contains </p>
+
+
+
+
+</volta:xhtml>

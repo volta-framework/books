@@ -19,12 +19,17 @@ class HtmlParser implements ContentParserInterface
 {
     use ContentParserTrait;
 
-    public function getContent(string $source, NodeInterface $node, bool $verbose = false): string
+    /**
+     * @inheritDoc
+     */
+    public function getContent(string $source,  bool $verbose = false): string
     {
-        $this->setNode($node);
         return file_get_contents($source);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getContentType(): string
     {
         return 'text/html';

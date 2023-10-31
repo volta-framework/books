@@ -54,7 +54,6 @@ class DocumentNode extends Node
             $this->_meta = new Meta($this->getAbsolutePath() . DIRECTORY_SEPARATOR . 'meta.json', $this);
         }
         return $this->_meta;
-
     }
 
     /**
@@ -126,7 +125,6 @@ class DocumentNode extends Node
                             }
                             $this->_resources[$resource->getUri()] = $resource;
                         }
-
                     }
                 } else {
                     if (strtolower($file->getFilename()) === 'meta.json') continue;
@@ -140,9 +138,7 @@ class DocumentNode extends Node
                     }
                     $this->_resources[$resource->getUri()] = $resource;
                 }
-
             }
-
         }
         return $this->_resources;
     }
@@ -209,11 +205,7 @@ class DocumentNode extends Node
      */
     public function getContent(): string
     {
-        return str_replace(
-            [ '{{URI_OFFSET}}'],
-            [Node::$uriOffset . $this->getUri()],
-            $this->_getContentParser()->getContent($this->getContentFile(), $this)
-        );
+        return $this->_getContentParser()->getContent($this->getContentFile());
     }
 
     /**
@@ -253,18 +245,28 @@ class DocumentNode extends Node
     }
 
     /**
+     * @ignore (do not showup in gerated documentation)
+     * @var ContentParserInterface
+     */
+    protected ContentParserInterface $_contentParser;
+
+    /**
      * @return ContentParserInterface
      * @throws Exception
      */
     protected function _getContentParser(): ContentParserInterface
     {
-        $contentFile =  $this->getContentFile();
-        $extension = pathinfo($contentFile, PATHINFO_EXTENSION);
-        $contentParser =  Settings::getContentParserFor($extension);
-        if (false === $contentParser) {
-            throw new Exception(sprintf('No Content Parser found for *.%s files', $extension));
+        if (!isset($this->_contentParser)) {
+            $contentFile = $this->getContentFile();
+            $extension = pathinfo($contentFile, PATHINFO_EXTENSION);
+            $contentParser = Settings::getContentParserFor($extension);
+            if (false === $contentParser) {
+                throw new Exception(sprintf('No Content Parser found for *.%s files', $extension));
+            }
+            $this->_contentParser = $contentParser;
+            $this->_contentParser->setNode($this);
         }
-        return $contentParser;
+        return $this->_contentParser;
     }
 
     /**

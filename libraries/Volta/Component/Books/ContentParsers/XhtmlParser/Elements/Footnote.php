@@ -18,9 +18,16 @@ class Footnote  extends BaseElement
 {
 
     protected static array $_footnotes = [];
+
     protected string $_ref = '';
 
     private int $_index = 0;
+
+
+    /**
+     * @inheritDoc
+     * @throws XhtmlParser\Exception
+     */
     public function onTranslateStart(): string
     {
         $href = $this->getAttribute('href', '') ;
@@ -35,17 +42,31 @@ class Footnote  extends BaseElement
         ];
         return '<em class="footnote">';
     }
+
+
+    private bool $_buffer = false;
+
+    /**
+     * @inheritDoc
+     */
     public function onTranslateData(string $data): string
     {
-        Footnote::$_footnotes[$this->_index]['caption'] .= $data;
+        if (!$this->_buffer) {
+            ob_start();
+            $this->_buffer = true;
+        }
+        echo $data;
+        //Footnote::$_footnotes[$this->_index]['caption'] .= $data;
         return '';
     }
 
     /**
-     * @return string
+     * @inheritDoc
      */
     public function onTranslateEnd(): string
     {
+        Footnote::$_footnotes[$this->_index]['caption'] = ob_get_contents();
+        ob_end_clean();
         return sprintf( '<sup><a href="#footnote_%d">[%d]</a></sup></em>',   $this->_index+1, $this->_index+1);
     }
 

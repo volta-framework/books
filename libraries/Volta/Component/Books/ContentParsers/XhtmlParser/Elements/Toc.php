@@ -27,11 +27,10 @@ class Toc extends BaseElement
         if(count($items)) $html .= "\n<ul class=\"toc document-nodes\">";
         foreach($items as $item) {
             $html .= "\n<li class=\"toc document-node\"><a class=\"toc link\" href=\"$item->uri\">{$item->caption}</a>";
-            if ($level === 1){
-                $html .= " <em>{$item->page}</em>";
-            }
+//            if ($level === 1){
+//                $html .= " <em>{$item->page}</em>";
+//            }
             $html .= $this->_printToc($item->children, $level + 1);
-
             $html .= "</li>\n";
         }
         if(count($items)) $html .= "\n</ul>";

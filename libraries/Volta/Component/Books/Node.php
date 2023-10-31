@@ -109,16 +109,12 @@ abstract class Node implements NodeInterface
      */
     public function getUri(): string
     {
-
         if ($this->getRoot()->getPublisher()) {
             $relativeUri =  $this->getRoot()->getPublisher()->sanitizeUri($this);
         } else {
             // create the relative uri for this node thus including a leading SLUG_SEPARATOR
             $relativeUri = str_replace(DIRECTORY_SEPARATOR, Node::SLUG_SEPARATOR,  $this->getRelativePath());
-
         }
-
-
         return $relativeUri;
     }
 
@@ -207,8 +203,6 @@ abstract class Node implements NodeInterface
             // The root is the directory with no other DocumentNode directories above.
             // So we loop upwards to find this folder ...
             $directories = explode(DIRECTORY_SEPARATOR, rtrim($this->getAbsolutePath(), DIRECTORY_SEPARATOR));
-
-            $currentNode = $this;
             $next = true;
             $loopCounter = count($directories);
             $this->_parent = null;
@@ -311,16 +305,16 @@ abstract class Node implements NodeInterface
      */
     public function __toString(): string
     {
-        $str  = "Type {$this->getType()}";
+        $str  = "\nType {$this->getType()}";
         $str .= "\nAbsolute Path : " . $this->getAbsolutePath();
         $str .= "\nAbs. Root     : " . $this->getRoot()->getAbsolutePath();
         $str .= "\nAbs. Parent   : " . (($this->getParent()===null) ? 'null' : $this->getParent()->getAbsolutePath());
         $str .= "\nName          : " . $this->getName();
         $str .= "\nUri           : " . $this->getUri();
         $str .= "\nRelativePath  : " . $this->getRelativePath();
-        $str .= "\nchildren      : ". print_r(array_keys($this->getChildren()), true);
-        $str .= "next          : " . (($this->getNext()===null) ? 'null' : $this->getNext()->getAbsolutePath());
-        $str .= "\nprevious      : " . (($this->getPrevious()===null) ? 'null' : $this->getPrevious()->getAbsolutePath());
+        $str .= "\nChildren      : ". print_r(array_keys($this->getChildren()), true);
+        $str .= "\nNext          : " . (($this->getNext()===null) ? 'null' : $this->getNext()->getAbsolutePath());
+        $str .= "\nPrevious      : " . (($this->getPrevious()===null) ? 'null' : $this->getPrevious()->getAbsolutePath());
         $str .= "\n";
         return $str;
     }

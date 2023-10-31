@@ -21,14 +21,21 @@ interface ContentParserInterface
     public function getNode(): NodeInterface;
 
     /**
+     * Sets the (Document)Node the content belongs to
+     *
+     * @param NodeInterface $node
+     * @return ContentParserInterface
+     */
+    public function setNode(NodeInterface $node): ContentParserInterface;
+
+    /**
      * Returns the (parsed) content for the selected node
      *
      * @param string $source
-     * @param NodeInterface $node
      * @param bool $verbose
      * @return string
      */
-    public function getContent(string $source, NodeInterface $node, bool $verbose = false): string;
+    public function getContent(string $source, bool $verbose = false): string;
 
     /**
      * Returns the Mime type of the content parsed

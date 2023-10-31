@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400&display=swap');
 
 :root{
     --body-color: darkslategrey;
@@ -23,10 +23,11 @@
 
 
 /** Sections **/
-body {margin:auto; width:80vw; max-width: var(--body-max-width); padding:var(--padding);
-    font-family: 'Roboto', Verdana, sans-serif; color:var(--body-color); line-height: 1.8}
+body {margin:auto; width:80vw; max-width: var(--body-max-width); padding:var(--padding); font-family: 'Roboto', sans-serif; color:var(--body-color); line-height: 1.8}
 header {text-align: center;  color:var(--header-color);  padding:var(--padding);}
-nav {padding:var(--padding); display:flex; justify-content: space-between}
+nav {padding:var(--padding); display:flex; justify-content: space-between; }
+nav > .previous:before { content: '\00AB  '; font-size:20px;vertical-align: center;}
+nav > .next:after { content: ' \00BB'; font-size:20px; vertical-align: center;}
 main {border:1px solid var(--main-border-color); min-height:80vh; padding:var(--padding); border-radius: var(--padding)}
 footer {text-align: center; color: var(--footer-color);  padding:var(--padding)}
 
@@ -48,8 +49,8 @@ img {width: 95%; height: auto; margin:auto; display: block;}
 h1, h2 { border-bottom: 1px solid var(--main-border-color); color:var(--h1-color)}
 a:link, a:visited, a:active, a:hover { color:var(--link-color); text-decoration: none;}
 a:hover {text-decoration: underline;}
-a[target="_blank"]::after {content: '\2197'; font-size:8pt;vertical-align: super; color:var( --body-color);}
-p {text-align: justify; }
+a[target="_blank"]::after {content: ' \2197'; font-size:8pt; vertical-align: center; color:var(--body-color);}
+p { text-align: justify-all; }
 p:first-letter{padding-left: var(--padding); font-weight: bold; color:var(--info-color);}
 blockquote{border: 1px solid var(--info-color); border-left-width: 4px; border-right-width: 4px; border-radius: 4px; padding: var(--padding); word-break: break-word; }
 blockquote.note{border-color: var(--note-color) }
@@ -61,14 +62,14 @@ abbr { color:var(--h1-color); text-transform: capitalize; font-weight: bold}
 var {font-family: "Courier New", serif;}
 em {color: var(--em-color);}
 
-/* TOC (in main section) */
+/* <volta:toc> */
 .toc.document-nodes { list-style: none; padding:0 20px 0 0 ;}
 .toc.document-nodes .toc.document-nodes {padding:0;}
 .toc.document-node { margin:0 0 0 20px; padding:0; border-bottom: 1px dotted #dddddd; }
 .toc.document-node .toc.document-node {border-bottom: none; }
 .toc.document-node > em { float: right}
 
-/* Quiz (in main section) */
+/* <volta:quiz> */
 .quiz{}
 .quiz .question { margin:20px;}
 .quiz .question .question-data{  }
@@ -84,25 +85,29 @@ em {color: var(--em-color);}
 .quiz .buttons > button{ padding:var(--padding); border:1px solid var(--main-border-color); border-radius: 5px;}
 .quiz .buttons > button:hover{ color: var(--link-color)}
 
-/* <volta:footnote> Footnotes bar (in main section) */
+/* <volta:footnote> */
 .footnotes { padding: 20px; font-size: 8pt; margin: 50px 0 0 0 }
 .footnotes:before{ display:block; content: 'FOOTNOTES:'; border-bottom: 1px solid var(--main-border-color);}
-.footnotes li { padding: 5px 0 5px 0 }
+.footnotes li { padding: 0 5px 0 5px }
 .footnote > sup {padding: 0 0 0 4px; font-size: 8pt;}
 
-/**/
+/*Glossary*/
+.glossaryEntry {margin: 0 0 20px 0}
+.glossaryTerm {font-weight:bold; text-decoration: underline;}
+.glossaryDescription {margin:0 0 0 20px;}
+
+/* <volta:chuck> */
 .chuck{ font-size:8pt; font-family: "Courier New", serif; text-align: center}
 .chuck:before{content: '"'}
 .chuck:after{content: '"'}
 
+/* Miscellaneous */
 .code-snippets{font-size: 8pt;}
 .anchor:before{content: '# '}
-
 .book-overview {justify-content: center; align-items: center; width:100%; display: flex; flex-direction: row; flex-wrap: wrap;}
 .book-overview > figure {display: inline-block;}
 /* ratio based on  https://snappa.com/blog/ebook-cover-size/ */
 .book-overview > figure > a > img {display: inline-block; width: 200px; height: calc(200px * 1.5); }
-
 .title{font-size: 40px}
 .center {text-align: center;}
 .center-all {margin: 20vh auto 0 auto; text-align: center;}

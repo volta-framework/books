@@ -36,7 +36,7 @@ if (!isset($publisher, $uriOffset))  {
                         <img src="/assets/media/cover.png"/>
                      <?php } ?>
                     </a>
-                    <figcaption><?= $book->getName()?></figcaption>
+                    <figcaption><?= $book->getDisplayName()?></figcaption>
                 </figure>
             <?php }?>
         <?php } catch(Throwable $e) { ?>

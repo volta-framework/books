@@ -15,6 +15,7 @@ use Volta\Component\Books\ContentParsers\HtmlParser;
 use Volta\Component\Books\ContentParsers\PhpParser;
 use Volta\Component\Books\ContentParsers\TxtParser;
 use Volta\Component\Books\ContentParsers\XhtmlParser;
+use Volta\Component\Books\ContentParsers\MarkdownParser;
 use Volta\Component\Books\Exceptions\Exception;
 
 /**
@@ -128,7 +129,7 @@ abstract class Settings
         'html' => HtmlParser::class,
         'htm' => HtmlParser::class,
         'txt' => TxtParser::class,
-        'md' => TxtParser::class,
+        'md' => MarkdownParser::class,
     ];
 
     /**
@@ -140,7 +141,7 @@ abstract class Settings
     {
         if (isset(static::$_contentParsers[$extension])) {
             $parser = static::$_contentParsers[$extension];
-            return  new $parser();
+            return new $parser();
         }
         return false;
     }

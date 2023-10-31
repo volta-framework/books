@@ -21,6 +21,7 @@
     "psr/log": "^3.0",
     "slim/slim": "4.*",
     "slim/psr7": "^1.6",
+    "erusev/parsedown": "dev-master",
     "psr/container": "^2.0",
     "volta-framework/component-configuration": "*",
     "volta-framework/component-logging": "*"

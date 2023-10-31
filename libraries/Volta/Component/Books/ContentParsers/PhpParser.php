@@ -15,16 +15,29 @@ use Volta\Component\Books\ContentParserInterface;
 use Volta\Component\Books\ContentParserTrait;
 use Volta\Component\Books\NodeInterface;
 
+/**
+ *
+ */
 class PhpParser implements ContentParserInterface
 {
     use ContentParserTrait;
 
-    public function getContent(string $source, NodeInterface $node, bool $verbose = false): string
+    /**
+     * @inheritDoc
+     */
+    public function getContent(string $source, bool $verbose = false): string
     {
-        $this->setNode($node);
-        include $source;
-        return '';
+        /* NOTE: There is no need to test whether the $source is a valid file as the function
+         *       should only be called from with a DocumentNode
+         */
+        $nodeContext = function (string $source) {include $source; return '';};
+        $nodeContext = $nodeContext->bindTo($this->getNode());
+        return $nodeContext($source);
     }
+
+    /**
+     * @inheritDoc
+     */
     public function getContentType(): string
     {
         return 'text/html';

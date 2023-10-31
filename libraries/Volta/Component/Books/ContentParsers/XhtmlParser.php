@@ -125,15 +125,10 @@ class XhtmlParser implements ContentParserInterface
     /**
      * Starts the parsing of the XML file set in the constructor
      *
-     * @param string $source
-     * @param NodeInterface $node
-     * @param bool $verbose
-     * @return string  The parse data
-     * @throws Exception On XML syntax errors
+     * @inheritDoc
      */
-    public function getContent(string $source, NodeInterface $node, bool $verbose = false): string
+    public function getContent(string $source, bool $verbose = false): string
     {
-        $this->setNode($node);
         $this->_verbose = $verbose;
 
         $xmlParser = xml_parser_create();

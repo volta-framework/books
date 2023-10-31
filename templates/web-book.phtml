@@ -19,12 +19,12 @@ if (!isset($node))  return __FILE__ . '  placeholder $node not set.';
 
     <nav>
         <?php if(null !== $node->getPrevious()): ?>
-            <a href="<?= $node->getPrevious()->getUri(true);?>"><?= $node->getPrevious()->getDisplayName();?></a>
+            <a  class="previous" href="<?= $node->getPrevious()->getUri(true);?>"><?= $node->getPrevious()->getDisplayName();?></a>
         <?php else: ?>
             <div><!-- placeholder --></div>
         <?php endif; ?>
         <?php if(null !== $node->getNext()): ?>
-            <a href="<?= $node->getNext()->getUri(true);?>"><?= $node->getNext()->getDisplayName();?></a>
+            <a class="next" href="<?= $node->getNext()->getUri(true);?>"><?= $node->getNext()->getDisplayName();?></a>
         <?php else: ?>
             <div><!-- placeholder --></div>
         <?php endif; ?>

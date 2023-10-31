@@ -15,17 +15,26 @@ use Volta\Component\Books\ContentParserInterface;
 use Volta\Component\Books\ContentParserTrait;
 use Volta\Component\Books\NodeInterface;
 
-class TxtParser implements ContentParserInterface
+use Parsedown;
+
+class MarkdownParser implements ContentParserInterface
 {
     use ContentParserTrait;
 
-    public function getContent(string $source,   bool $verbose = false): string
+    /**
+     * @inheritDoc
+     */
+    public function getContent(string $source, bool $verbose = false): string
     {
-        return '<div style="white-space: pre-wrap;">' . file_get_contents($source) . '</div>';
+        $parseDown = new Parsedown();
+        return $parseDown->parse(file_get_contents($source));
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getContentType(): string
     {
-        return 'text/plain';
+        return 'text/html';
     }
 }
