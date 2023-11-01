@@ -112,7 +112,8 @@ em {color: var(--em-color);}
 .center {text-align: center;}
 .center-all {margin: 20vh auto 0 auto; text-align: center;}
 .box { }
-
+.references { margin-top: 20px; }
+.references > .reference { margin-bottom: 20px; }
 
 @media only screen and (max-width: 600px) {
     p {text-align: left; }

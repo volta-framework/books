@@ -1,5 +1,9 @@
 <?php
 declare(strict_types=1);
+
+use Volta\Component\Books\NodeInterface;
+
+/** @var NodeInterface $node  */
 if (!isset($node))  return __FILE__ . '  placeholder $node not set.';
 ?>
 <!DOCTYPE html>
@@ -46,7 +50,8 @@ if (!isset($node))  return __FILE__ . '  placeholder $node not set.';
     </main>
 
     <footer>- <?= $node->getIndex() ?>-<br>
-        <?= $node->getRoot()->getMeta()->get('copyright', '')?>
+        <?= $node->getRoot()->getMeta()->get('copyright', '')?><br>
+        last changed: <?= date('Y-m-d H:i:s', $node->getModificationTime())?>
     </footer>
 
     <!-- https://highlightjs.org/usage/ -->
