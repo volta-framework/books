@@ -19,7 +19,6 @@ use Volta\Component\Books\Exceptions\Exception;
 class BookNode extends DocumentNode
 {
 
-
     #region - Publisher
 
     /**

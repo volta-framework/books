@@ -179,7 +179,7 @@ class Epub extends Publisher
         if (count(scandir($destination)) > 2) {
             throw new Exception('Destination not pointing to an empty directory');
         }
-        $this->getLogger()->debug('Destination made empty');
+        //$this->getLogger()->debug('Destination made empty');
         $this->_destination = $destination;
 
         // add the libraries dir
@@ -392,7 +392,7 @@ class Epub extends Publisher
         // cover file if anny otherwise generate default
         $coverFile = $this->_currentBook->getChild('/cover.png');
         if (NULL !== $coverFile) {
-            $this->getLogger()->debug('Found cover @ ' . $coverFile->getAbsolutePath());
+            //$this->getLogger()->debug('Found cover @ ' . $coverFile->getAbsolutePath());
         } else {
             $coverFile = realpath(__DIR__ . '/../../../../public/assets/media/cover.png');
         }
