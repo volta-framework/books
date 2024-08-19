@@ -10,6 +10,15 @@ if (!isset($publisher, $uriOffset))  {
     echo __FILE__ . '  missing placeholders not set.';
     return;
 }
+
+
+
+if (count($publisher->getBooks()) === 1) {
+    foreach($publisher->getBooks() as $bookIndex => $book) {
+        header("location: $uriOffset/$bookIndex");
+        exit();
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">

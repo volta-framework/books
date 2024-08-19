@@ -158,14 +158,14 @@ class BooksController
     #endregion --------------------------------------------------------------------------------------------------------
     #region - URI offset
 
-    private static string $_uriOffset = '/books';
+
     public static function getUriOffset(): string
     {
-        return BooksController::$_uriOffset;
+        return \Volta\Component\Books\Settings::getUriOffset();
     }
     public static function setUriOffset(string $uriOffset): void
     {
-        BooksController::$_uriOffset = $uriOffset;
+        \Volta\Component\Books\Settings::setUriOffset($uriOffset);
     }
 
     #endregion --------------------------------------------------------------------------------------------------------
@@ -297,6 +297,7 @@ class BooksController
      */
     public function __invoke(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
+
         // no books return a 404
         if (count(BooksController::getPublisher()->getBooks()) === 0) {
             throw new HttpNotFoundException($request, 'Sorry, it seems we are out of books :-(');

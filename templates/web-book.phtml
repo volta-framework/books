@@ -49,7 +49,7 @@ if (!isset($node))  return __FILE__ . '  placeholder $node not set.';
         <?php }; ?>
     </main>
 
-    <footer>- <?= $node->getIndex() ?>-<br>
+    <footer>-&nbsp;<?= $node->getIndex() ?>&nbsp;-<br>
         <?= $node->getRoot()->getMeta()->get('copyright', '')?><br>
         last changed: <?= date('Y-m-d H:i:s', $node->getModificationTime())?>
     </footer>

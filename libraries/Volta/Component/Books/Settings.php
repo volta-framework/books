@@ -16,6 +16,7 @@ use Volta\Component\Books\ContentParsers\PhpParser;
 use Volta\Component\Books\ContentParsers\TxtParser;
 use Volta\Component\Books\ContentParsers\XhtmlParser;
 use Volta\Component\Books\ContentParsers\MarkdownParser;
+use Volta\Component\Books\Controllers\BooksController;
 use Volta\Component\Books\Exceptions\Exception;
 
 /**
@@ -233,5 +234,15 @@ abstract class Settings
     #endregion --------------------------------------------------------------------------------------------------------
 
 
+
+    private static string $_uriOffset = '/books';
+    public static function getUriOffset(): string
+    {
+        return Settings::$_uriOffset;
+    }
+    public static function setUriOffset(string $uriOffset): void
+    {
+        Settings::$_uriOffset = $uriOffset;
+    }
 
 }

@@ -52,11 +52,11 @@ class Toc extends BaseElement
             }
             $html .=  $this->_printToc($this->_getNode()->getParent()->getToc());
 
-        } else if ($target == 'root') {
+        } else if ($target === 'root') {
             $html .=  $this->_printToc($this->_getNode()->getRoot()->getToc());
 
-        } else if ($target == 'self') {
-            $html .= $this->_printToc($this->_getNode()->getRoot()->getToc());
+        } else if ($target === 'self') {
+            $html .= $this->_printToc($this->_getNode()->getToc());
         } else {
             $node = $this->_getNode()->getChild($target);
             if (null === $node) {

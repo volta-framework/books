@@ -1,6 +1,7 @@
 __*
 .idea
 vendor/
+node_modules/
 composer.lock
 phpunit.xml.dist
 .phpunit*
