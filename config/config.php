@@ -13,33 +13,6 @@ return [
     'volta' => [
        'component' =>  [
            'books' => [
-
-               /* see Settings::getSupportedResources and Settings::registerContentParsers for defaults
-               'supportedResources' => [],
-
-               /* see Settings::registerContentParsers for defaults
-               'contentParsers' => [ ],
-
-               /* see Settings::setCache() for defaults
-               'cache' => [
-                   'class' =>
-                   'options' => [],
-               ],
-
-               /* see BooksController::setDocumentNodeTemplate for defaults
-               'template' => ''
-
-
-
-               'cache' => [
-                   'class' => \Volta\Component\Books\Cache::class,
-                   'options' => [
-                       'directory' => __DIR__  . '/../__cache/'
-                   ],
-               ],
-
-                */
-
                'library' => [
                    'ExampleBook' => realpath(__DIR__ . '/../resources/ExampleBook'),
                    'ExampleBook2' => realpath(__DIR__ . '/../resources/ExampleBook2'),

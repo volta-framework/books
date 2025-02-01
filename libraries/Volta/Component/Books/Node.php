@@ -99,7 +99,7 @@ abstract class Node implements NodeInterface
 
     }
 
-    const SLUG_SEPARATOR = '/';
+    const string SLUG_SEPARATOR = '/';
 
     private string $_fullUri;
 

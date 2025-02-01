@@ -10,6 +10,7 @@
 declare(strict_types=1);
 
 use Slim\Factory\AppFactory;
+use Slim\Interfaces\RouteInterface;
 use Volta\Component\Books\Controllers\BooksController;
 
 /*
@@ -25,7 +26,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
  * This way this index.php wil act as a front controller and will serve
  * all the static resources as well
  *
- * As this is an example we make sure we see all errors.
+ * As this is an example(test) we make sure we see all errors.
  */
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
@@ -38,7 +39,7 @@ try {
         return false;
     }
 
-    /*
+   /*
     * Redirect to BooksController::getUriOffset() which is the start page of this component
     * NOTE: BooksController::getUriOffset() can not be set through the configuration as this is not loaded yet
     */
@@ -55,11 +56,22 @@ try {
     $app->addRoutingMiddleware();
     $errorMiddleware = $app->addErrorMiddleware(true, true, true);
 
-    /*
-     * include the routes and run the application
+    /**
+     * Include the routes and run the application
+     * @var RouteInterface $route
      */
-    require_once __DIR__ . '/../config/routes.php';
+    $routes = require_once __DIR__ . '/../config/routes.php';
+    foreach($routes as $routeName => $routeInfo) {
+        if (is_array($routeInfo['methods'])) {
+            $route = $app->map($routeInfo['methods'], $routeInfo['path'], $routeInfo['handler']) ;
+        } else if (is_string($routeInfo['methods'])) {
+            $method = $routeInfo['methods'];
+            $route = $app->$method($routeInfo['path'], $routeInfo['handler']) ;
+        }
+        if (is_string($routeName)) $route->setName($routeName);
+    }
     $app->run();
+    exit(0);
 
 } catch(\Throwable $e) {
 
@@ -76,10 +88,8 @@ try {
     echo "message: {$e->getMessage()} \n";
     echo "file   : {$e->getFile()} \n";
     echo "line   : {$e->getLine()} \n";
-    echo "\n";
-    if(count(debug_backtrace())) {
-        echo "Backtrace(ignoring arguments and limits to 100): \n";
-        debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 100);
-    }
+    echo str_repeat('-', 120), " \n";
+    echo "Backtrace(ignoring arguments and limits to 100): \n";
+    debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 100);
     exit(1);
 }

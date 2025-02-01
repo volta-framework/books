@@ -91,6 +91,10 @@ class ResourceNode extends Node
 
     protected null|ResourceNode $_next;
 
+    /**
+     * @inheritDoc
+     * @return ResourceNode|null
+     */
     public function getNext(): null|ResourceNode
     {
         if (!isset($this->_next)) {
@@ -111,6 +115,7 @@ class ResourceNode extends Node
     protected null|ResourceNode $_previous;
 
     /**
+     * @inheritDoc
      * @throws Exception
      */
     public function getPrevious(): null|ResourceNode
@@ -127,7 +132,7 @@ class ResourceNode extends Node
     }
 
 
-    const MEDIA_TYPE_NOT_SUPPORTED = 'Media-type not supported';
+    const string MEDIA_TYPE_NOT_SUPPORTED = 'Media-type not supported';
 
     /**
      * @inheritdoc
@@ -144,8 +149,7 @@ class ResourceNode extends Node
     /**
      * As a Resource node can not have a meta file attached to it this function will return the parents node Metadata
      * object.
-     *
-     * @inheritdoc
+     * @throws Exception
      */
     public function getMeta(): Meta
     {

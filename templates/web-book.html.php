@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 
+use Volta\Component\Books\Controllers\BooksController;
 use Volta\Component\Books\NodeInterface;
 
 /** @var NodeInterface $node  */
@@ -36,17 +37,33 @@ if (!isset($node))  return __FILE__ . '  placeholder $node not set.';
 
     <main>
         <ul id="favorites">
-            <li><a href="<?= $node->getRoot()->getUri();?>">Home</a></li>
+            <li><a href="<?= BooksController::getUriOffset();?>">Library</a></li>
+            <li><a href="<?= $node->getRoot()->getUri();?>">Start</a></li>
             <?php if ($node->getRoot()->getMeta()->has('tocPage')) { ?>
                 <li><a href="<?= $node->getRoot()->getPublisher()->getUriOffset() . $node->getRoot()->getMeta()->get('tocPage'); ?>">TOC</a></li>
             <?php }; ?>
+            <?php foreach($node->getRoot()->getMeta()->get('favorites', []) as $favorite) { ?>
+                <li><a href="<?= $favorite['link'] ?? '#'; ?>"><?= $favorite['caption'] ?? 'Unknown Root favorite'; ?></a></li>
+            <?php }; ?>
+            <?php if ( !$node->isBook()) { ?>
+                <?php foreach($node->getMeta()->get('favorites', []) as $favorite) { ?>
+                    <li><a href="<?= $favorite['link'] ?? '#'; ?>"><?= $favorite['caption'] ?? 'Unknown Node favorite'; ?></a></li>
+                <?php }; ?>
+            <?php }; ?>
         </ul>
-
-        <?php try { ?>
-            <?= $node->getContent(); ?>
-        <?php } catch(Throwable $e) { ?>
-            <blockquote class="error"><?= $e->getMessage(); ?></blockquote>
-        <?php }; ?>
+        <div id="content">
+            <?php if(null !== $node->getPrevious()): ?>
+                <div id="pagePrevious" onclick="location.href='<?= $node->getPrevious()->getUri(true);?>'" title="&xlarr; <?= $node->getPrevious()->getDisplayName();?>"></div>
+            <?php endif; ?>
+            <?php if(null !== $node->getNext()): ?>
+                <div id="pageNext" onclick="location.href='<?= $node->getNext()->getUri(true);?>'" title="<?= $node->getNext()->getDisplayName();?> &xrarr; "> </div>
+            <?php endif; ?>
+            <?php try { ?>
+                <?= $node->getContent(); ?>
+            <?php } catch(Throwable $e) { ?>
+                <blockquote class="error"><?= $e->getMessage(); ?></blockquote>
+            <?php }; ?>
+        </div>
     </main>
 
     <footer>-&nbsp;<?= $node->getIndex() ?>&nbsp;-<br>
@@ -69,7 +86,10 @@ if (!isset($node))  return __FILE__ . '  placeholder $node not set.';
     <script type="module">
         import {addPageToc} from '/assets/js/book.mjs';
         addPageToc(1);
+
+
     </script>
+
 
 </body>
 </html>

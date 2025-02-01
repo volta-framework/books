@@ -16,7 +16,6 @@ use Volta\Component\Books\ContentParsers\PhpParser;
 use Volta\Component\Books\ContentParsers\TxtParser;
 use Volta\Component\Books\ContentParsers\XhtmlParser;
 use Volta\Component\Books\ContentParsers\MarkdownParser;
-use Volta\Component\Books\Controllers\BooksController;
 use Volta\Component\Books\Exceptions\Exception;
 
 /**
@@ -27,6 +26,10 @@ abstract class Settings
 
     #region - Supported Resources
 
+
+    /**
+     * @var array|string[] All supported resources
+     */
     private static array $_supportedResources = [
         // textual files
         'html' => 'text/html',
@@ -65,18 +68,18 @@ abstract class Settings
     }
 
     /**
-     * If the resource identified by its file extension the corresponding mimetype is returned. False if
+     * If the resource, identified by its file extension, is supported the corresponding mimetype is returned. NULL if
      * the resource is not supported
      *
      * @param string $extension
-     * @return bool|string Mimetype, false if resource is not supported
+     * @return null|string Mimetype, false if resource is not supported
      */
-    public static function getResourceMimeType(string $extension): bool|string
+    public static function getResourceMimeType(string $extension): null|string
     {
         if (Settings::isResourceSupported($extension)){
             return Settings::$_supportedResources[$extension];
         }
-        return false;
+        return null;
     }
 
     /**
@@ -125,7 +128,8 @@ abstract class Settings
      */
     private static array $_contentParsers = [
         'php' => PhpParser::class,
-        'phtml' => PhpParser::class,
+        'phtml' => PhpParser::class, // ! deprecated
+        'html.php' => PhpParser::class,
         'xhtml' => XhtmlParser::class,
         'html' => HtmlParser::class,
         'htm' => HtmlParser::class,
@@ -192,26 +196,22 @@ abstract class Settings
     ];
 
     /**
-     * Adds an XML namespaces with an array where the first index(0)
-     * contains the uri name, the second index(1) the library location with the
-     * class definitions of the elements and the third(2) the PHP namespace of these classes
+     * Adds an XHTML namespaces pointing to  Directory containing PHP classes with the specified elements.
      *
-     * @param string $prefix
-     * @param string $uri
-     * @param string $libraryDirectory
-     * @param string $namespace
+     * @see \Volta\Component\Books\ContentParsers\XhtmlParser\Element
+     * @param string $xhtmlNamespacePrefix XHTML namespace
+     * @param string $xhtmlNamespaceUri    XHTML namespace URI
+     * @param string $phpLibraryDirectory  PHP (PSR 1) Class directory
+     * @param string $phpNamespace         PHP namespace
      * @return void
      * @throws XhtmlParser\Exception
      */
-    public static function addXhtmlNamespace(string $prefix, string $uri, string $libraryDirectory, string $namespace): void
+    public static function addXhtmlNamespace(string $xhtmlNamespacePrefix, string $xhtmlNamespaceUri, string $phpLibraryDirectory, string $phpNamespace): void
     {
-        if(!is_dir($libraryDirectory)) {
+        if(!is_dir($phpLibraryDirectory)) {
             throw new XhtmlParser\Exception('Library for Xhtml namespace elements is not a directory');
         }
-
-        Settings::$_xhtmlNamespaces[$prefix] = [
-            $uri, $libraryDirectory, $namespace
-        ];
+        Settings::$_xhtmlNamespaces[$xhtmlNamespacePrefix] = [$xhtmlNamespaceUri, $phpLibraryDirectory, $phpNamespace];
     }
 
     /**
@@ -232,10 +232,11 @@ abstract class Settings
 
 
     #endregion --------------------------------------------------------------------------------------------------------
-
+    #region - Miscellaneous settings
 
 
     private static string $_uriOffset = '/books';
+
     public static function getUriOffset(): string
     {
         return Settings::$_uriOffset;
@@ -244,5 +245,8 @@ abstract class Settings
     {
         Settings::$_uriOffset = $uriOffset;
     }
+
+
+    #endregion
 
 }

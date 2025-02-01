@@ -14,7 +14,7 @@ namespace Volta\Component\Books;
 /**
  * An Item in a Table Of Content collection
  */
-class TocItem
+readonly class TocItem
 {
     /**
      * @param string $caption
@@ -23,10 +23,10 @@ class TocItem
      * @param int $page
      */
     public function __construct(
-        public readonly string $caption,
-        public readonly string $uri,
-        public readonly array $children,
-        public readonly int $page,
+        public string $caption,
+        public string $uri,
+        public array  $children,
+        public int    $page,
     ){}
 
 }

@@ -89,8 +89,15 @@ interface PublisherInterface extends LoggerAwareInterface
      */
     public function sanitizeUri(NodeInterface $node): string;
 
-
+    /**
+     * @param string $uriOffset
+     * @return PublisherInterface
+     */
     public function setUriOffset(string $uriOffset): PublisherInterface;
+
+    /**
+     * @return string
+     */
     public function getUriOffset(): string;
 
     /**

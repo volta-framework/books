@@ -144,8 +144,8 @@ class XhtmlParser implements ContentParserInterface
         xml_set_default_handler($xmlParser, [$this, 'defaultHandler']);
         xml_set_element_handler($xmlParser, [$this,'elementStartHandler'], [$this,'elementEndHandler']);
 
-        //xml_set_unparsed_entity_decl_handler($xmlParser, 'unparsedEntityDeclHandler');
-        //xml_set_external_entity_ref_handler($xmlParser,'externalEntityRefHandler');
+//        xml_set_unparsed_entity_decl_handler($xmlParser, [$this, 'unparsedEntityDeclHandler']);
+//        xml_set_external_entity_ref_handler($xmlParser, [$this, 'externalEntityRefHandler']);
 
         if ($this->_useBuffer)  ob_start();
 
@@ -204,6 +204,9 @@ class XhtmlParser implements ContentParserInterface
                     }
                 }
 
+
+                $this->addDtd($data);
+
                 if (!xml_parse($xmlParser, $data, $end)) {
                     $errorInfo = $this->_getErrorInfo($xmlParser);
                     $exceptionMessage = sprintf(
@@ -225,6 +228,34 @@ class XhtmlParser implements ContentParserInterface
         }
     }
 
+
+    protected function addDtd(string &$data): void
+    {
+        $dtd  = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+        $dtd .= '<!DOCTYPE  xhtml [
+         
+           <!ENTITY atilde "atilde">
+           <!ENTITY micro  "micro">
+           <!ENTITY euro   "euro">
+           <!ENTITY reg    "trademark">
+           <!ENTITY trade    "trade">
+           <!ENTITY copy   "copyright">
+           <!ENTITY pi     "pi">       
+           <!ENTITY beta     "beta">       
+           <!ENTITY mu     "mu">       
+           <!ENTITY hellip     "hellip">       
+           <!ENTITY larr     "larr">    
+           <!ENTITY uarr     "uarr">    
+           <!ENTITY rarr     "rarr">    
+           <!ENTITY darr     "darr">    
+           <!ENTITY harr     "harr">    
+           <!ENTITY crarr     "crarr">    
+               
+        ]>' . "\n";
+        $data = $dtd . $data;
+    }
+
+
     /**
      * @param XMLParser $xmlParser
      * @param string $source
@@ -241,6 +272,8 @@ class XhtmlParser implements ContentParserInterface
         if (!str_ends_with(strtolower($data), '</volta:xhtml>')) {
             $data .= '</volta:xhtml>' ;
         }
+
+        $this->addDtd($data);
 
         if (!xml_parse($xmlParser, $data, true)) {
             $errorInfo = $this->_getErrorInfo($xmlParser);
@@ -297,6 +330,17 @@ class XhtmlParser implements ContentParserInterface
 
 
     // -----------------------------------------------------------------------------
+
+//    protected function externalEntityRefHandler(\XmlParser $parser, string $entname,$base,$sysID,$pubID)
+//    {
+//        $this->_content .="externalEntityRefHandler $entname";
+//        return false;
+//    }
+//    protected function unparsedEntityDeclHandler(\XmlParser $parser, string $entname,$base,$sysID,$pubID,$notname)
+//    {
+//        $this->_content .="unparsedEntityDeclHandler  $entname";
+//        return false;
+//    }
 
     /**
      * @var array<Element> $_stack

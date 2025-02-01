@@ -43,8 +43,6 @@ class Epub extends Publisher
     {
         parent::__construct($options);
 
-        Settings::setPublishingMode(Settings::PUBLISHING_EPUB);
-
         $this->_contentDir = $options['contentDir'] ?? 'OEBPS';
         $this->_metadataFileName  = $options['metadataFileName'] ?? 'metadata.opf';
         $this->_tocFileName = $options['tocFileName'] ?? 'toc.ncx';
@@ -108,8 +106,8 @@ class Epub extends Publisher
             $this->_teardown();
             exit(1);
         };
-        $errorHandler->bindTo($this);
-        set_error_handler($errorHandler);
+        $errorClosure = $errorHandler->bindTo($this);
+        set_error_handler($errorClosure);
 
         $this->getLogger()->info('Set temporarily exception handler', [__METHOD__]);
         $exceptionHandler = function(\Throwable $exception): void {
@@ -117,8 +115,8 @@ class Epub extends Publisher
             $this->_teardown();
             exit();
         };
-        $exceptionHandler->bindTo($this);
-        set_exception_handler($exceptionHandler);
+        $exceptionClosure = $exceptionHandler->bindTo($this);
+        set_exception_handler($exceptionClosure);
     }
 
     /**
@@ -348,6 +346,7 @@ class Epub extends Publisher
             $navMap[] = $offset . '    </navPoint>';
         };
         $addToNavMap->bindTo($this);
+
 
         foreach($this->_currentBook->getChildren() as $child) {
             $addToNavMap($child, 0);

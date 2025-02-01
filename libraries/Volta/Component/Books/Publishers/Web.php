@@ -53,7 +53,7 @@ class Web extends Publisher
     private function _getDocumentNodeTemplate(): string
     {
         if (!isset($this->_documentNodeTemplate)) {
-            $this->_setDocumentNodeTemplate(__DIR__ . '/../../../../templates/web-book.phtml');
+            $this->_setDocumentNodeTemplate(__DIR__ . '/../../../../templates/web-book.html.php');
         }
         return $this->_documentNodeTemplate;
     }
@@ -149,9 +149,6 @@ class Web extends Publisher
         return false;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function exportPage(string|int $bookIndex, string $path, array $options = []): bool|string
     {
         return false;
@@ -231,6 +228,11 @@ class Web extends Publisher
 
     }
 
+    /**
+     * @inheritDoc
+     * @param NodeInterface $node
+     * @return string
+     */
     public function sanitizeUri(NodeInterface $node): string
     {
         // create the relative uri for this node thus including a leading SLUG_SEPARATOR

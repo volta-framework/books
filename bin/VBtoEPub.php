@@ -80,7 +80,7 @@ try {
         'destination' => $destination,
     ]);
     $publisher->addBook('', $book);
-    $publisher->setPageTemplate(__DIR__ . '/../templates/epub-book.phtml');
+    $publisher->setPageTemplate(__DIR__ . '/../templates/epub-book.html.php');
     $publisher->setPageStyle(__DIR__ . '/../public/assets/css/epub-book.css');
     $publisher->setLogger($logger);;
     $publisher->exportBook('');

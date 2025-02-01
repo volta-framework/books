@@ -244,8 +244,10 @@ class Element
             }
 
             if (false !== $nameSpace = Settings::getXhtmlNamespace($namespacePrefix)) {
+
                 $elementFile = $nameSpace[1] . ucfirst($elementName) . '.php';
                 $elementClass = $nameSpace[2] . '\\' . ucfirst($elementName);
+
                 if (is_file($elementFile)) {
                     $element = new $elementClass($elementName, $attributes, $parent);
                     if (!is_a($element, Element::class)) {
@@ -329,10 +331,11 @@ class Element
      * @ignore (do not show up in generated documentation)
      * @return string
      */
-    protected function _attributesAsString(): string
+    protected function _attributesAsString(...$exclude): string
     {
         $attribsAsString = '';
         foreach($this->getAttributes() as $attribName => $attribValue) {
+            if (in_array($attribName, $exclude)) continue;
             $attribsAsString .= ' ' .$attribName . '="' . $attribValue . '"';
         }
         return $attribsAsString;

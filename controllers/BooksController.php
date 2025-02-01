@@ -43,8 +43,8 @@ class BooksController
     #region - Construction and configuration
 
 
-    private Config $_config;
-    private LoggerInterface $_log;
+    private Config $config;
+    private LoggerInterface $logger;
 
     /**
      * When used with slim application a container instance is passed in the constructor.
@@ -61,59 +61,59 @@ class BooksController
     #[Key('volta.component.books.library', ['een' => '~resources/ExampleBook', 'twee' => '~resources/ExampleBook'], '[REQUIRED] List of Volta Books. Expected to be in the format array<identifier, path>')]
     #[Key('volta.component.books.cache.class', '', 'Classname for a Cache:CacheItemPoolInterface object. Use the books internal class ('. Cache::class.') for file based cache.')]
     #[Key('volta.component.books.cache.options', [], 'Options for the cache instance. May be different based on the cache selected. When using the internal class ('. Cache::class.') a valid directory is expected, use ["directory"=> "???"] for the options')]
-    #[Key('volta.component.books.book-template', '~templates/web-book.phtml', 'HTML template for displaying one book. Defaults to the Components "~templates/web-book.phtml" template.')]
-    #[Key('volta.component.books.book-overview-template', '~templates/web-book-overview.phtml', 'HTML template for displaying all the books in the publishers library. Defaults to the Components "~templates/web-book-overview.phtml" template.')]
+    #[Key('volta.component.books.book-template', '~templates/web-book.html.php', 'HTML template for displaying one book. Defaults to the Components "~templates/web-book.html.php" template.')]
+    #[Key('volta.component.books.book-overview-template', '~templates/web-book-overview.html.php', 'HTML template for displaying all the books in the publishers library. Defaults to the Components "~templates/web-book-overview.html.php" template.')]
     public function __construct(ContainerInterface|null $container=null)
     {
         // create instance of the configuration object and set required and allowed options
-        $this->_config = new Config();
-        $this->_config->setRequiredOptions(['volta.component.books.library']);
+        $this->config = new Config();
+        $this->config->setRequiredOptions(['volta.component.books.library']);
 
         // check if we have a custom configuration passed through the slim app class
         // if not use our own configuration
-        if (isset($container) && $container->has('conf')) {
-            $this->_config->setOptions($container->get('conf'));
+        if (isset($container) && $container->has('config')) {
+            $this->config->setOptions($container->get('config'));
         } else {
-            $this->_config->setOptions(__DIR__ . '/../config/config.php');
+            $this->config->setOptions(__DIR__ . '/../config/config.php');
         }
 
         // set the log
-        if (isset($container) && $container->has('log')) {
-            $this->_log = $container->get('log');
+        if (isset($container) && $container->has('logger')) {
+            $this->logger = $container->get('logger');
         } else {
-            $this->_log = new ConsoleLogger();
+            $this->logger = new ConsoleLogger();
         }
-        BooksController::getPublisher()->setLogger($this->_log);
+        BooksController::getPublisher()->setLogger($this->logger);
 
         // only overwrite when present in the config-file
-        if ($this->_config->hasOption('volta.component.books.supportedResources')) {
+        if ($this->config->hasOption('volta.component.books.supportedResources')) {
             Settings::setSupportedResources(
-                (array)$this->_config->getOption('volta.component.books.supportedResources')
+                (array)$this->config->getOption('volta.component.books.supportedResources')
             );
         }
 
         // only overwrite per item when present in the config-file
-        if ($this->_config->hasOption('volta.component.books.contentParsers')) {
-            foreach ((array)$this->_config->getOption('volta.component.books.contentParsers') as $extension => $class) {
+        if ($this->config->hasOption('volta.component.books.contentParsers')) {
+            foreach ((array)$this->config->getOption('volta.component.books.contentParsers') as $extension => $class) {
                 Settings::registerContentParser($extension, $class);
             }
         }
 
         // this option is required, so we may assume it is there
-        foreach ($this->_config->get('volta.component.books.library') as $bookIndex => $bookPath) {
+        foreach ($this->config->get('volta.component.books.library') as $bookIndex => $bookPath) {
             BooksController::getPublisher()->addBook(realpath($bookPath), $bookIndex);
         }
 
         // configure the controllers cache
-        $cacheClass = $this->_config->get('volta.component.books.cache.class', '');
-        $cacheOptions = $this->_config->get('volta.component.books.cache.options', ['directory' => realpath(__DIR__ . '/../__cache/')]);
+        $cacheClass = $this->config->get('volta.component.books.cache.class', '');
+        $cacheOptions = $this->config->get('volta.component.books.cache.options', ['directory' => realpath(__DIR__ . '/../__cache/')]);
         if (!empty($cacheClass)){
             $cache = new $cacheClass($cacheOptions);
             BooksController::setCache($cache);
         }
 
         // set template and style
-        BooksController::setDocumentNodeTemplate($this->_config->get('volta.component.books.template' ,  __DIR__ . '/../templates/web-book.phtml'));
+        BooksController::setDocumentNodeTemplate($this->config->get('volta.component.books.template' ,  __DIR__ . '/../templates/web-book.html.php'));
 
     }
 
@@ -191,13 +191,13 @@ class BooksController
     }
 
     /**
-     * Returns the location for the DocumentNode template. Defaults to PHP-HTML file "~/templates/web-book.phtml"
+     * Returns the location for the DocumentNode template. Defaults to PHP-HTML file "~/templates/web-book.html.php"
      * @return string
      */
     public static function getDocumentNodeTemplate(): string
     {
         if(!isset(BooksController::$_documentNodeTemplate)) {
-            BooksController::$_documentNodeTemplate = __DIR__ . '/../templates/web-book.phtml';
+            BooksController::$_documentNodeTemplate = __DIR__ . '/../templates/web-book.html.php';
         }
         return BooksController::$_documentNodeTemplate;
     }
@@ -267,22 +267,22 @@ class BooksController
                         BooksController::getCache()->deleteItem($node->getRelativePath());
                     }
                     echo $cachedNode->get();
-                    $this->_log->info($node->getUri(). " retrieved from cache in: " . number_format(microtime(true) - $start, 10) . " seconds");
+                    $this->logger->info($node->getUri(). " retrieved from cache in: " . number_format(microtime(true) - $start, 10) . " seconds");
 
                 } else {
                     $uriOffset = ob_start();
                     include BooksController::getDocumentNodeTemplate();
                     $cachedNode->set(ob_get_contents());
                     ob_end_flush();
-                    $this->_log->info($node->getUri(). " generated in: " . number_format(microtime(true) - $start, 10) . " seconds");
+                    $this->logger->info($node->getUri(). " generated in: " . number_format(microtime(true) - $start, 10) . " seconds");
                 }
             } else {
                 include (BooksController::getDocumentNodeTemplate());
-                $this->_log->info($node->getUri(). " generated in: " . number_format(microtime(true) - $start, 10) . " seconds (cache not set)");
+                $this->logger->info($node->getUri(). " generated in: " . number_format(microtime(true) - $start, 10) . " seconds (cache not set)");
             }
         } else {
             include (BooksController::getDocumentNodeTemplate());
-            $this->_log->info($node->getUri(). " generated in: " . number_format(microtime(true) - $start, 10) . " seconds (page set not be cached)");
+            $this->logger->info($node->getUri(). " generated in: " . number_format(microtime(true) - $start, 10) . " seconds (page set not be cached)");
         }
 
         return $response;
@@ -312,7 +312,7 @@ class BooksController
         if (!$bookIndex) {
             $uriOffset = $uriPath;
             $publisher = BooksController::getPublisher();
-            include $this->_config->get('volta.component.books.book-overview-template', __DIR__ . '/../templates/web-book-overview.phtml');
+            include $this->config->get('volta.component.books.book-overview-template', __DIR__ . '/../templates/web-book-overview.html.php');
 
             // otherwise show the requested node
         } else {

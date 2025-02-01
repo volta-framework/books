@@ -34,14 +34,18 @@
     --dark-main-border-color: #aaaaaa;
     --dark-footer-color: #aaaaaa;
     --dark-box-bg-color: #aaaaaa;
+
     --dark-link-color: #aa5151;
     --dark-info-color:#aa5151;
     --dark-note-color:#aaaaaa;
+
     --dark-code-bg-color:  #444;
     --dark-error-color: #aa2929;
+
     --dark-h1-color:  #aa2929;
     --dark-h2-color:  #aa2929;
     --dark-h3-color:  #aa2929;
+
     --dark-em-color: #aa5151;
     
 }
@@ -84,12 +88,6 @@ body {
         min-height:80vh;
         padding:var(--padding);
         border-radius: var(--padding);
-        position: relative;
-
-        #content > #pagePrevious {   border-radius: 10px 0 0 10px; position:absolute; background-color: #dddddd;  opacity: 0; top: 0; left: 0px; width: 30px; height: 100%; text-align: center; line-height: 75vh;  transition: opacity 0.8s; }
-        #content > #pagePrevious:hover { opacity: 0.5; cursor: pointer;  }
-        #content > #pageNext { border-radius: 0 10px 10px 0; position:absolute; background-color: #dddddd; opacity: 0; top: 0; right: 0px; width: 30px; height: 100%; text-align: center; line-height: 75vh;  transition: opacity 0.8s; }
-        #content > #pageNext:hover {  opacity: 0.5; cursor: pointer;  }
 
         /** H(n) Counters (in main section) **/
         counter-reset: h1;
@@ -98,7 +96,7 @@ body {
         h3{counter-reset: h4;} h3::before{ counter-increment: h3; content: counter(h2) "." counter(h3) ". "}
         h4{counter-reset: h5;} h4::before{ counter-increment: h4; content: counter(h2) "." counter(h3) "." counter(h4) ". "}
         h5{counter-reset: h6;} h5::before{ counter-increment: h5; content: counter(h2) "." counter(h3) "." counter(h4) "." counter(h5) ". "}
-        h6{  }                 h6::before{ counter-increment: h6; content: counter(h2) "." counter(h3) "." counter(h4) "." counter(h5) "." counter(h6) ". "}
+        h5{  }                 h6::before{ counter-increment: h6; content: counter(h2) "." counter(h3) "." counter(h4) "." counter(h5) "." counter(h6) ". "}
 
         h1, h2 {
             border-bottom: 1px solid light-dark( var(--light-main-border-color), var(--dark-main-border-color) );
@@ -115,27 +113,17 @@ body {
             margin:0; padding:0;
             font-size: 10pt;
             color: lightgrey;
+        }
+        #favorites {
             li{
                 display: inline-block;
                 border-left:1px solid light-dark( var(--light-main-border-color),  var(--dark-main-border-color));
                 border-bottom:1px solid light-dark( var(--light-main-border-color), var(--dark-main-border-color));
                 padding:4px var(--padding) 4px var(--padding)
             }
-
         }
 
-        #pageTocContainer {
-            ol {
-                counter-reset: item
-            }
-            li {
-                display: block
-            }
-            li:before {
-                content: counters(item, ".") " ";
-                counter-increment: item
-            }
-        }
+
     }
     footer {
         text-align: center;
@@ -151,7 +139,6 @@ body {
 figure {
     border:1px solid light-dark( var(--light-main-border-color), var(--dark-main-border-color));
     padding: 5px; border-radius: 5px;
-    img {width: 100%; height: auto; margin:auto; display: block;}
     figcaption {
         text-align: center;
         font-style: italic;
@@ -159,18 +146,7 @@ figure {
         color: light-dark( var(--light-code-bg-color), var(--dark-code-bg-color))
     }
 }
-
-
-figure.right75{float:right; width:75%}
-figure.right60{float:right; width:60%}
-figure.right50{float:right; width:50%}
-figure.right30{float:right; width:30%}
-figure.right25{float:right; width:25%}
-figure.left75{float:left; width:75%}
-figure.left60{float:left; width:60%}
-figure.left50{float:left; width:50%}
-figure.left30{float:left; width:30%}
-figure.left25{float:left; width:25%}
+img {width: 95%; height: auto; margin:auto; display: block;}
 
 
 a:link,
@@ -224,10 +200,10 @@ code:not(pre > code) {
     background-color: light-dark( var(--light-box-bg-color), var(--dark-box-bg-color));
 }
 code:is(p > code) {
-    font-size: 0.8rem; border:0;
+    font-size: 1.2rem; border:0;
     background-color: transparent;
-    display: inline;
-    padding: 0 4px 0 4px;
+    display: inline-block;
+    padding: 4px;
     color: light-dark( var(--light-main-code-bg-color), var(--dark-code-bg-color));
 }
 
@@ -287,7 +263,6 @@ em {
 .anchor:before{content: '# '}
 .book-overview {justify-content: center; align-items: center; width:100%; display: flex; flex-direction: row; flex-wrap: wrap;}
 .book-overview > figure {display: inline-block;}
-
 /* ratio based on  https://snappa.com/blog/ebook-cover-size/ */
 .book-overview > figure > a > img {display: inline-block; width: 200px; height: calc(200px * 1.5); }
 .title{font-size: 40px}
@@ -297,11 +272,8 @@ em {
 .references { margin-top: 20px; }
 .references > .reference { margin-bottom: 20px; }
 
-
-
-
 @media only screen and (max-width: 600px) {
     p {text-align: left; }
     blockquote{margin:0;  word-break: break-all;}
-}
 
+}

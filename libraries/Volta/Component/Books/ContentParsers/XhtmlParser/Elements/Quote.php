@@ -27,7 +27,7 @@ class Quote extends BaseElement
     public function onTranslateStart(): string
     {
         if ($this->getAttribute('inline', 'false') === 'false' ) {
-            $html = '<blockquote><q>';
+            $html = '<blockquote>';
         } else {
             $html = '<q>';
         }
@@ -60,7 +60,7 @@ class Quote extends BaseElement
         ob_end_clean();
 
         if ($this->getAttribute('inline', 'false') === 'false' ) {
-            $html .=  '</q><br/>'.$refHtml.'</blockquote>';
+            $html .=  '<br/>'.$refHtml.'</blockquote>';
         } else {
             $html .= '</q>(' . trim($refHtml) . ')';
         }

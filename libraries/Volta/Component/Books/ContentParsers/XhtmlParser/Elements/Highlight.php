@@ -14,7 +14,7 @@ namespace Volta\Component\Books\ContentParsers\XhtmlParser\Elements;
 use Volta\Component\Books\ContentParsers\XhtmlParser\Element as BaseElement;
 
 /**
- * DigiCademy Repository XHTML tag
+ * Repository XHTML tag
  * 
  * The following XHTML structure:
  *
