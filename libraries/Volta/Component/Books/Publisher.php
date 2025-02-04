@@ -63,17 +63,13 @@ abstract class Publisher implements PublisherInterface
     {
         if (!isset($bookIndex)) $bookIndex = count($this->_bookCollection);
         if(is_string($book)) {
-            $node = Node::factory($book);
-            if (!is_a($node, BookNode::class)) {
-                throw new Exception(__METHOD__ . ': Path("' . $book . '") can not be identified as a BookNode:(Path does not point to a book)');
-            }
+            $node = BookNode::factory($book);
             $node->setPublisher($this);
             $this->_bookCollection[$bookIndex] = $node;
         } else {
             $book->setPublisher($this);
             $this->_bookCollection[$bookIndex] = $book;
         }
-
         return $this->_bookCollection[$bookIndex];
     }
 
@@ -131,11 +127,15 @@ abstract class Publisher implements PublisherInterface
     #region - Construction
 
 
+    protected array $options = [];
+
     /** Force the use of the factory method
      * @param array $options
      */
     protected function __construct(array $options = [])
-    {}
+    {
+        $this->options = $options;
+    }
 
     /**
      * @param string $class

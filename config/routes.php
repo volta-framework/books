@@ -14,7 +14,7 @@ use Volta\Component\Books\Controllers\BooksController;
 return [
     [
         'methods'  => ['GET'],
-        'pattern'  =>  BooksController::getUriOffset() .'[/{bookIndex}[/{bookNode:.*}]]',
+        'pattern'  => BooksController::getUriOffset() . '[/{bookIndex}[/{bookNode:.*}]]',
         'callable' => BooksController::class,
         'name'     => 'BooksController'
     ],

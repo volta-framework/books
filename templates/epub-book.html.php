@@ -8,7 +8,7 @@ $level  = $level ?? 0;
 <head>
     <meta charset="UTF-8" />
     <title><?= $node->getRoot()->getDisplayName() . ': ' . $node->getDisplayName();?></title>
-    <link rel="stylesheet" href="<?= str_repeat('../', $level)?>epub-book.css"/>
+    <link rel="stylesheet" href="./<?= str_repeat('../', $node->getLevel())?>css/epub-book.css"/>
 </head>
 <body>
     <main>

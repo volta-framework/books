@@ -174,4 +174,27 @@ class ResourceNode extends Node
     {
         return filemtime($this->getAbsolutePath());
     }
+
+
+    /**
+     * @param string $absolutePath
+     * @param bool $rebuild
+     * @return ResourceNode
+     * @throws Exception
+     */
+    public static function factory(string $absolutePath, bool $rebuild = false): ResourceNode
+    {
+        try {
+            /** @var ResourceNode $node */
+            $node = parent::factory($absolutePath, $rebuild);
+            if (!$node->isResource()) {
+                throw new Exception(__METHOD__ . ': Request can not be identified as a Resource Node');
+            }
+            return $node;
+        } catch(Exception $e ){
+            throw new Exception(__METHOD__ . ': Request can not be identified as a Resource Node');
+        }
+
+
+    }
 }

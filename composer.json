@@ -24,7 +24,9 @@
     "erusev/parsedown": "dev-master",
     "psr/container": "^2.0",
     "volta-framework/component-configuration": "*",
-    "volta-framework/component-logging": "*"
+    "volta-framework/component-logging": "*",
+    "ext-zip": "*",
+    "ext-readline": "*"
   },
 
   "autoload": {

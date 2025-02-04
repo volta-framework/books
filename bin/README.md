@@ -6,10 +6,10 @@ This element comprises a solitary command-line script named `VBtoEPub.php` (sign
 ~$ php VBtoEpub.php <FROM> <TO>
 ```
 
-Response will be provided in the event that either of the two arguments is deemed invalid. Should the target directory encompass files, the script will request permission prior to purging all files within. 
+Response will be provided in the event that either of the two arguments is deemed invalid. Should the target directory encompass files, the script will request permission prior to purging all files within.
 
 ## Creation of the *.epub file on Linux
-At present, the generation of the `*.epub` file occurs automatically on Linux systems. However, Windows and iOS platforms are not yet supported. This implies that on these platforms, the creation of the file needs to be performed manually after script execution. 
+At present, the generation of the `*.epub` file occurs automatically on Linux systems. However, Windows and iOS platforms are not yet supported. This implies that on these platforms, the creation of the file needs to be performed manually after script execution.
 
 Once executed, you will locate the file within the destination folder, adjacent to the `src` subfolder where all the EPUB source content is stored. It's also possible to recreate the EPUB manually whenever needed. Refer to the subsequent section for instructions on how to accomplish this.
 

@@ -51,6 +51,7 @@ class BookNode extends DocumentNode
      */
     public function setPublisher(PublisherInterface|string $publisher, array $options = []): BookNode
     {
+
         if (is_string($publisher)) {
             $this->_publisher = Publisher::factory(Publishers\Web::class, $options);;
         } else {
@@ -115,4 +116,26 @@ class BookNode extends DocumentNode
 
     #endregion -------------------------------------------------------------------------------------------------------
 
+
+    /**
+     * @param string $absolutePath
+     * @param bool $rebuild
+     * @return BookNode
+     * @throws Exception
+     */
+    public static function factory(string $absolutePath, bool $rebuild = false): BookNode
+    {
+        try {
+            /** @var BookNode $node */
+            $node = parent::factory($absolutePath, $rebuild);
+            if (!$node->isBook()) {
+                throw new Exception(__METHOD__ . ': Request can not be identified as a Book Node: (Path does not point to a book)');
+            }
+            return $node;
+        } catch(Exception $e ){
+            throw new Exception(__METHOD__ . ': Request can not be identified as a Book Node: (Path does not point to a book)');
+        }
+
+
+    }
 }

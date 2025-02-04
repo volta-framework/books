@@ -22,7 +22,7 @@
 body {margin:auto; width:80vw; max-width: var(--body-max-width); padding:var(--padding); font-family: Verdana, serif; color:var(--body-color); line-height: 1.8}
 header {text-align: center;  color:var(--header-color);  padding:var(--padding);}
 nav {padding:var(--padding); display:flex; justify-content: space-between}
-main {  min-height:80vh; padding:var(--padding); border-radius: var(--padding)}
+main {  min-height:80vh; padding:var(--padding); border-radius: var(--padding); counter-reset: h1}
 footer {text-align: center; color: var(--footer-color);  padding:var(--padding)}
 
 
@@ -36,11 +36,17 @@ img#coverimage { height: 95%; }
 /*overrides the previous setting, but only in newer systems that support CSS3 */
 img#coverimage:only-of-type { height: 95vh; }
 /** H(n) Counters (in main section) **/
-main{counter-reset: h1}
+
 h1{counter-reset: h2;}
 h2{counter-reset: h3;} h2::before{ counter-increment: h2; content: counter(h2) ". "; }
 h3{counter-reset: h4;} h3::before{ counter-increment: h3; content: counter(h2) "." counter(h3) ". "}
 h4{counter-reset: h5;} h4::before{ counter-increment: h4; content: counter(h2) "." counter(h3) "." counter(h4) ". "}
+
+/* Footnotes bar (in main section) */
+main .footnotes { padding: 20px; font-size: 8pt; margin: 50px 0 0 0 }
+main .footnotes:before{ display:block; content: 'Footnotes:'; border-bottom: 1px solid var(--main-border-color);}
+main .footnotes li { padding: 5px 0 5px 0 }
+main .footnote > sup {padding: 0 0 0 4px; font-size: 8pt;}
 
 /* Favorites bar (in main section) */
 main #favorites { top: -10px;right: -10px; position:relative; display:flex; justify-content: right; margin:0; padding:0; font-size: 10pt; color: lightgrey;}
@@ -67,14 +73,9 @@ code:is(p > code) {border: 1px solid var(--main-border-color); padding: 4px;colo
 var {font-family: "Courier New", serif;}
 
 /* Quiz (in main section) */
-.quiz{}
+
 .quiz .question { margin:20px;}
-.quiz .question .question-data{  }
-.quiz .question .answer-container{}
-.quiz .question .answer-container .answer{}
-.quiz .question .answer-container .answer-data{}
 .quiz .question .answer-container .answer-status:before{ display:inline-block; width:1em; content: ' '}
-.quiz .question .answer-container .answer-status.unknown{}
 .quiz .question .answer-container .answer-status.correct{ color:green; }
 .quiz .question .answer-container .answer-status.error{ color: red; }
 .quiz .question .answer-container .answer-status.correct:before{ content: '\2713 ' }
@@ -82,11 +83,6 @@ var {font-family: "Courier New", serif;}
 .quiz .buttons > button{ padding:var(--padding); border:1px solid var(--main-border-color); border-radius: 5px;}
 .quiz .buttons > button:hover{ color: var(--link-color)}
 
-/* Footnotes bar (in main section) */
-.footnotes { padding: 20px; font-size: 8pt; margin: 50px 0 0 0 }
-.footnotes:before{ display:block; content: 'Footnotes:'; border-bottom: 1px solid var(--main-border-color);}
-.footnotes li { padding: 5px 0 5px 0 }
-.footnote > sup {padding: 0 0 0 4px; font-size: 8pt;}
 
 .chuck{ font-size:8pt; font-family: "Courier New", serif; text-align: center}
 .chuck:before{content: '"'}

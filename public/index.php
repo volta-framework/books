@@ -13,31 +13,15 @@ use Slim\Factory\AppFactory;
 use Slim\Interfaces\RouteInterface;
 use Volta\Component\Books\Controllers\BooksController;
 
-/*
- * By including the autoload, we have all the classes at our fingertips
- */
 require_once __DIR__ . '/../vendor/autoload.php';
 
-/*
- * Start the PHP webserver in this directory like:
- *
- *  php -S localhost:8080 index.php
- *
- * This way this index.php wil act as a front controller and will serve
- * all the static resources as well
- *
- * As this is an example(test) we make sure we see all errors.
- */
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 try {
 
-    /* When using the build-in webserver return false to serve the static content */
-    if (is_file(__DIR__. $_SERVER['REQUEST_URI']) &&
-        php_sapi_name() === 'cli-server') {
-        return false;
-    }
+    $uri = strtok($_SERVER["REQUEST_URI"], '?');
+    if (is_file(__DIR__ . $uri) && php_sapi_name() === 'cli-server')  return false;
 
    /*
     * Redirect to BooksController::getUriOffset() which is the start page of this component
@@ -63,10 +47,10 @@ try {
     $routes = require_once __DIR__ . '/../config/routes.php';
     foreach($routes as $routeName => $routeInfo) {
         if (is_array($routeInfo['methods'])) {
-            $route = $app->map($routeInfo['methods'], $routeInfo['path'], $routeInfo['handler']) ;
+            $route = $app->map($routeInfo['methods'], $routeInfo['pattern'], $routeInfo['callable']) ;
         } else if (is_string($routeInfo['methods'])) {
             $method = $routeInfo['methods'];
-            $route = $app->$method($routeInfo['path'], $routeInfo['handler']) ;
+            $route = $app->$method($routeInfo['pattern'], $routeInfo['callable']) ;
         }
         if (is_string($routeName)) $route->setName($routeName);
     }

@@ -108,6 +108,6 @@ interface PublisherInterface extends LoggerAwareInterface
      * @param array $options = []
      * @return bool True on success, False otherwise
      */
-    public function exportBook(string|int $bookIndex, array $options = []): bool;
+    public function exportBook(string|int $bookIndex = 0, array $options = []): bool;
 
 }

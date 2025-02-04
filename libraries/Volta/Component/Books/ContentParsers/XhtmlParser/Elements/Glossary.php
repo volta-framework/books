@@ -84,7 +84,7 @@ class Glossary  extends BaseElement
 
         $html = '';
         foreach(Glossary::$_terms as $item => $text) {
-            $html .= '<div class="glossaryEntry" id="'. $item. '">';
+            $html .= '<div class="glossaryEntry" id="'. (string) preg_replace('/[^a-zA-Z0-9]/', '-', $item). '">';
             $html .= '<div class="glossaryTerm">'. $item. '</div>';
             $html .= '<div class="glossaryDescription">';
             $html .= $text;

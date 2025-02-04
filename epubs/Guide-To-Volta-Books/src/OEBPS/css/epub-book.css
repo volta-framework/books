@@ -1,0 +1,94 @@
+:root{
+    --body-color: darkslategrey;
+    --body-max-width: 840px;
+    --header-color: lightgrey;
+    --main-border-color: lightgrey;
+    --footer-color: lightgrey;
+    --box-bg-color: #f3f3f3;
+
+    --link-color: lightseagreen;
+    --info-color: lightseagreen; /*lightseagreen, seagreen, darkseagreen; mediumseagreen, goldenrod*/
+    --note-color:lightgrey;
+
+    --code-bg-color:  #444; /* light theme*/
+    --error-color: sienna;
+    --h1-color: sienna;
+    --h2-color: sienna;
+    --h3-color: sienna; /*sandybrown*/
+
+    --padding: 10px;
+}
+
+body {margin:auto; width:80vw; max-width: var(--body-max-width); padding:var(--padding); font-family: Verdana, serif; color:var(--body-color); line-height: 1.8}
+header {text-align: center;  color:var(--header-color);  padding:var(--padding);}
+nav {padding:var(--padding); display:flex; justify-content: space-between}
+main {  min-height:80vh; padding:var(--padding); border-radius: var(--padding); counter-reset: h1}
+footer {text-align: center; color: var(--footer-color);  padding:var(--padding)}
+
+
+/*
+ Cover image settings
+ Resizes teh cover image to the current window size
+ */
+.cover-container { margin: 0; padding: 0; }
+section.cover { display: block; text-align: center; height: 95%; }
+img#coverimage { height: 95%; }
+/*overrides the previous setting, but only in newer systems that support CSS3 */
+img#coverimage:only-of-type { height: 95vh; }
+/** H(n) Counters (in main section) **/
+
+h1{counter-reset: h2;}
+h2{counter-reset: h3;} h2::before{ counter-increment: h2; content: counter(h2) ". "; }
+h3{counter-reset: h4;} h3::before{ counter-increment: h3; content: counter(h2) "." counter(h3) ". "}
+h4{counter-reset: h5;} h4::before{ counter-increment: h4; content: counter(h2) "." counter(h3) "." counter(h4) ". "}
+
+/* Footnotes bar (in main section) */
+main .footnotes { padding: 20px; font-size: 8pt; margin: 50px 0 0 0 }
+main .footnotes:before{ display:block; content: 'Footnotes:'; border-bottom: 1px solid var(--main-border-color);}
+main .footnotes li { padding: 5px 0 5px 0 }
+main .footnote > sup {padding: 0 0 0 4px; font-size: 8pt;}
+
+/* Favorites bar (in main section) */
+main #favorites { top: -10px;right: -10px; position:relative; display:flex; justify-content: right; margin:0; padding:0; font-size: 10pt; color: lightgrey;}
+main #favorites > li{ display: inline-block;  border-left:1px solid var(--main-border-color); border-bottom:1px solid var(--main-border-color); padding:4px var(--padding) 4px var(--padding)}
+
+/** Basic textual markup (in main section) **/
+figure { padding: 5px; border-radius: 5px;}
+figcaption { text-align: center; font-style: italic; font-size: 8pt; color: var(--code-bg-color)}
+img {width: 95%; height: auto; margin:auto; display: block;}
+h1, h2 { border-bottom: 1px solid var(--main-border-color); color:var(--h1-color)}
+a:link, a:visited, a:active, a:hover { color:var(--link-color); text-decoration: none;}
+a:hover {text-decoration: underline;}
+a[target="_blank"]::after {content: '\2197'; font-size:8pt;vertical-align: super; color:var( --body-color);}
+p {text-align: justify; }
+p:first-letter{padding-left: var(--padding); font-weight: bold; color:var(--info-color);}
+blockquote{border: 1px solid var(--info-color); border-left-width: 4px; border-right-width: 4px; border-radius: 4px; padding: var(--padding); word-break: break-word; }
+blockquote.note{border-color: var(--note-color) }
+blockquote.error{border-color: var(--error-color); color:var(--error-color);}
+pre{border: 1px solid var(--main-border-color);   border-radius: 5px !important;  }
+code{ padding:20px;}
+code:not(pre > code) { display:block;border: 1px solid var(--main-border-color); padding: 4px; border-radius: 5px; background-color: var(--box-bg-color)}
+code:is(p > code) {border: 1px solid var(--main-border-color); padding: 4px;color: var(--code-bg-color); border-radius: 5px !important; }
+
+var {font-family: "Courier New", serif;}
+
+/* Quiz (in main section) */
+
+.quiz .question { margin:20px;}
+.quiz .question .answer-container .answer-status:before{ display:inline-block; width:1em; content: ' '}
+.quiz .question .answer-container .answer-status.correct{ color:green; }
+.quiz .question .answer-container .answer-status.error{ color: red; }
+.quiz .question .answer-container .answer-status.correct:before{ content: '\2713 ' }
+.quiz .question .answer-container .answer-status.error:before{ content: '\274c ' }
+.quiz .buttons > button{ padding:var(--padding); border:1px solid var(--main-border-color); border-radius: 5px;}
+.quiz .buttons > button:hover{ color: var(--link-color)}
+
+
+.chuck{ font-size:8pt; font-family: "Courier New", serif; text-align: center}
+.chuck:before{content: '"'}
+.chuck:after{content: '"'}
+
+@media only screen and (max-width: 600px) {
+    p {text-align: left; }
+    blockquote{margin:0;  word-break: break-all;}
+}

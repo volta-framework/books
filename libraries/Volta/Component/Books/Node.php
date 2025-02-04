@@ -65,19 +65,18 @@ abstract class Node implements NodeInterface
         if (isset(Node::$_nodesCache[$absolutePath]) && !$rebuild) return Node::$_nodesCache[$absolutePath];
 
         // must be a valid path, readable and slug-able
-        if (false === $realPath) throw new Exception(__METHOD__ . ': Path("'.$absolutePath.'") can not be identified as a node: Invalid path');
-        if (!is_readable($realPath)) throw new Exception(__METHOD__ . ': Path("'.$absolutePath.'") can not be identified as a node: Not readable');
-        if (false === preg_match('/[^a-zA-Z0-9_-]/', basename($realPath)))
-            throw new Exception(__METHOD__ . ': Path("'.$absolutePath.'") can not be identified as a node: Name contains character other then a-z, A-Z, 0-9 hyphen or underscore');
+        if (false === $realPath) throw new Exception(__METHOD__ . ': Request can not be identified as a node: Invalid path');
+        if (!is_readable($realPath)) throw new Exception(__METHOD__ . ': Request can not be identified as a node: Not readable');
+        if(is_dir($realPath)) {
+            if (preg_match('/[^a-zA-Z0-9_-]/', basename($realPath)))
+                throw new Exception(__METHOD__ . ': Request can not be identified as a node: Name contains character other then a-z, A-Z, 0-9 hyphen or underscore');
 
-        // file(resource) or directory(DocumentNode)
-        if (is_dir($realPath)) {
             $result = glob($absolutePath . DIRECTORY_SEPARATOR . 'content.*');
             if ($result === false || count($result) === 0)
-                throw new DocumentNodeException(__METHOD__ . ': Path("'.$absolutePath.'") can not be identified as a node: Missing content.*');
+                throw new DocumentNodeException(__METHOD__ . ': Request can not be identified as a document node: Missing content.*');
 
             if (!file_exists($realPath . DIRECTORY_SEPARATOR . 'meta.json'))
-                throw new DocumentNodeException(__METHOD__ . ': Path("'.$absolutePath.'") can not be identified as a document node: Missing meta.json');
+                throw new DocumentNodeException(__METHOD__ . ': Request can not be identified as a document node: Missing meta.json');
 
             $node = new DocumentNode($realPath);
             if ($node->getParent() === null) {
@@ -88,10 +87,24 @@ abstract class Node implements NodeInterface
 
         // if the request is a file it must be a resource
         else {
+
+            $baseName = basename($realPath);
+            if (strtolower($baseName) === 'meta.json' ||
+                str_starts_with($baseName, '_') ||
+                str_starts_with($baseName, '.') ||
+                preg_match('/^content\..*/', $baseName)) {
+                throw new Exception(__METHOD__ . ': Request can not be identified as a resource node: Reserved name');
+            }
+
             $extension = pathinfo($realPath, PATHINFO_EXTENSION);
             if (!Settings::isResourceSupported($extension)) {
-                throw new MimeTypeNotSupportedException(__METHOD__ . ': Resources "*.'.$extension.'" not supported ');
+                throw new MimeTypeNotSupportedException(__METHOD__ . ': Request can not be identified as a resource node: "*.' . $extension . '" not supported ');
             }
+
+            if (preg_match('/[^a-zA-Z0-9_-]/', pathinfo($realPath, PATHINFO_FILENAME))) {
+                throw new Exception(__METHOD__ . ': Request can not be identified as a resource node: Name contains character other then a-z, A-Z, 0-9 hyphen or underscore');
+            }
+
             Node::$_nodesCache[$absolutePath] = new ResourceNode($realPath);
         }
 

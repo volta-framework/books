@@ -114,6 +114,7 @@ interface NodeInterface
      */
     public function getNext():null|NodeInterface;
 
+
     /**
      * Get a child node
      * @throws Exception

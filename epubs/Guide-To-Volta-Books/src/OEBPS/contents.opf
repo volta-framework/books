@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://www.idpf.org/2007/opf" version="2.0" unique-identifier="pub-id">
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
+    <dc:identifier id="pub-id" opf:scheme="uuid">F7C410E3-3DEC-4F51-8A73-BB11E9EBE362</dc:identifier>
+    <meta refines="#pub-id" property="identifier-type" scheme="xsd:string">uuid</meta>
+    <meta property="dcterms:modified">2020-01-01T01:01:01Z</meta>
+    <dc:title id="title1">Guide-To-Volta-Books</dc:title>
+    <meta refines="#title1" property="title-type">main</meta>
+    <meta refines="#title1" property="display-seq">1</meta>
+    <dc:language>een</dc:language>
+    <dc:creator opf:file-as="Rob Demmenie" opf:role="aut">Rob Demmenie</dc:creator>
+  </metadata>
+  <manifest>
+    <item id="VB42099b4af021e53fd8fd4e056c2568d7c2e3ffa8" href="./content.html" media-type="application/xhtml+xml"/>
+    <item id="VB293e4e367ad3e8debc77a061d29330497378bf61" href="./cover.png" media-type="image/png"/>
+    <item id="VB3701ac81ac224e400201bb02ce25d6b6fdfe52bb" href="./1-Copyright/content.html" media-type="application/xhtml+xml"/>
+    <item id="VB9c92a35cd038b4c2804f16c98806ef845e57dac2" href="./3-Introduction/content.html" media-type="application/xhtml+xml"/>
+    <item id="VB495945a078ea4c999668d44bd5e3dd7aefe15cb6" href="./4-ContentParsers/content.html" media-type="application/xhtml+xml"/>
+    <item id="VB35641cc7331b24f0b5f44d3bbf5789e14491e769" href="./5-Publishers/content.html" media-type="application/xhtml+xml"/>
+    <item id="VBe38a7530b2f9a9b2e46cc468ea0d280c34668c6d" href="./6-Volta-Component/content.html" media-type="application/xhtml+xml"/>
+    <item id="VBdf004d60af8d1d963e7f4a949f6f6653ebdf6dab" href="./8-Glossary/content.html" media-type="application/xhtml+xml"/>
+    <item id="VB21c703eae0d86176dc5f64048409da48a47f9485" href="./9-References/content.html" media-type="application/xhtml+xml"/>
+    <item id="cover" properties="cover-image" href="cover.png" media-type="image/png" />
+    <item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml"/>
+    <item id="stylesheet" href="./css/epub-book.css" media-type="text/css"/>
+  </manifest>
+  <spine toc="ncx">
+    <itemref idref="VB42099b4af021e53fd8fd4e056c2568d7c2e3ffa8"/>
+    <itemref idref="VB3701ac81ac224e400201bb02ce25d6b6fdfe52bb"/>
+    <itemref idref="VB9c92a35cd038b4c2804f16c98806ef845e57dac2"/>
+    <itemref idref="VB495945a078ea4c999668d44bd5e3dd7aefe15cb6"/>
+    <itemref idref="VB35641cc7331b24f0b5f44d3bbf5789e14491e769"/>
+    <itemref idref="VBe38a7530b2f9a9b2e46cc468ea0d280c34668c6d"/>
+    <itemref idref="VBdf004d60af8d1d963e7f4a949f6f6653ebdf6dab"/>
+    <itemref idref="VB21c703eae0d86176dc5f64048409da48a47f9485"/>
+  </spine>
+</package>

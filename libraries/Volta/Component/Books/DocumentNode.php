@@ -12,6 +12,9 @@ declare(strict_types=1);
 namespace Volta\Component\Books;
 
 use DirectoryIterator;
+use FilesystemIterator;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
 use Volta\Component\Books\Exceptions\DocumentNodeException;
 use Volta\Component\Books\Exceptions\Exception;
 use Volta\Component\Books\Exceptions\ResourceNodeException;
@@ -105,38 +108,31 @@ class DocumentNode extends Node
             $this->_resources = [];
 
             // loop through files in this directory and subdirectories which are not DocumentNodes
-            $flags = \FilesystemIterator::SKIP_DOTS;
-            $dir = new \DirectoryIterator($this->getAbsolutePath());
-            foreach ($dir as $file) {
-                if($file->isDir()) {
-                    try {
+            $flags = FilesystemIterator::SKIP_DOTS;
+            $dirIt = new DirectoryIterator($this->getAbsolutePath());
+            foreach ($dirIt as $file) {
+                try {
+                    if ($file->isDot()) continue;
+                    if ($file->isDir()) {
                         $docNode = Node::factory($file->getPathname());
-                        continue;
-                    } catch(Exception $e){
+                        if ($docNode->isDocument()) continue;
 
-                        // recursive iterate
-                        $dir = new \RecursiveDirectoryIterator($file->getPathname(), $flags);
-                        $files = new \RecursiveIteratorIterator($dir);
+                        // a directory in the document node directory which is not a document qualifies as a resource directory
+                        // therefor recursive iterate through all resources.
+                        $recDirIt = new RecursiveDirectoryIterator($file->getPathname(), $flags);
+                        $files = new RecursiveIteratorIterator($recDirIt);
                         foreach ($files as $resourceFile) {
-                            try {
-                                $resource = Node::factory($resourceFile->getPathname());
-                            } catch(Exception $e){
-                                continue;
-                            }
-                            $this->_resources[$resource->getUri()] = $resource;
+                            $resourceNode = Node::factory($resourceFile->getPathname());
+                            if ($resourceNode->isDocument()) continue;
+                            $this->_resources[$resourceNode->getUri()] = $resourceNode;
                         }
-                    }
-                } else {
-                    if (strtolower($file->getFilename()) === 'meta.json') continue;
-                    if (str_starts_with($file->getFilename(), '_')) continue;
-                    if (str_starts_with($file->getFilename(), '.')) continue;
-                    if (preg_match('/^content\..*/', $file->getFilename())) continue;
-                    try {
+
+                    } else {
                         $resource = Node::factory($file->getPathname());
-                    } catch (Exception $e) {
-                        continue;
+                        $this->_resources[$resource->getUri()] = $resource;
                     }
-                    $this->_resources[$resource->getUri()] = $resource;
+                } catch (Exception $e) {
+                    continue;
                 }
             }
         }
@@ -196,6 +192,19 @@ class DocumentNode extends Node
         }
         return $this->_previous;
     }
+
+
+    public function getLevel():int
+    {
+        $level = 0;
+        $parent = $this->getParent();
+        while(null !== $parent) {
+            $parent = $parent->getParent();
+            $level++;
+        }
+        return $level;
+    }
+
 
     /**
      * Returns the parsed content
@@ -275,6 +284,28 @@ class DocumentNode extends Node
     public function getModificationTime(): int|false
     {
         return filemtime($this->getContentFile());
+    }
+
+    /**
+     * @param string $absolutePath
+     * @param bool $rebuild
+     * @return DocumentNode
+     * @throws Exception
+     */
+    public static function factory(string $absolutePath, bool $rebuild = false): DocumentNode
+    {
+        try {
+            /** @var DocumentNode $node */
+            $node = parent::factory($absolutePath, $rebuild);
+            if (!$node->isBook()) {
+                throw new Exception(__METHOD__ . ': Request can not be identified as a Document Node');
+            }
+            return $node;
+        } catch(Exception $e ){
+            throw new Exception(__METHOD__ . ': Request can not be identified as a Document Node');
+        }
+
+
     }
 
 }

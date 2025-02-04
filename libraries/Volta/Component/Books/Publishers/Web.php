@@ -144,7 +144,7 @@ class Web extends Publisher
      * @param array $option
      * @inheritdoc
      */
-    public function exportBook(string|int $bookIndex, array $options = []): bool
+    public function exportBook(string|int $bookIndex = 0, array $options = []): bool
     {
         return false;
     }
